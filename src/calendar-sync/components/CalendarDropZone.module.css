@@ -14,3 +14,12 @@
   background-color: rgba(37, 99, 235, 0.08);
   border-radius: 4px;
 }
+
+.dropZonePastBlocked {
+  outline: 2px dashed var(--accent-crimson, #EF4444);
+  outline-offset: -2px;
+  background-color: rgba(239, 68, 68, 0.12);
+  border-radius: 4px;
+  cursor: not-allowed !important;
+}
+

@@ -333,11 +333,12 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
 
     fireEvent.dragStart(taskCard, { dataTransfer });
 
-    // Obtener la casilla destino en el calendario
+    // Obtener la casilla destino en el calendario (hoy es una fecha válida presente)
     const today = new Date();
     const y = today.getFullYear();
     const m = String(today.getMonth() + 1).padStart(2, '0');
-    const targetDate = `${y}-${m}-15`;
+    const d = String(today.getDate()).padStart(2, '0');
+    const targetDate = `${y}-${m}-${d}`;
 
     const dropZone = screen.getByTestId(`calendar-drop-zone-${targetDate}`);
     expect(dropZone).toBeInTheDocument();
@@ -351,7 +352,68 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
       expect(pill).toHaveTextContent('Instalar estantería salón');
     });
   });
+
+  it('[VV-002]: Arrastrar una tarea a una casilla de fecha pasada anula la operación, no crea la pastilla en el calendario y preserva la tarea intacta en el Hub (Decisión 1A)', async () => {
+    const mockTasks = [
+      {
+        id: 'task-dnd-past-test',
+        titulo: 'Reparar tejado pasado',
+        prioridad: 'alta' as const,
+        completado: false,
+        modulo: 'tasks' as const,
+        descripcion: 'Intento en fecha pasada',
+        userId: 'usr-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        fechaProgramada: null,
+      },
+    ];
+
+    render(<App initialAuthenticated={true} initialTasks={mockTasks} />);
+
+    // Verificar presencia de la tarjeta en el Hub
+    const hub = screen.getByRole('complementary', { name: /hub lateral/i });
+    const taskCard = within(hub).getByTestId('task-card-task-dnd-past-test');
+    expect(taskCard).toBeInTheDocument();
+
+    const dataTransferData: Record<string, string> = {};
+    const dataTransfer = {
+      setData: (format: string, data: string) => {
+        dataTransferData[format] = data;
+      },
+      getData: (format: string) => dataTransferData[format] || '',
+      dropEffect: 'none',
+      effectAllowed: 'none',
+    };
+
+    fireEvent.dragStart(taskCard, { dataTransfer });
+
+    // Casilla de fecha pasada comprobable (día 1 del mes en curso, hoy es 29)
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const pastDate = `${y}-${m}-01`;
+
+    const dropZone = screen.getByTestId(`calendar-drop-zone-${pastDate}`);
+    expect(dropZone).toBeInTheDocument();
+
+    // Comprobar que al sobrevolar se activa el bloqueo carmesí
+    fireEvent.dragOver(dropZone, { dataTransfer });
+    expect(dropZone).toHaveClass(/dropZonePastBlocked/);
+    expect(dropZone).toHaveAttribute('data-drop-blocked', 'true');
+    expect(dataTransfer.dropEffect).toBe('none');
+
+    // Intentar soltar en la casilla pasada
+    fireEvent.drop(dropZone, { dataTransfer });
+
+    // La pastilla NO debe aparecer en el calendario (VV-002)
+    expect(screen.queryByTestId('calendar-pill-task-dnd-past-test')).not.toBeInTheDocument();
+
+    // La tarjeta permanece intacta en el Hub
+    expect(within(hub).getByTestId('task-card-task-dnd-past-test')).toBeInTheDocument();
+  });
 });
+
 
 
 

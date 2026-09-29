@@ -178,7 +178,7 @@ describe('MonthlyCalendarGrid Component', () => {
     expect(pill).toHaveTextContent('Revisión anual caldera');
   });
 
-  it('debería invocar onItemDrop al soltar un ítem sobre una casilla', () => {
+  it('debería invocar onItemDrop al soltar un ítem sobre una casilla presente o futura', () => {
     const handleItemDrop = vi.fn();
     render(
       <MonthlyCalendarGrid
@@ -187,7 +187,7 @@ describe('MonthlyCalendarGrid Component', () => {
       />
     );
 
-    const dropZone = screen.getByTestId('calendar-drop-zone-2026-09-15');
+    const dropZone = screen.getByTestId('calendar-drop-zone-2026-09-30');
     const payload = {
       id: 'task-dnd-1',
       modulo: 'tasks' as const,
@@ -198,19 +198,62 @@ describe('MonthlyCalendarGrid Component', () => {
 
     const dataTransfer = {
       getData: (format: string) => {
-        if (format === 'application/x-centrat-item' || format === 'text/plain') {
+        if (format === 'application/x-centra-t-item' || format === 'text/plain') {
           return JSON.stringify(payload);
         }
         return '';
       },
     };
 
-    // Usamos dispatchEvent de drag/drop nativo simulado
     const dropEvent = new Event('drop', { bubbles: true, cancelable: true });
     Object.defineProperty(dropEvent, 'dataTransfer', { value: dataTransfer });
     dropZone.dispatchEvent(dropEvent);
 
     expect(handleItemDrop).toHaveBeenCalledTimes(1);
-    expect(handleItemDrop).toHaveBeenCalledWith(payload, '2026-09-15');
+    expect(handleItemDrop).toHaveBeenCalledWith(payload, '2026-09-30');
+  });
+
+  it('bloquea el soltado en casillas de días pasados y lo permite en días presentes y futuros (Decisión 1A / VV-002)', () => {
+    const handleItemDrop = vi.fn();
+    render(
+      <MonthlyCalendarGrid
+        initialDate={mockInitialDate}
+        onItemDrop={handleItemDrop}
+      />
+    );
+
+    const payload = {
+      id: 'task-dnd-vv002',
+      modulo: 'tasks' as const,
+      titulo: 'Auditoría caldera',
+      prioridad: 'alta' as const,
+      completado: false,
+    };
+
+    const dataTransfer = {
+      getData: (format: string) => {
+        if (format === 'application/x-centra-t-item' || format === 'text/plain') {
+          return JSON.stringify(payload);
+        }
+        return '';
+      },
+    };
+
+    // 1. Intento de soltado en casilla pasada (2026-09-15)
+    const pastDropZone = screen.getByTestId('calendar-drop-zone-2026-09-15');
+    const pastDropEvent = new Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(pastDropEvent, 'dataTransfer', { value: dataTransfer });
+    pastDropZone.dispatchEvent(pastDropEvent);
+
+    expect(handleItemDrop).not.toHaveBeenCalled();
+
+    // 2. Soltado en casilla futura (2026-09-30)
+    const futureDropZone = screen.getByTestId('calendar-drop-zone-2026-09-30');
+    const futureDropEvent = new Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(futureDropEvent, 'dataTransfer', { value: dataTransfer });
+    futureDropZone.dispatchEvent(futureDropEvent);
+
+    expect(handleItemDrop).toHaveBeenCalledTimes(1);
+    expect(handleItemDrop).toHaveBeenCalledWith(payload, '2026-09-30');
   });
 });

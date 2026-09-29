@@ -127,4 +127,90 @@ describe('CalendarDropZone Component', () => {
     });
     expect(handleDrop).not.toHaveBeenCalled();
   });
+
+  it('activa el estado isBlocked (.dropZonePastBlocked) y establece dropEffect = none al sobrevolar una casilla pasada (isPast=true)', () => {
+    render(
+      <CalendarDropZone dateString="2026-09-01" isPast={true}>
+        <span>Casilla Pasada</span>
+      </CalendarDropZone>
+    );
+
+    const dropZone = screen.getByTestId('calendar-drop-zone-2026-09-01');
+    const dataTransfer = { dropEffect: 'move' };
+
+    fireEvent.dragOver(dropZone, { dataTransfer });
+
+    expect(dropZone).toHaveClass(/dropZonePastBlocked/);
+    expect(dropZone).toHaveAttribute('data-drop-blocked', 'true');
+    expect(dropZone).not.toHaveClass(/dropZoneActive/);
+    expect(dataTransfer.dropEffect).toBe('none');
+  });
+
+  it('remueve .dropZonePastBlocked al salir de la casilla pasada con dragLeave', () => {
+    render(
+      <CalendarDropZone dateString="2026-09-01" isPast={true}>
+        <span>Casilla Pasada</span>
+      </CalendarDropZone>
+    );
+
+    const dropZone = screen.getByTestId('calendar-drop-zone-2026-09-01');
+
+    fireEvent.dragOver(dropZone, { dataTransfer: { dropEffect: 'move' } });
+    expect(dropZone).toHaveClass(/dropZonePastBlocked/);
+
+    fireEvent.dragLeave(dropZone);
+    expect(dropZone).not.toHaveClass(/dropZonePastBlocked/);
+    expect(dropZone).not.toHaveAttribute('data-drop-blocked');
+  });
+
+  it('anula el drop y NO invoca onItemDrop cuando isPast=true (Caso VV-002)', () => {
+    const handleDrop = vi.fn();
+    render(
+      <CalendarDropZone dateString="2026-09-01" isPast={true} onItemDrop={handleDrop}>
+        <span>Casilla Pasada</span>
+      </CalendarDropZone>
+    );
+
+    const dropZone = screen.getByTestId('calendar-drop-zone-2026-09-01');
+    const payload: DragItemPayload = {
+      id: 'task-past-1',
+      modulo: 'tasks',
+      titulo: 'Tarea rechazada en pasado',
+      prioridad: 'alta',
+      completado: false,
+    };
+
+    const dataTransfer = {
+      getData: (format: string) => {
+        if (format === DRAG_TRANSFER_MIME || format === 'text/plain') {
+          return JSON.stringify(payload);
+        }
+        return '';
+      },
+    };
+
+    fireEvent.drop(dropZone, { dataTransfer });
+
+    expect(handleDrop).not.toHaveBeenCalled();
+    expect(dropZone).not.toHaveClass(/dropZonePastBlocked/);
+    expect(dropZone).not.toHaveClass(/dropZoneActive/);
+  });
+
+  it('mantiene el funcionamiento habitual con .dropZoneActive y dropEffect = move cuando isPast=false', () => {
+    const handleDrop = vi.fn();
+    render(
+      <CalendarDropZone dateString="2026-09-30" isPast={false} onItemDrop={handleDrop}>
+        <span>Casilla Futura</span>
+      </CalendarDropZone>
+    );
+
+    const dropZone = screen.getByTestId('calendar-drop-zone-2026-09-30');
+    const dataTransfer = { dropEffect: 'none' };
+
+    fireEvent.dragOver(dropZone, { dataTransfer });
+
+    expect(dropZone).toHaveClass(/dropZoneActive/);
+    expect(dropZone).not.toHaveClass(/dropZonePastBlocked/);
+    expect(dataTransfer.dropEffect).toBe('move');
+  });
 });

@@ -13,22 +13,36 @@ export interface CalendarDropZoneProps {
 
 export const CalendarDropZone: React.FC<CalendarDropZoneProps> = ({
   dateString,
+  isPast = false,
   children,
   onItemDrop,
   className,
 }) => {
   const [isOver, setIsOver] = useState<boolean>(false);
+  const [isBlocked, setIsBlocked] = useState<boolean>(false);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    if (isPast) {
+      e.dataTransfer.dropEffect = 'none';
+      if (!isBlocked) setIsBlocked(true);
+      if (isOver) setIsOver(false);
+      return;
+    }
+    e.dataTransfer.dropEffect = 'move';
     if (!isOver) {
       setIsOver(true);
     }
-    e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
+    if (isPast) {
+      e.dataTransfer.dropEffect = 'none';
+      setIsBlocked(true);
+      setIsOver(false);
+      return;
+    }
     setIsOver(true);
   };
 
@@ -40,11 +54,18 @@ export const CalendarDropZone: React.FC<CalendarDropZoneProps> = ({
       return;
     }
     setIsOver(false);
+    setIsBlocked(false);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsOver(false);
+    setIsBlocked(false);
+
+    // Decisión 1A / Caso VV-002: Bloqueo inflexible de fechas pasadas
+    if (isPast) {
+      return;
+    }
 
     const rawData =
       e.dataTransfer.getData(DRAG_TRANSFER_MIME) ||
@@ -67,6 +88,7 @@ export const CalendarDropZone: React.FC<CalendarDropZoneProps> = ({
   const combinedClasses = [
     styles.dropZone,
     isOver ? styles.dropZoneActive : '',
+    isBlocked ? styles.dropZonePastBlocked : '',
     className || '',
   ]
     .filter(Boolean)
@@ -77,6 +99,7 @@ export const CalendarDropZone: React.FC<CalendarDropZoneProps> = ({
       className={combinedClasses}
       data-testid={`calendar-drop-zone-${dateString}`}
       data-date={dateString}
+      data-drop-blocked={isBlocked ? 'true' : undefined}
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
