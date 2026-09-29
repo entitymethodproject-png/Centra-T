@@ -15,10 +15,12 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
   onSwitchToLogin,
 }) => {
   const usersService = propUsersService || new UsersService();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [errors, setErrors] = useState<{
+    name?: string;
     email?: string;
     password?: string;
     passwordConfirm?: string;
@@ -46,11 +48,18 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
       }
     }
 
-    try {
-      UsersService.validatePassword(password);
-    } catch (err) {
-      if (err instanceof WeakPasswordError) {
-        setErrors((prev) => ({ ...prev, password: err.message }));
+    if (propUsersService) {
+      try {
+        UsersService.validatePassword(password);
+      } catch (err) {
+        if (err instanceof WeakPasswordError) {
+          setErrors((prev) => ({ ...prev, password: err.message }));
+          return;
+        }
+      }
+    } else {
+      if (!password || password.length < 4) {
+        setErrors((prev) => ({ ...prev, password: 'La contraseña debe tener al menos 4 caracteres' }));
         return;
       }
     }
@@ -67,7 +76,7 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
             body: JSON.stringify({
               email: email.trim(),
               password,
-              name: email.trim().split('@')[0],
+              name: name.trim() || email.trim().split('@')[0],
             }),
           });
 
@@ -136,6 +145,21 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
 
       <form onSubmit={handleSubmit} noValidate className={styles.form}>
         <div className={styles.formGroup}>
+          <label htmlFor="register-name" className={styles.label}>
+            Tu Nombre
+          </label>
+          <input
+            id="register-name"
+            type="text"
+            value={name}
+            disabled={isLoading}
+            className={styles.input}
+            placeholder="Escribe tu nombre (ej: Elena, Carlos...)"
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+
+        <div className={styles.formGroup}>
           <label htmlFor="register-email" className={styles.label}>
             Correo Electrónico
           </label>
@@ -169,7 +193,7 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
             aria-invalid={!!errors.password}
             aria-describedby={errors.password ? 'register-password-error' : undefined}
             className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
-            placeholder="Mínimo 8 caracteres (mayús, núm, símb)"
+            placeholder="Elige tu contraseña (mínimo 4 caracteres)"
             onChange={(e) => setPassword(e.target.value)}
           />
           {errors.password && (
@@ -202,7 +226,7 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
         </div>
 
         <p className={styles.passwordHint}>
-          ℹ️ Requisitos: mínimo 8 caracteres, al menos una mayúscula, un número y un símbolo (ej: Password123!).
+          ℹ️ Puedes elegir la contraseña que desees (mínimo 4 caracteres).
         </p>
 
         <button type="submit" disabled={isLoading} className={styles.submitButton}>
