@@ -412,6 +412,126 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
     // La tarjeta permanece intacta en el Hub
     expect(within(hub).getByTestId('task-card-task-dnd-past-test')).toBeInTheDocument();
   });
+
+  it('[VV-003]: Al mover una tarea ya fechada a una nueva fecha se abre el modal de conflicto y [Mantener fecha] conserva la fecha original (Decisión 4B)', async () => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const todayIso = `${y}-${m}-${d}`;
+    const nextDay = String(today.getDate() + 1).padStart(2, '0');
+    const nextDayIso = `${y}-${m}-${nextDay}`;
+
+    const mockTasks = [
+      {
+        id: 'task-conflict-1',
+        titulo: 'Revisión cuadro eléctrico',
+        prioridad: 'alta' as const,
+        completado: false,
+        modulo: 'tasks' as const,
+        descripcion: 'Con fecha programada',
+        userId: 'usr-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        fechaProgramada: new Date(`${todayIso}T00:00:00`),
+      },
+    ];
+
+    render(<App initialAuthenticated={true} initialTasks={mockTasks} />);
+
+    // Verificar que la pastilla está inicialmente en la casilla de hoy
+    expect(screen.getByTestId('calendar-pill-task-conflict-1')).toBeInTheDocument();
+
+    const dataTransferData: Record<string, string> = {};
+    const dataTransfer = {
+      setData: (format: string, data: string) => {
+        dataTransferData[format] = data;
+      },
+      getData: (format: string) => dataTransferData[format] || '',
+      dropEffect: 'none',
+      effectAllowed: 'none',
+    };
+
+    // Arrastramos la pastilla desde el calendario
+    const pill = screen.getByTestId('calendar-pill-task-conflict-1');
+    fireEvent.dragStart(pill, { dataTransfer });
+
+    // Soltamos en la casilla de mañana
+    const nextDayZone = screen.getByTestId(`calendar-drop-zone-${nextDayIso}`);
+    fireEvent.drop(nextDayZone, { dataTransfer });
+
+    // Debe abrirse el modal de conflicto
+    const modal = screen.getByRole('dialog');
+    expect(modal).toBeInTheDocument();
+    expect(within(modal).getByText('Conflicto de Programación')).toBeInTheDocument();
+    expect(within(modal).getByText('Revisión cuadro eléctrico')).toBeInTheDocument();
+
+    // Cancelar con [Mantener fecha]
+    const cancelBtn = screen.getByRole('button', { name: /mantener fecha/i });
+    fireEvent.click(cancelBtn);
+
+    // Modal se cierra
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    // La pastilla sigue en la casilla original (hoy) y no en mañana
+    const todayDropZone = screen.getByTestId(`calendar-drop-zone-${todayIso}`);
+    expect(within(todayDropZone).getByTestId('calendar-pill-task-conflict-1')).toBeInTheDocument();
+  });
+
+  it('[VV-003]: Al pulsar [Mover fecha] en el modal de conflicto se confirma la reasignación a la nueva casilla', async () => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const todayIso = `${y}-${m}-${d}`;
+    const nextDay = String(today.getDate() + 1).padStart(2, '0');
+    const nextDayIso = `${y}-${m}-${nextDay}`;
+
+    const mockTasks = [
+      {
+        id: 'task-conflict-confirm',
+        titulo: 'Pintar habitación',
+        prioridad: 'media' as const,
+        completado: false,
+        modulo: 'tasks' as const,
+        descripcion: 'Mover a mañana',
+        userId: 'usr-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        fechaProgramada: new Date(`${todayIso}T00:00:00`),
+      },
+    ];
+
+    render(<App initialAuthenticated={true} initialTasks={mockTasks} />);
+
+    const dataTransferData: Record<string, string> = {};
+    const dataTransfer = {
+      setData: (format: string, data: string) => {
+        dataTransferData[format] = data;
+      },
+      getData: (format: string) => dataTransferData[format] || '',
+      dropEffect: 'none',
+      effectAllowed: 'none',
+    };
+
+    const pill = screen.getByTestId('calendar-pill-task-conflict-confirm');
+    fireEvent.dragStart(pill, { dataTransfer });
+
+    const nextDayZone = screen.getByTestId(`calendar-drop-zone-${nextDayIso}`);
+    fireEvent.drop(nextDayZone, { dataTransfer });
+
+    // Confirmar pulsando [Mover fecha]
+    const confirmBtn = screen.getByRole('button', { name: /mover fecha/i });
+    fireEvent.click(confirmBtn);
+
+    // Modal se cierra
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+    // La pastilla ahora se ha trasladado a la casilla de mañana
+    await waitFor(() => {
+      expect(within(nextDayZone).getByTestId('calendar-pill-task-conflict-confirm')).toBeInTheDocument();
+    });
+  });
 });
 
 

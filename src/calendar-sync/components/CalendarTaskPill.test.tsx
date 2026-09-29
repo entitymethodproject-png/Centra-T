@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CalendarTaskPill } from './CalendarTaskPill';
+import { DRAG_TRANSFER_MIME } from '../types/drag-drop.types';
 
 describe('CalendarTaskPill Component', () => {
   it('renderiza el título del ítem correctamente', () => {
@@ -133,5 +134,47 @@ describe('CalendarTaskPill Component', () => {
 
     const titleEl = screen.getByText('Tarea completada');
     expect(titleEl).toHaveClass(/completedTitle/);
+  });
+
+  it('permite arrastre nativo serializando DragItemPayload con su fecha previa', () => {
+    render(
+      <CalendarTaskPill
+        id="task-drag-pill"
+        titulo="Mover estantería"
+        prioridad="alta"
+        modulo="tasks"
+        fechaProgramada="2026-09-15"
+        isDraggable={true}
+      />
+    );
+
+    const pill = screen.getByTestId('calendar-pill-task-drag-pill');
+    expect(pill).toHaveAttribute('draggable', 'true');
+
+    const dataTransferData: Record<string, string> = {};
+    const dataTransfer = {
+      setData: (format: string, data: string) => {
+        dataTransferData[format] = data;
+      },
+      getData: (format: string) => dataTransferData[format] || '',
+      dropEffect: 'none',
+      effectAllowed: 'none',
+    };
+
+    fireEvent.dragStart(pill, { dataTransfer });
+
+    expect(dataTransfer.effectAllowed).toBe('move');
+    expect(dataTransferData[DRAG_TRANSFER_MIME]).toBeDefined();
+
+    const parsed = JSON.parse(dataTransferData[DRAG_TRANSFER_MIME]);
+    expect(parsed).toEqual(
+      expect.objectContaining({
+        id: 'task-drag-pill',
+        modulo: 'tasks',
+        titulo: 'Mover estantería',
+        prioridad: 'alta',
+        fechaProgramada: '2026-09-15',
+      })
+    );
   });
 });

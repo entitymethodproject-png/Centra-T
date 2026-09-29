@@ -20,6 +20,7 @@ import {
   CalendarSchedulableItem,
   DragItemPayload,
 } from './calendar-sync/types/drag-drop.types';
+import { ReassignmentConfirmModal } from './calendar-sync/components/ReassignmentConfirmModal';
 
 export interface AppProps {
   initialAuthenticated?: boolean;
@@ -51,6 +52,13 @@ export const App: React.FC<AppProps> = ({
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
   const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
   const [sortConfig, setSortConfig] = useState<SortConfiguration>(DEFAULT_SORT_CONFIG);
+
+  // Buffer de conflicto para reasignación de fecha (Decisión 4B / VV-003)
+  const [reassignConflict, setReassignConflict] = useState<{
+    item: DragItemPayload;
+    targetDate: string;
+    originDate: string;
+  } | null>(null);
 
   useEffect(() => {
     if (initialTasks !== undefined) {
@@ -156,21 +164,58 @@ export const App: React.FC<AppProps> = ({
     ].filter((i) => Boolean(i.fechaProgramada));
   }, [allTasks, allShopping, allCleaning]);
 
-  const handleScheduleItem = (draggedItem: DragItemPayload, targetDate: string) => {
+  const applySchedule = (item: DragItemPayload, targetDate: string) => {
     const targetDateObj = new Date(`${targetDate}T00:00:00`);
-    if (draggedItem.modulo === 'tasks') {
+    if (item.modulo === 'tasks') {
       setAllTasks((prev) =>
-        prev.map((t) => (t.id === draggedItem.id ? { ...t, fechaProgramada: targetDateObj } : t))
+        prev.map((t) => (t.id === item.id ? { ...t, fechaProgramada: targetDateObj } : t))
       );
-    } else if (draggedItem.modulo === 'shopping') {
+    } else if (item.modulo === 'shopping') {
       setAllShopping((prev) =>
-        prev.map((s) => (s.id === draggedItem.id ? { ...s, fechaProgramada: targetDateObj } : s))
+        prev.map((s) => (s.id === item.id ? { ...s, fechaProgramada: targetDateObj } : s))
       );
-    } else if (draggedItem.modulo === 'cleaning') {
+    } else if (item.modulo === 'cleaning') {
       setAllCleaning((prev) =>
-        prev.map((c) => (c.id === draggedItem.id ? { ...c, fechaProgramada: targetDateObj } : c))
+        prev.map((c) => (c.id === item.id ? { ...c, fechaProgramada: targetDateObj } : c))
       );
     }
+  };
+
+  const handleScheduleItem = (draggedItem: DragItemPayload, targetDate: string) => {
+    let existingItemDate: Date | string | null = draggedItem.fechaProgramada || null;
+    if (!existingItemDate) {
+      if (draggedItem.modulo === 'tasks') {
+        const found = allTasks.find((t) => t.id === draggedItem.id);
+        if (found?.fechaProgramada) existingItemDate = found.fechaProgramada;
+      } else if (draggedItem.modulo === 'shopping') {
+        const found = allShopping.find((s) => s.id === draggedItem.id);
+        if (found?.fechaProgramada) existingItemDate = found.fechaProgramada;
+      } else if (draggedItem.modulo === 'cleaning') {
+        const found = allCleaning.find((c) => c.id === draggedItem.id);
+        if (found?.fechaProgramada) existingItemDate = found.fechaProgramada;
+      }
+    }
+
+    const originDateStr = existingItemDate
+      ? typeof existingItemDate === 'string'
+        ? existingItemDate.slice(0, 10)
+        : existingItemDate instanceof Date
+        ? existingItemDate.toISOString().slice(0, 10)
+        : null
+      : null;
+
+    // Si ya tenía fecha asignada y es distinta a la fecha de destino -> CONFLICTO (Decisión 4B / VV-003)
+    if (originDateStr && originDateStr !== targetDate) {
+      setReassignConflict({
+        item: draggedItem,
+        targetDate,
+        originDate: originDateStr,
+      });
+      return;
+    }
+
+    // Si no tenía fecha previa o es la misma, asignación directa sin modal
+    applySchedule(draggedItem, targetDate);
   };
 
   if (!isAuthenticated) {
@@ -255,6 +300,20 @@ export const App: React.FC<AppProps> = ({
           setSortConfig(newConfig);
           setIsSortMenuOpen(false);
         }}
+      />
+
+      <ReassignmentConfirmModal
+        isOpen={Boolean(reassignConflict)}
+        itemTitle={reassignConflict?.item.titulo || ''}
+        originDate={reassignConflict?.originDate || ''}
+        targetDate={reassignConflict?.targetDate || ''}
+        onConfirm={() => {
+          if (reassignConflict) {
+            applySchedule(reassignConflict.item, reassignConflict.targetDate);
+            setReassignConflict(null);
+          }
+        }}
+        onCancel={() => setReassignConflict(null)}
       />
     </>
   );

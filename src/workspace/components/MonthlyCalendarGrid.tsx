@@ -176,6 +176,7 @@ export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
                       prioridad={item.prioridad}
                       modulo={item.modulo}
                       completado={item.completado}
+                      fechaProgramada={item.fechaProgramada}
                     />
                   ))}
                 </div>

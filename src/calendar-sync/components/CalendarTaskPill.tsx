@@ -1,6 +1,6 @@
 import React from 'react';
 import styles from './CalendarTaskPill.module.css';
-import { ItemModule, ItemPriority } from '../types/drag-drop.types';
+import { ItemModule, ItemPriority, DRAG_TRANSFER_MIME, DragItemPayload } from '../types/drag-drop.types';
 
 export interface CalendarTaskPillProps {
   id: string;
@@ -8,6 +8,8 @@ export interface CalendarTaskPillProps {
   prioridad: ItemPriority;
   modulo: ItemModule;
   completado?: boolean;
+  fechaProgramada?: string | Date | null;
+  isDraggable?: boolean;
   onClick?: (id: string) => void;
 }
 
@@ -23,9 +25,30 @@ export const CalendarTaskPill: React.FC<CalendarTaskPillProps> = ({
   prioridad,
   modulo,
   completado = false,
+  fechaProgramada = null,
+  isDraggable = true,
   onClick,
 }) => {
   const moduleInitial = MODULE_INITIALS[modulo] || 'T';
+
+  const handleDragStart = (e: React.DragEvent) => {
+    if (!isDraggable) return;
+    const dateStr =
+      fechaProgramada instanceof Date
+        ? fechaProgramada.toISOString().slice(0, 10)
+        : fechaProgramada || null;
+    const payload: DragItemPayload = {
+      id,
+      modulo,
+      titulo,
+      prioridad,
+      completado: Boolean(completado),
+      fechaProgramada: dateStr,
+    };
+    e.dataTransfer.setData(DRAG_TRANSFER_MIME, JSON.stringify(payload));
+    e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = 'move';
+  };
 
   return (
     <div
@@ -33,6 +56,8 @@ export const CalendarTaskPill: React.FC<CalendarTaskPillProps> = ({
       data-testid={`calendar-pill-${id}`}
       data-item-id={id}
       data-modulo={modulo}
+      draggable={isDraggable}
+      onDragStart={handleDragStart}
       onClick={() => onClick?.(id)}
       role="button"
       tabIndex={0}
