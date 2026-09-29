@@ -831,6 +831,113 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
       expect(taskCreateBtn).toBeEnabled();
     });
   });
+
+  describe('Resiliencia y Rollback Optimista con Toast Empático (RV-A08 / FIA-A08.02)', () => {
+    const mockTasksForRollback = [
+      {
+        id: 'task-rb-1',
+        userId: 'usr-1',
+        modulo: 'tasks' as const,
+        titulo: 'Pagar recibo de comunidad',
+        descripcion: 'Vencimiento urgente',
+        prioridad: 'alta' as const,
+        completado: false,
+        fechaProgramada: null,
+        createdAt: new Date('2026-09-01T08:00:00Z'),
+        updatedAt: new Date('2026-09-01T08:00:00Z'),
+      },
+      {
+        id: 'task-rb-2',
+        userId: 'usr-1',
+        modulo: 'tasks' as const,
+        titulo: 'Comprar bombilla bajo consumo',
+        descripcion: 'Para el salón',
+        prioridad: 'baja' as const,
+        completado: false,
+        fechaProgramada: null,
+        createdAt: new Date('2026-09-02T08:00:00Z'),
+        updatedAt: new Date('2026-09-02T08:00:00Z'),
+      },
+    ];
+
+    it('[Rollback Optimista]: Marcar una tarea con fallo 500 revierte el checkbox al estado original y muestra Toast empático con 3 componentes', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <App
+          initialAuthenticated={true}
+          initialTasks={mockTasksForRollback}
+          simulateApiErrorOnToggle={true}
+        />
+      );
+
+      const hub = screen.getByRole('complementary', { name: /hub lateral/i });
+      const taskCard = within(hub).getByTestId('task-card-task-rb-1');
+      const checkbox1 = within(taskCard).getByRole('checkbox', {
+        name: /completar tarea pagar recibo de comunidad/i,
+      });
+
+      expect(checkbox1).not.toBeChecked();
+
+      // Clic para conmutar la tarea con fallo 500 simulado
+      await user.click(checkbox1);
+
+      // 1. Rollback: el checkbox debe volver al estado original (no marcado)
+      await waitFor(() => {
+        expect(checkbox1).not.toBeChecked();
+      });
+
+      // 2. Notificación Toast empática visible con role="alert"
+      const toast = screen.getByRole('alert');
+      expect(toast).toBeInTheDocument();
+      expect(toast).toHaveAttribute('aria-live', 'assertive');
+
+      // 3. Estructura empática de 3 partes visible
+      expect(within(toast).getByTestId('toast-what')).toHaveTextContent(
+        'Actualización de tarea: No se pudo completar la operación en el servidor.'
+      );
+      expect(within(toast).getByTestId('toast-why')).toHaveTextContent(
+        'Ha ocurrido un fallo temporal en los servicios centrales.'
+      );
+      expect(within(toast).getByTestId('toast-action')).toHaveTextContent(
+        'Hemos revertido el cambio automáticamente para proteger tus datos.'
+      );
+
+      // 4. Aislamiento: la otra tarea permanece inalterada
+      const taskCard2 = within(hub).getByTestId('task-card-task-rb-2');
+      const checkbox2 = within(taskCard2).getByRole('checkbox', {
+        name: /completar tarea comprar bombilla bajo consumo/i,
+      });
+      expect(checkbox2).not.toBeChecked();
+    });
+
+    it('cerrar el Toast pulsando [×] descarta la notificación', async () => {
+      const user = userEvent.setup();
+
+      render(
+        <App
+          initialAuthenticated={true}
+          initialTasks={mockTasksForRollback}
+          simulateApiErrorOnToggle={true}
+        />
+      );
+
+      const hub = screen.getByRole('complementary', { name: /hub lateral/i });
+      const taskCard = within(hub).getByTestId('task-card-task-rb-1');
+      const checkbox1 = within(taskCard).getByRole('checkbox', {
+        name: /completar tarea pagar recibo de comunidad/i,
+      });
+
+      await user.click(checkbox1);
+
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+
+      const closeBtn = screen.getByRole('button', { name: /cerrar notificación/i });
+      await user.click(closeBtn);
+
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    });
+  });
 });
 
 

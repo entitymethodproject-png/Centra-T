@@ -27,12 +27,15 @@ import { BulkShoppingConfirmModal } from './calendar-sync/components/BulkShoppin
 import { CalendarItemContextMenu } from './calendar-sync/components/CalendarItemContextMenu';
 import { useNetworkStatus } from './workspace/hooks/useNetworkStatus';
 import { OfflineBanner } from './workspace/components/OfflineBanner';
+import { Toast } from './workspace/components/Toast';
+import { EmpathicMessage, formatEmpathicError } from './infrastructure/http/apiClient';
 
 export interface AppProps {
   initialAuthenticated?: boolean;
   initialTasks?: TaskItem[];
   initialShoppingItems?: ShoppingItem[];
   initialCleaningItems?: CleaningItem[];
+  simulateApiErrorOnToggle?: boolean; // Permite simular rechazo 500 en tests
 }
 
 export const App: React.FC<AppProps> = ({
@@ -40,6 +43,7 @@ export const App: React.FC<AppProps> = ({
   initialTasks,
   initialShoppingItems,
   initialCleaningItems,
+  simulateApiErrorOnToggle = false,
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (initialAuthenticated) return true;
@@ -78,6 +82,13 @@ export const App: React.FC<AppProps> = ({
   const [contextMenuState, setContextMenuState] = useState<{
     position: { x: number; y: number };
     item: { id: string; modulo: ItemModule; titulo: string };
+  } | null>(null);
+
+  // Estado para notificaciones Toast empáticas (RV-A08 / FIA-A08.02)
+  const [toastState, setToastState] = useState<{
+    isOpen: boolean;
+    message: EmpathicMessage;
+    type?: 'error' | 'warning' | 'info' | 'success';
   } | null>(null);
 
   useEffect(() => {
@@ -137,22 +148,67 @@ export const App: React.FC<AppProps> = ({
     setIsAuthenticated(false);
   };
 
-  const handleTaskToggle = (taskId: string) => {
+  const handleTaskToggle = async (taskId: string) => {
+    const previousTasks = allTasks;
+    const targetTask = allTasks.find((t) => t.id === taskId);
+    if (!targetTask) return;
+
     setAllTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, completado: !t.completado } : t))
     );
+
+    if (simulateApiErrorOnToggle) {
+      await Promise.resolve();
+      const errorMsg = formatEmpathicError(500, 'Actualización de tarea');
+      setAllTasks(previousTasks.map((t) => ({ ...t })));
+      setToastState({
+        isOpen: true,
+        message: errorMsg,
+        type: 'error',
+      });
+    }
   };
 
-  const handleShoppingToggle = (itemId: string) => {
+  const handleShoppingToggle = async (itemId: string) => {
+    const previousShopping = allShopping;
+    const targetItem = allShopping.find((i) => i.id === itemId);
+    if (!targetItem) return;
+
     setAllShopping((prev) =>
       prev.map((i) => (i.id === itemId ? { ...i, completado: !i.completado } : i))
     );
+
+    if (simulateApiErrorOnToggle) {
+      await Promise.resolve();
+      const errorMsg = formatEmpathicError(500, 'Actualización de compra');
+      setAllShopping(previousShopping.map((i) => ({ ...i })));
+      setToastState({
+        isOpen: true,
+        message: errorMsg,
+        type: 'error',
+      });
+    }
   };
 
-  const handleCleaningToggle = (itemId: string) => {
+  const handleCleaningToggle = async (itemId: string) => {
+    const previousCleaning = allCleaning;
+    const targetItem = allCleaning.find((i) => i.id === itemId);
+    if (!targetItem) return;
+
     setAllCleaning((prev) =>
       prev.map((i) => (i.id === itemId ? { ...i, completado: !i.completado } : i))
     );
+
+    if (simulateApiErrorOnToggle) {
+      await Promise.resolve();
+      const errorMsg = formatEmpathicError(500, 'Actualización de limpieza');
+      setAllCleaning(previousCleaning.map((c) => ({ ...c })));
+      setToastState({
+        isOpen: true,
+        message: errorMsg,
+        type: 'error',
+      });
+    }
   };
 
   const allScheduledItems: CalendarSchedulableItem[] = useMemo(() => {
@@ -409,6 +465,15 @@ export const App: React.FC<AppProps> = ({
         itemTitle={contextMenuState?.item.titulo || ''}
         onUnschedule={handleUnscheduleItem}
         onClose={() => setContextMenuState(null)}
+      />
+
+      <Toast
+        isOpen={Boolean(toastState?.isOpen)}
+        what={toastState?.message.what || ''}
+        why={toastState?.message.why || ''}
+        action={toastState?.message.action || ''}
+        type={toastState?.type || 'error'}
+        onClose={() => setToastState(null)}
       />
     </>
   );

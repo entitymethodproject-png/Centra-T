@@ -1,0 +1,114 @@
+.toastContainer {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1100;
+  width: calc(100vw - 48px);
+  max-width: 420px;
+  min-width: 320px;
+  background-color: var(--bg-card, #1a2433);
+  border: 1px solid var(--border-subtle, #233144);
+  border-radius: var(--radius-md, 10px);
+  padding: 14px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  animation: slideUp 0.18s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.toast_error {
+  border-left: 4px solid var(--accent-red, #ef4444);
+}
+
+.toast_warning {
+  border-left: 4px solid var(--accent-amber, #f59e0b);
+}
+
+.toast_info {
+  border-left: 4px solid var(--accent-blue, #3b82f6);
+}
+
+.toast_success {
+  border-left: 4px solid var(--accent-green, #10b981);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.titleSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.whatText {
+  font-family: var(--font-sans, inherit);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary, #ffffff);
+  line-height: 1.3;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.15s ease;
+}
+
+.closeButton:hover {
+  color: var(--text-primary, #ffffff);
+}
+
+.body {
+  padding-left: 23px;
+}
+
+.whyText {
+  margin: 0;
+  font-family: var(--font-sans, inherit);
+  font-size: 12.5px;
+  color: var(--text-secondary, #cbd5e1);
+  line-height: 1.4;
+}
+
+.footer {
+  padding-left: 23px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 6px;
+}
+
+.actionText {
+  margin: 0;
+  font-family: var(--font-sans, inherit);
+  font-size: 11.5px;
+  color: var(--accent-amber, #f59e0b);
+  line-height: 1.3;
+  font-weight: 500;
+}

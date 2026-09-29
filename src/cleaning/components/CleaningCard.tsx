@@ -32,7 +32,7 @@ export const CleaningCard: React.FC<CleaningCardProps> = ({
 
   useEffect(() => {
     setIsCompleted(item.completado);
-  }, [item.completado]);
+  }, [item.completado, item]);
 
   const handleToggle = async () => {
     if (isSyncing) return;
@@ -65,7 +65,7 @@ export const CleaningCard: React.FC<CleaningCardProps> = ({
           onRollback({ ...item, completado: previousStatus });
         }
       }
-    } else {
+    } else if (!onToggleOptimistic) {
       if (onItemUpdated) {
         onItemUpdated({ ...item, completado: newStatus });
       }

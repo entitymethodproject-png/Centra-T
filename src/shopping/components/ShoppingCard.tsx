@@ -32,7 +32,7 @@ export const ShoppingCard: React.FC<ShoppingCardProps> = ({
 
   useEffect(() => {
     setIsCompleted(item.completado || !!item.comprado);
-  }, [item.completado, item.comprado]);
+  }, [item.completado, item.comprado, item]);
 
   const handleToggle = async () => {
     if (isSyncing) return;
@@ -63,7 +63,7 @@ export const ShoppingCard: React.FC<ShoppingCardProps> = ({
           onRollback({ ...item, completado: previousStatus, comprado: previousStatus });
         }
       }
-    } else {
+    } else if (!onToggleOptimistic) {
       if (onItemUpdated) {
         onItemUpdated({ ...item, completado: newStatus, comprado: newStatus });
       }

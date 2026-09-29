@@ -33,7 +33,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   // Sincronizar estado local si el prop cambia
   useEffect(() => {
     setIsCompleted(task.completado);
-  }, [task.completado]);
+  }, [task.completado, task]);
 
   // VV-005: Mutación optimista inmediata (<50ms)
   const handleToggle = async () => {
@@ -67,7 +67,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           onRollback({ ...task, completado: previousStatus });
         }
       }
-    } else {
+    } else if (!onToggleOptimistic) {
       if (onTaskUpdated) {
         onTaskUpdated({ ...task, completado: newStatus });
       }
