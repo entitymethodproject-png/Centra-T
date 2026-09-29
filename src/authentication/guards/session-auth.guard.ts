@@ -11,11 +11,11 @@ export class UnauthorizedSessionError extends Error {
 export interface RequestWithCookies {
   headers?: {
     cookie?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   cookies?: Record<string, string>;
   user?: { id: string; email: string };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ExecutionContextLike {
@@ -24,11 +24,11 @@ export interface ExecutionContextLike {
   };
   headers?: {
     cookie?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   cookies?: Record<string, string>;
   user?: { id: string; email: string };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export class SessionAuthGuard {

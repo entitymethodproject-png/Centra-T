@@ -5,6 +5,7 @@ import { LoginPage } from './LoginPage';
 import { AuthController } from '../controllers/auth.controller';
 import { InvalidCredentialsError } from '../services/auth.service';
 import { TooManyRequestsError } from '../services/throttler.service';
+import { UsersService } from '../../users/services/users.service';
 
 describe('LoginPage Component', () => {
   it('debe renderizar la tarjeta de autenticación con pestañas y formulario de login por defecto', () => {
@@ -150,4 +151,37 @@ describe('LoginPage Component', () => {
     expect(registerTabButton).toHaveAttribute('aria-selected', 'true');
     expect(screen.getByLabelText(/confirmar contraseña/i)).toBeInTheDocument();
   });
+
+  it('debe invocar onNavigateToWorkspace y onSuccess tras registro exitoso en RegisterTab', async () => {
+    const user = userEvent.setup();
+    const mockNavigate = vi.fn();
+    const mockSuccess = vi.fn();
+    const mockUsersService = {
+      createUser: vi.fn().mockResolvedValue({
+        id: 'usr-reg-1',
+        email: 'nuevo@centrat.local',
+        createdAt: new Date(),
+      }),
+    } as unknown as UsersService;
+
+    render(
+      <LoginPage
+        usersService={mockUsersService}
+        defaultTab="register"
+        onNavigateToWorkspace={mockNavigate}
+        onSuccess={mockSuccess}
+      />
+    );
+
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'nuevo@centrat.local');
+    await user.type(screen.getByLabelText(/^contraseña/i), 'Password123!');
+    await user.type(screen.getByLabelText(/confirmar contraseña/i), 'Password123!');
+    await user.click(screen.getByRole('button', { name: /crear cuenta/i }));
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledTimes(1);
+      expect(mockSuccess).toHaveBeenCalledTimes(1);
+    });
+  });
 });
+

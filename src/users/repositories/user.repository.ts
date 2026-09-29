@@ -9,15 +9,16 @@ export interface IUserRepository {
 // Almacén compartido en memoria para persistir usuarios en la aplicación y sincronizar con localStorage
 const sharedUsersStore = new Map<string, UserEntity>();
 
-// Carga inicial persistente si se ejecuta en navegador
-if (typeof window !== 'undefined' && window.localStorage) {
+function hydrateFromStorage(store: Map<string, UserEntity>): void {
+  if (typeof window === 'undefined' || !window.localStorage) return;
   try {
     const raw = window.localStorage.getItem('centrat_users_db');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        for (const u of parsed) {
-          sharedUsersStore.set(u.id, {
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      for (const u of parsed) {
+        if (u && typeof u.id === 'string' && typeof u.email === 'string') {
+          store.set(u.id, {
             ...u,
             createdAt: new Date(u.createdAt),
             updatedAt: new Date(u.updatedAt),
@@ -26,9 +27,12 @@ if (typeof window !== 'undefined' && window.localStorage) {
       }
     }
   } catch {
-    // Si no está disponible o falla parseo, continúa en memoria
+    // Si no está disponible o falla parseo, continúa puramente en memoria
   }
 }
+
+// Carga inicial persistente si se ejecuta en navegador
+hydrateFromStorage(sharedUsersStore);
 
 export class InMemoryUserRepository implements IUserRepository {
   private users: Map<string, UserEntity>;
