@@ -97,18 +97,19 @@ export const CleaningCard: React.FC<CleaningCardProps> = ({
           />
         </label>
 
+        {/* Puntito sutil de prioridad entre casilla y nombre */}
+        <span
+          className={`${styles.priorityDot} ${styles['priorityDot_' + (item.prioridad || 'media')]}`}
+          data-testid="cleaning-card-priority"
+          title={`Prioridad ${item.prioridad || 'media'}`}
+          aria-label={`Prioridad ${item.prioridad || 'media'}`}
+        />
+
         <span
           className={`${styles.taskTitle} ${isCompleted ? styles.titleCompleted : ''}`}
           data-testid="cleaning-card-title"
         >
           {displayName}
-        </span>
-
-        <span
-          className={`${styles.priorityBadge} ${styles['priority_' + (item.prioridad || 'media')]}`}
-          data-testid="cleaning-card-priority"
-        >
-          {(item.prioridad || 'media').toUpperCase()}
         </span>
 
         {/* Menú Contextual de Tarjeta */}

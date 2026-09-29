@@ -95,18 +95,19 @@ export const ShoppingCard: React.FC<ShoppingCardProps> = ({
           />
         </label>
 
+        {/* Puntito sutil de prioridad entre casilla y nombre */}
+        <span
+          className={`${styles.priorityDot} ${styles['priorityDot_' + (item.prioridad || 'media')]}`}
+          data-testid="shopping-card-priority"
+          title={`Prioridad ${item.prioridad || 'media'}`}
+          aria-label={`Prioridad ${item.prioridad || 'media'}`}
+        />
+
         <span
           className={`${styles.taskTitle} ${isCompleted ? styles.titleCompleted : ''}`}
           data-testid="shopping-card-title"
         >
           {displayName}
-        </span>
-
-        <span
-          className={`${styles.priorityBadge} ${styles['priority_' + (item.prioridad || 'media')]}`}
-          data-testid="shopping-card-priority"
-        >
-          {(item.prioridad || 'media').toUpperCase()}
         </span>
 
         {/* Menú Contextual de Tarjeta */}

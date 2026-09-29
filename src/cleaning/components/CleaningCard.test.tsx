@@ -19,11 +19,13 @@ describe('CleaningCard Component (Mutación Optimista & Homogeneidad)', () => {
     updatedAt: new Date(),
   };
 
-  it('debe renderizar la tarjeta con título, badge de prioridad y checkbox con label accesible', () => {
+  it('debe renderizar la tarjeta con título, dot sutil de prioridad y checkbox con label accesible', () => {
     render(<CleaningCard item={baseItem} />);
 
     expect(screen.getByText('Desinfectar encimera de cocina')).toBeInTheDocument();
-    expect(screen.getByText('ALTA')).toBeInTheDocument();
+    const priorityDot = screen.getByTestId('cleaning-card-priority');
+    expect(priorityDot).toBeInTheDocument();
+    expect(priorityDot).toHaveClass(/priorityDot_alta/);
 
     const checkbox = screen.getByRole('checkbox', {
       name: /completar limpieza desinfectar encimera de cocina/i,

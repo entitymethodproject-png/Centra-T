@@ -27,18 +27,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Sincronizar estado si la prop externa cambia
+  // Sincronizar estado local si el prop cambia
   useEffect(() => {
     setIsCompleted(task.completado);
   }, [task.completado]);
 
+  // VV-005: Mutación optimista inmediata (<50ms)
   const handleToggle = async () => {
     if (isSyncing) return;
 
     const previousStatus = isCompleted;
     const newStatus = !previousStatus;
 
-    // 1. Mutación optimista inmediata (<16ms)
+    // Mutación optimista local
     setIsCompleted(newStatus);
     setToastMessage(null);
 
@@ -46,7 +47,6 @@ export const TaskCard: React.FC<TaskCardProps> = ({
       onToggleOptimistic(task.id, newStatus);
     }
 
-    // 2. Sincronización en backend
     if (tasksService && userId) {
       setIsSyncing(true);
       try {
@@ -56,7 +56,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           onTaskUpdated(updated);
         }
       } catch {
-        // 3. Caso Forense VV-005: Rollback inmediato y Toast empático
+        // Rollback automático incondicional ante fallo 500
         setIsCompleted(previousStatus);
         setIsSyncing(false);
         setToastMessage('No se pudo actualizar el estado de la tarea. Se ha revertido el cambio.');
@@ -93,18 +93,19 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           />
         </label>
 
+        {/* Puntito sutil de prioridad entre casilla y nombre */}
+        <span
+          className={`${styles.priorityDot} ${styles['priorityDot_' + task.prioridad]}`}
+          data-testid="task-card-priority"
+          title={`Prioridad ${task.prioridad}`}
+          aria-label={`Prioridad ${task.prioridad}`}
+        />
+
         <span
           className={`${styles.taskTitle} ${isCompleted ? styles.titleCompleted : ''}`}
           data-testid="task-card-title"
         >
           {task.titulo}
-        </span>
-
-        <span
-          className={`${styles.priorityBadge} ${styles['priority_' + task.prioridad]}`}
-          data-testid="task-card-priority"
-        >
-          {task.prioridad.toUpperCase()}
         </span>
 
         {/* Menú Contextual de Tarjeta */}

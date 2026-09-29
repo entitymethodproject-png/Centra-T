@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TopNavbar } from './TopNavbar';
 
-describe('PVF-A01.03 · TopNavbar (Barra de Navegación Superior y Telemetría Visual)', () => {
+describe('PVF-A01.03 · TopNavbar (Barra de Navegación Superior)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -35,31 +35,6 @@ describe('PVF-A01.03 · TopNavbar (Barra de Navegación Superior y Telemetría V
     expect(screen.getByText('M')).toBeInTheDocument();
   });
 
-  it('debe mostrar la píldora de red inicialmente en estado Online', () => {
-    render(<TopNavbar />);
-
-    const badge = screen.getByRole('status');
-    expect(badge).toBeInTheDocument();
-    expect(badge).toHaveAttribute('aria-live', 'polite');
-    expect(badge).toHaveTextContent(/online/i);
-  });
-
-  it('debe conmutar dinámicamente el badge de Online a Offline y viceversa ante eventos del navegador', () => {
-    render(<TopNavbar />);
-    const badge = screen.getByRole('status');
-    expect(badge).toHaveTextContent(/online/i);
-
-    act(() => {
-      window.dispatchEvent(new Event('offline'));
-    });
-    expect(badge).toHaveTextContent(/offline/i);
-
-    act(() => {
-      window.dispatchEvent(new Event('online'));
-    });
-    expect(badge).toHaveTextContent(/online/i);
-  });
-
   it('debe disparar el callback onLogout al pulsar el botón de cerrar sesión', async () => {
     const user = userEvent.setup();
     const onLogoutMock = vi.fn();
@@ -70,15 +45,5 @@ describe('PVF-A01.03 · TopNavbar (Barra de Navegación Superior y Telemetría V
     await user.click(logoutBtn);
 
     expect(onLogoutMock).toHaveBeenCalledTimes(1);
-  });
-
-  it('debe limpiar los event listeners al desmontar el componente para evitar fugas de memoria', () => {
-    const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener');
-
-    const { unmount } = render(<TopNavbar />);
-    unmount();
-
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('online', expect.any(Function));
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('offline', expect.any(Function));
   });
 });

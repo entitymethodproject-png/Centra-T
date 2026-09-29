@@ -98,15 +98,16 @@ describe('TasksAccordion Component (EV-LIST-01 a EV-LIST-05)', () => {
     expect(handleRetry).toHaveBeenCalled();
   });
 
-  it('EV-LIST-01: debe renderizar lista de tareas con badges de prioridad y texto tachado en completadas', () => {
+  it('EV-LIST-01: debe renderizar lista de tareas con dot sutil de prioridad y texto tachado en completadas', () => {
     render(<TasksAccordion tasks={mockTasks} />);
 
     expect(screen.getByText('Revisar caldera')).toBeInTheDocument();
-    expect(screen.getByText('ALTA')).toHaveClass(/priority_alta/);
+    const priorityDots = screen.getAllByTestId('task-card-priority');
+    expect(priorityDots[0]).toHaveClass(/priorityDot_alta/);
 
     const completedTaskTitle = screen.getByText('Comprar bombilla LED');
     expect(completedTaskTitle).toBeInTheDocument();
-    expect(screen.getByText('BAJA')).toHaveClass(/priority_baja/);
+    expect(priorityDots[1]).toHaveClass(/priorityDot_baja/);
 
     const checkboxes = screen.getAllByRole('checkbox');
     expect(checkboxes[0]).not.toBeChecked();

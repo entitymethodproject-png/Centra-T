@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import '../../theme/tokens.css';
 import styles from './TopNavbar.module.css';
 
@@ -19,23 +19,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
   onLogout,
   'data-testid': testId,
 }) => {
-  const [isOnline, setIsOnline] = useState<boolean>(() => {
-    return typeof navigator !== 'undefined' ? navigator.onLine : true;
-  });
-
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
   const avatarInitial = user.name ? user.name.charAt(0).toUpperCase() : 'U';
 
   return (
@@ -48,15 +31,6 @@ export const TopNavbar: React.FC<TopNavbarProps> = ({
       </div>
 
       <div className={styles.controlsSection}>
-        <div
-          role="status"
-          aria-live="polite"
-          className={`${styles.networkBadge} ${isOnline ? styles.online : styles.offline}`}
-        >
-          <span className={styles.networkDot} />
-          <span className={styles.networkLabel}>{isOnline ? 'Online' : 'Offline'}</span>
-        </div>
-
         <div className={styles.profileSection} aria-label="Perfil de usuario">
           <div className={styles.avatarCircle} aria-hidden="true">
             {avatarInitial}

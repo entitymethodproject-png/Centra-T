@@ -72,17 +72,17 @@ describe('CleaningAccordion Component (Homogeneidad con Tareas y Compra)', () =>
     expect(screen.getByTestId('cleaning-populated-list')).toBeInTheDocument();
   });
 
-  it('3. debe renderizar todas las tareas con títulos, checkboxes y badges de prioridad', () => {
+  it('3. debe renderizar todas las tareas con títulos, checkboxes y dot sutil de prioridad', () => {
     render(<CleaningAccordion items={mockItems} />);
 
     expect(screen.getByText('Fregar suelo cocina')).toBeInTheDocument();
-    expect(screen.getByText('ALTA')).toBeInTheDocument();
-
     expect(screen.getByText('Desinfectar ducha')).toBeInTheDocument();
-    expect(screen.getByText('MEDIA')).toBeInTheDocument();
-
     expect(screen.getByText('Aspirar alfombra salón')).toBeInTheDocument();
-    expect(screen.getByText('BAJA')).toBeInTheDocument();
+
+    const dots = screen.getAllByTestId('cleaning-card-priority');
+    expect(dots[0]).toHaveClass(/priorityDot_alta/);
+    expect(dots[1]).toHaveClass(/priorityDot_media/);
+    expect(dots[2]).toHaveClass(/priorityDot_baja/);
 
     const fregarCheckbox = screen.getByRole('checkbox', { name: /completar limpieza fregar suelo cocina/i });
     const duchaCheckbox = screen.getByRole('checkbox', { name: /desmarcar limpieza desinfectar ducha/i });

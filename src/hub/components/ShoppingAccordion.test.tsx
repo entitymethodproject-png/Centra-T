@@ -84,17 +84,17 @@ describe('ShoppingAccordion Component (Homogeneidad con Tareas)', () => {
     expect(screen.getByRole('button', { name: /\+ crear producto/i })).toBeInTheDocument();
   });
 
-  it('debe renderizar lista de productos con checkboxes, títulos y badges de prioridad', () => {
+  it('debe renderizar lista de productos con checkboxes, títulos y dot sutil de prioridad', () => {
     render(<ShoppingAccordion items={mockItems} />);
 
     expect(screen.getByText('Leche desnatada')).toBeInTheDocument();
-    expect(screen.getByText('ALTA')).toBeInTheDocument();
-
     expect(screen.getByText('Arroz basmati')).toBeInTheDocument();
-    expect(screen.getByText('MEDIA')).toBeInTheDocument();
-
     expect(screen.getByText('Pechuga de pollo')).toBeInTheDocument();
-    expect(screen.getByText('BAJA')).toBeInTheDocument();
+
+    const dots = screen.getAllByTestId('shopping-card-priority');
+    expect(dots[0]).toHaveClass(/priorityDot_alta/);
+    expect(dots[1]).toHaveClass(/priorityDot_media/);
+    expect(dots[2]).toHaveClass(/priorityDot_baja/);
 
     const lecheCheckbox = screen.getByRole('checkbox', { name: /desmarcar producto leche desnatada/i });
     const arrozCheckbox = screen.getByRole('checkbox', { name: /comprar producto arroz basmati/i });

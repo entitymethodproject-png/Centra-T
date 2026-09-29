@@ -19,11 +19,13 @@ describe('TaskCard Component (Mutación Optimista & Caso Forense VV-005)', () =>
     updatedAt: new Date(),
   };
 
-  it('debe renderizar la tarjeta con título, badge de prioridad y checkbox con label accesible', () => {
+  it('debe renderizar la tarjeta con título, dot sutil de prioridad y checkbox con label accesible', () => {
     render(<TaskCard task={baseTask} />);
 
     expect(screen.getByText('Revisar caldera de gasoil')).toBeInTheDocument();
-    expect(screen.getByText('ALTA')).toBeInTheDocument();
+    const priorityDot = screen.getByTestId('task-card-priority');
+    expect(priorityDot).toBeInTheDocument();
+    expect(priorityDot).toHaveClass(/priorityDot_alta/);
 
     const checkbox = screen.getByRole('checkbox', {
       name: /completar tarea revisar caldera de gasoil/i,

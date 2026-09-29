@@ -19,11 +19,13 @@ describe('ShoppingCard Component (Mutación Optimista & Paridad de Diseño)', ()
     updatedAt: new Date(),
   };
 
-  it('debe renderizar la tarjeta con título, badge de prioridad y checkbox con label accesible', () => {
+  it('debe renderizar la tarjeta con título, dot sutil de prioridad y checkbox con label accesible', () => {
     render(<ShoppingCard item={baseItem} />);
 
     expect(screen.getByText('Leche desnatada')).toBeInTheDocument();
-    expect(screen.getByText('ALTA')).toBeInTheDocument();
+    const priorityDot = screen.getByTestId('shopping-card-priority');
+    expect(priorityDot).toBeInTheDocument();
+    expect(priorityDot).toHaveClass(/priorityDot_alta/);
 
     const checkbox = screen.getByRole('checkbox', {
       name: /comprar producto leche desnatada/i,
