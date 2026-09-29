@@ -1,0 +1,19 @@
+{
+  "mounted_components": [
+    "WorkspaceLayout",
+    "HubContainer",
+    "TopNavbar"
+  ],
+  "viewport_topology": {
+    "root": "100vw x 100vh, padding 16px, background #0B0F17",
+    "navbar": "TopNavbar (height 64px, role banner, brand Centra-T, network status badge, user profile, logout button)",
+    "hub": "HubContainer (width 380px expandido / 48px colapsado, role complementary)",
+    "workbench": "flex 1 (lienzo adaptable), role main"
+  },
+  "observable_states": {
+    "hub": "reactivo_toggle",
+    "navbar_telemetry": "navigator_online_offline_reactive",
+    "active_route": "/workspace",
+    "backend_domain": "users_module_active"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "capabilities_completed": [
+    "RV-A01: Topología espacial y scaffolding completo del Workspace (WorkspaceLayout, HubContainer reactivo, TopNavbar)",
+    "FIA-A02.01: Entidad User, validación de Email RFC 5322, hashing bcrypt (coste 12), DTOs y UsersService con control de unicidad 409",
+    "FIA-A02.02: Componente de interfaz RegisterTab con validación inline de contraseñas desiguales (Caso Forense VV-009), matriz de 5 estados y consumo de UsersService",
+    "FIA-A02.03: Autenticación segura en backend con AuthController, AuthService, ThrottlerService (fuerza bruta 429) y sesión segura HttpOnly (Caso Forense VV-001)",
+    "FIA-A02.04: Vista LoginPage con selector de pestañas (Iniciar Sesión / Crear Cuenta), validación empática en onBlur/onSubmit (Caso Forense VV-001), bloqueo 429 y redirección a /workspace"
+  ],
+  "active_constraints": [
+    "Validación innegociable de doble contraseña (VV-009)",
+    "Doctrina de Validación Empática en login: prohibición estricta de alertas rojas en onChange inicial",
+    "Emisión y custodia de sesión exclusivamente mediante cookie HttpOnly SameSite=Strict (VV-001)",
+    "Consumo desacoplado de AuthController sin acoplamiento a enrutadores de framework"
+  ],
+  "unlocked_next": "FIA-A02.05 (Invalidación de Sesión - Logout y AuthGuard)"
+}

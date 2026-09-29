@@ -1,0 +1,14 @@
+{
+  "capabilities_completed": [
+    "FIA-A01.01: Inicialización del repositorio y scaffolding del WorkspaceLayout (100vw x 100vh, 2 columnas, Navbar 64px, Hub 380px, Workbench flex:1)",
+    "FIA-A01.02: Mecanismo de colapso y expansión reactiva del Hub (380px <-> colapso) con transición CSS <= 200ms y preservación de estado interno",
+    "FIA-A01.03: TopNavbar con telemetría de red reactiva (online/offline), ficha de perfil de usuario y botón accesible de logout"
+  ],
+  "active_constraints": [
+    "Prohibido scroll global en body",
+    "Preservar montaje de hijos en Hub colapsado",
+    "Navbar fijado a altura 64px",
+    "Rebanada RV-A01 (Scaffolding UI Base) COMPLETADA Y BLOQUEADA"
+  ],
+  "unlocked_next": "RV-A02 · FIA-A02.01 (Entidad User, VO Email, Hashing y POST /users)"
+}

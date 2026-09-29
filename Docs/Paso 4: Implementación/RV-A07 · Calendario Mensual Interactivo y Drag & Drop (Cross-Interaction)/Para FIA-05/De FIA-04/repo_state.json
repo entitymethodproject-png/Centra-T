@@ -1,0 +1,16 @@
+{
+  "files_created": [
+    "src/calendar-sync/components/ReassignmentConfirmModal.tsx",
+    "src/calendar-sync/components/ReassignmentConfirmModal.module.css",
+    "src/calendar-sync/components/ReassignmentConfirmModal.test.tsx"
+  ],
+  "files_modified": [
+    "src/calendar-sync/components/CalendarTaskPill.tsx",
+    "src/calendar-sync/components/CalendarTaskPill.module.css",
+    "src/calendar-sync/components/CalendarTaskPill.test.tsx",
+    "src/workspace/components/MonthlyCalendarGrid.tsx",
+    "src/App.tsx",
+    "src/App.test.tsx"
+  ],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

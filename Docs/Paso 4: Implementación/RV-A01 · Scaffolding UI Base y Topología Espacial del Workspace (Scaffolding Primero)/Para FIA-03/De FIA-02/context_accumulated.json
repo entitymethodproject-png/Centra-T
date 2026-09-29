@@ -1,0 +1,12 @@
+{
+  "capabilities_completed": [
+    "FIA-A01.01: Inicialización del repositorio y scaffolding del WorkspaceLayout (100vw x 100vh, 2 columnas, Navbar 64px, Hub 380px, Workbench flex:1)",
+    "FIA-A01.02: Mecanismo de colapso y expansión reactiva del Hub (380px <-> colapso) con transición CSS <= 200ms y preservación de estado interno"
+  ],
+  "active_constraints": [
+    "Prohibido scroll global en body",
+    "Preservar montaje de hijos en Hub colapsado (no unmount destructivo)",
+    "Transiciones CSS <= 200ms"
+  ],
+  "unlocked_next": "FIA-A01.03"
+}

@@ -1,0 +1,16 @@
+{
+  "files_created": [
+    "src/calendar-sync/components/CalendarItemContextMenu.tsx",
+    "src/calendar-sync/components/CalendarItemContextMenu.module.css",
+    "src/calendar-sync/components/CalendarItemContextMenu.test.tsx"
+  ],
+  "files_modified": [
+    "src/calendar-sync/components/CalendarTaskPill.tsx",
+    "src/calendar-sync/components/CalendarTaskPill.test.tsx",
+    "src/workspace/components/MonthlyCalendarGrid.tsx",
+    "src/workspace/components/MonthlyCalendarGrid.test.tsx",
+    "src/App.tsx",
+    "src/App.test.tsx"
+  ],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ShoppingAccordion } from './ShoppingAccordion';
-import { ShoppingItem } from '../../shopping/entities/shopping-item.entity';
+import { ShoppingItem } from '../../items/entities/item.entity';
 
 describe('ShoppingAccordion Component (Homogeneidad con Tareas)', () => {
   const mockItems: ShoppingItem[] = [

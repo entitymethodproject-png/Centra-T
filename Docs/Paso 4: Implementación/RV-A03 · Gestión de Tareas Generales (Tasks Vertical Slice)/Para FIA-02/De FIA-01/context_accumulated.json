@@ -1,0 +1,14 @@
+{
+  "capabilities_completed": [
+    "RV-A01: Topología espacial y scaffolding completo del Workspace (WorkspaceLayout, HubContainer reactivo, TopNavbar)",
+    "RV-A02: Autenticación, sesión segura HttpOnly, validación empática de login, registro con doble contraseña (VV-009), throttler (429), logout y SessionAuthGuard. Cierre formal total.",
+    "FIA-A03.01: Modelo de datos TaskItem, invariantes tipográficas de la Decisión 2B (120/1000 caracteres), aislamiento multi-tenant estricto por userId y endpoints CRUD completos (POST, GET, PUT, PATCH toggle, DELETE)"
+  ],
+  "active_constraints": [
+    "Aislamiento absoluto de tenant por userId en todas las consultas del repositorio de tareas",
+    "Decisión 2B innegociable: corte estricto en 120 caracteres de título y 1000 de descripción",
+    "Aislamiento hermético de tests en Vitest sin contaminación cruzada de almacenamiento",
+    "Persistencia transparente en cliente para soporte interactivo en navegador de desarrollo"
+  ],
+  "unlocked_next": "FIA-A03.02 (Acordeón de Tareas en Hub con Estados EV-01..05)"
+}

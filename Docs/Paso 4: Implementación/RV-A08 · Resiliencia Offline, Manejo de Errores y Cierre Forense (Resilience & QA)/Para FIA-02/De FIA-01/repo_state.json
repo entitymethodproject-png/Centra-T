@@ -1,0 +1,22 @@
+{
+  "files_created": [
+    "src/workspace/hooks/useNetworkStatus.ts",
+    "src/workspace/hooks/useNetworkStatus.test.ts",
+    "src/workspace/components/OfflineBanner.tsx",
+    "src/workspace/components/OfflineBanner.module.css",
+    "src/workspace/components/OfflineBanner.test.tsx"
+  ],
+  "files_modified": [
+    "src/workspace/components/WorkspaceLayout.tsx",
+    "src/hub/components/TasksAccordion.tsx",
+    "src/hub/components/TasksAccordion.module.css",
+    "src/hub/components/TasksAccordion.test.tsx",
+    "src/hub/components/ShoppingAccordion.tsx",
+    "src/hub/components/ShoppingAccordion.module.css",
+    "src/hub/components/CleaningAccordion.tsx",
+    "src/hub/components/CleaningAccordion.module.css",
+    "src/App.tsx",
+    "src/App.test.tsx"
+  ],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

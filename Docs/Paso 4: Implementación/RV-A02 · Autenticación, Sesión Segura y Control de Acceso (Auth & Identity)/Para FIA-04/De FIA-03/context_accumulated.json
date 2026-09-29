@@ -1,0 +1,14 @@
+{
+  "capabilities_completed": [
+    "RV-A01: Scaffolding UI Base y Topología Espacial del Workspace",
+    "FIA-A02.01: Entidad User, VO Email RFC 5322, hashing bcrypt (coste 12) y UsersService con control de unicidad 409",
+    "FIA-A02.02: Componente RegisterTab en UI con validación de doble contraseña (VV-009) y matriz de 5 estados",
+    "FIA-A02.03: AuthController y AuthService con cookie HttpOnly (Caso Forense VV-001), prevención de enumeración y ThrottlerGuard (5 fallos/15 min)"
+  ],
+  "active_constraints": [
+    "Cookie de sesión configurada con flags HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400",
+    "Prevención estricta de enumeración (mensaje 401 invariable)",
+    "Throttling activo en endpoint de login"
+  ],
+  "unlocked_next": "FIA-A02.04 (Formulario Login Empático y Transición - VV-001)"
+}

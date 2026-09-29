@@ -1,0 +1,19 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "FilterModal",
+    "SortMenu",
+    "TasksAccordion",
+    "ShoppingAccordion",
+    "CleaningAccordion",
+    "MonthlyCalendarGrid",
+    "TopNavbar",
+    "LoginPage"
+  ],
+  "observable_states": {
+    "workbench": "monthly_calendar_grid_7_columns_navigable",
+    "calendar_header": "month_year_controls_previous_next_today"
+  }
+}

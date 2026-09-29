@@ -1,0 +1,27 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "TasksAccordion",
+    "ShoppingAccordion",
+    "QuickItemInput",
+    "TopNavbar",
+    "RegisterTab",
+    "LoginPage"
+  ],
+  "viewport_topology": {
+    "root": "100vw x 100vh, padding 16px, background #0B0F17",
+    "navbar": "TopNavbar (h=64px, logout reactivo)",
+    "hub": "HubContainer (w=380px/colapsado) -> aloja TasksAccordion y ShoppingAccordion",
+    "shopping_accordion": "ShoppingAccordion (telemetría reactiva X/Y, badge de pendientes, lista y QuickItemInput inline)",
+    "workbench": "flex 1",
+    "auth_surface": "LoginPage (card 440px centrada, tabs conmutables, inputs empáticos)"
+  },
+  "observable_states": {
+    "hub": "reactivo_dual_acordeon_tasks_y_shopping",
+    "shopping_accordion": "telemetria_activa_con_input_rapido_continuo",
+    "shopping_backend": "crud_tenant_isolated_decision_1a_2b_bulk_schedule_active",
+    "tasks_backend": "crud_tenant_isolated_decision_2b_active"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "active_slice": "RV-A05 · Gestión de Tareas de Limpieza Doméstica (Cleaning Vertical Slice)",
+  "completed_fias": [
+    "FIA-A01.01",
+    "FIA-A01.02",
+    "FIA-A01.03",
+    "FIA-A02.01",
+    "FIA-A02.02",
+    "FIA-A02.03",
+    "FIA-A02.04",
+    "FIA-A02.05",
+    "FIA-A03.01",
+    "FIA-A03.02",
+    "FIA-A03.03",
+    "FIA-A03.04",
+    "FIA-A03.05",
+    "FIA-A04.01",
+    "FIA-A04.02",
+    "FIA-A04.03",
+    "FIA-A05.01"
+  ],
+  "latest_locked_fia": "FIA-A05.01",
+  "architectural_decisions_applied": [
+    "Aislamiento absoluto de tenant por userId en todas las consultas y mutaciones de limpieza",
+    "Decisión 2B innegociable: corte estricto en 120 caracteres de título y 1000 caracteres de descripción",
+    "Modelo Universal de Tareas unificado para tasks, shopping y cleaning (titulo, descripcion, prioridad, completado)",
+    "Prioridades semánticas canónicas: 'alta', 'media', 'baja'",
+    "Alternancia atómica y mutaciones optimistas con reversión ante error",
+    "Asignación de fechas de forma unificada mediante arrastre al Calendario"
+  ],
+  "unlocked_next": "FIA-A05.02 (Componentes UI de Limpieza y Acordeón Homogéneo)"
+}

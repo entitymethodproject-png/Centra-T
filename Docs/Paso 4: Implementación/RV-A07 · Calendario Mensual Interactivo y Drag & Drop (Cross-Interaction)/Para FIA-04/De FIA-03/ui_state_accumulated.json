@@ -1,0 +1,27 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "FilterModal",
+    "SortMenu",
+    "TasksAccordion",
+    "ShoppingAccordion",
+    "CleaningAccordion",
+    "TaskCard",
+    "ShoppingCard",
+    "CleaningCard",
+    "MonthlyCalendarGrid",
+    "CalendarDropZone",
+    "CalendarTaskPill",
+    "TopNavbar",
+    "LoginPage"
+  ],
+  "observable_states": {
+    "workbench": "monthly_calendar_grid_with_past_date_blocking_and_task_pills",
+    "calendar_header": "month_year_controls_previous_next_today",
+    "hub_cards": "draggable_cards_with_html5_dnd_payload",
+    "drop_feedback_valid": "blue_accent_highlight_dropZoneActive",
+    "drop_feedback_blocked": "crimson_accent_highlight_dropZonePastBlocked_not_allowed"
+  }
+}

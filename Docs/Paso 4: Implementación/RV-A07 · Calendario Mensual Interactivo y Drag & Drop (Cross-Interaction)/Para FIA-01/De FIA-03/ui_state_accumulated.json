@@ -1,0 +1,25 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "FilterModal",
+    "SortMenu",
+    "TasksAccordion",
+    "ShoppingAccordion",
+    "CleaningAccordion",
+    "TaskCard",
+    "ShoppingCard",
+    "CleaningCard",
+    "TaskActionMenu",
+    "ShoppingActionMenu",
+    "CleaningActionMenu",
+    "TopNavbar",
+    "LoginPage"
+  ],
+  "observable_states": {
+    "filter_system": "filtros_y_ordenacion_multinivel_completos_reactivos_en_caliente_conectados_en_App",
+    "hub_toolbar": "botones_filtrar_con_lupa_limpiar_y_reordenar_operativos_con_aria_label_dinamico",
+    "action_menus": "opcion_descripcion_con_modal_lectura_edicion_borrado_en_las_tres_tarjetas"
+  }
+}

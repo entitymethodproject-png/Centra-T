@@ -1,0 +1,31 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "TasksAccordion",
+    "TaskCard",
+    "TaskActionMenu",
+    "TaskCreationWizard",
+    "ShoppingAccordion",
+    "ShoppingCard",
+    "ShoppingActionMenu",
+    "ShoppingCreationWizard",
+    "TopNavbar",
+    "RegisterTab",
+    "LoginPage"
+  ],
+  "viewport_topology": {
+    "root": "100vw x 100vh, padding 16px, background #0B0F17",
+    "navbar": "TopNavbar (h=64px, logout reactivo)",
+    "hub": "HubContainer (w=380px/colapsado) -> aloja TasksAccordion y ShoppingAccordion homogéneos",
+    "workbench": "flex 1",
+    "auth_surface": "LoginPage (card 440px centrada, tabs conmutables, inputs empáticos)"
+  },
+  "observable_states": {
+    "hub": "reactivo_tasks_shopping",
+    "cleaning_backend": "crud_tenant_isolated_modelo_universal_activo",
+    "shopping_backend": "crud_tenant_isolated_modelo_universal_activo",
+    "tasks_backend": "crud_tenant_isolated_modelo_universal_activo"
+  }
+}

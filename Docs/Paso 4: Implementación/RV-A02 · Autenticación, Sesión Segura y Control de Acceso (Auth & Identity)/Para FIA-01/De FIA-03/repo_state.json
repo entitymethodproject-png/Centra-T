@@ -1,0 +1,11 @@
+{
+  "files_created": [
+    "src/workspace/components/TopNavbar.tsx",
+    "src/workspace/components/TopNavbar.module.css",
+    "src/workspace/components/TopNavbar.test.tsx"
+  ],
+  "files_modified": [
+    "src/workspace/components/WorkspaceLayout.tsx"
+  ],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

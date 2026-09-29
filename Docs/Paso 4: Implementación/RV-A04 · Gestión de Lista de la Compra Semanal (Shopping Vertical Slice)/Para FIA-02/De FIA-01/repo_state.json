@@ -1,0 +1,15 @@
+{
+  "files_created": [
+    "src/shopping/entities/shopping-item.entity.ts",
+    "src/shopping/dto/create-shopping-item.dto.ts",
+    "src/shopping/dto/update-shopping-item.dto.ts",
+    "src/shopping/dto/bulk-schedule-shopping.dto.ts",
+    "src/shopping/repositories/shopping.repository.ts",
+    "src/shopping/services/shopping.service.ts",
+    "src/shopping/controllers/shopping.controller.ts",
+    "src/shopping/services/shopping.service.test.ts",
+    "src/shopping/controllers/shopping.controller.test.ts"
+  ],
+  "files_modified": [],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

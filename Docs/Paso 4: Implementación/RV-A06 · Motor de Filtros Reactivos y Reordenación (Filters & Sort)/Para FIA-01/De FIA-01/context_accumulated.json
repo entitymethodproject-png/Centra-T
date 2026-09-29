@@ -1,0 +1,42 @@
+{
+  "active_slice": "RV-A06 · Motor de Filtros Reactivos y Reordenación (Filters & Sort)",
+  "completed_fias": [
+    "FIA-A01.01",
+    "FIA-A01.02",
+    "FIA-A01.03",
+    "FIA-A02.01",
+    "FIA-A02.02",
+    "FIA-A02.03",
+    "FIA-A02.04",
+    "FIA-A02.05",
+    "FIA-A03.01",
+    "FIA-A03.02",
+    "FIA-A03.03",
+    "FIA-A03.04",
+    "FIA-A03.05",
+    "FIA-A04.01",
+    "FIA-A04.02",
+    "FIA-A04.03",
+    "FIA-A05.01",
+    "FIA-A05.02",
+    "FIA-A05.03",
+    "FIA-A06.01"
+  ],
+  "latest_locked_fia": "FIA-A06.01",
+  "architectural_decisions_applied": [
+    "Aislamiento absoluto de tenant por userId en todas las consultas y mutaciones de limpieza",
+    "Decisión 2B innegociable: corte estricto en 120 caracteres de título y 1000 caracteres de descripción",
+    "Tríada de acordeones en Hub completada con diseño idéntico: TasksAccordion, ShoppingAccordion y CleaningAccordion",
+    "Cabeceras limpias con contador dinámico [Modulo] (N) y botón cuadrado [+] compacto (26x26px), sin apelotonamientos ni badges redundantes",
+    "Tarjetas homogéneas con checkbox accesible, puntito sutil de prioridad (7x7px) situado entre checkbox y nombre, título tachado y menú contextual de 3 puntos (•••)",
+    "Menú contextual con cambio de prioridad en tiempo real y modal de eliminación preventiva (foco seguro en Cancelar y soporte ESC)",
+    "Wizard de creación homogéneo en 3 pasos con rollback a cero ante cancelación o tecla Escape",
+    "Asignación temporal unificada: cero fechas en modales; la programación temporal se delega exclusivamente al Calendario",
+    "Cabecera superior (TopNavbar) limpia sin telemetría espuria de red (eliminado badge Online/Offline)",
+    "RV-A05 100% COMPLETADA Y CERRADA: Tríada de módulos (Tareas, Compra, Limpieza) concluida, homogénea y sellada",
+    "Motor de filtros combinados AND en cliente puro (Prioridad + Rango de Fechas + Estado)",
+    "Buffer de edición desacoplado en FilterModal con descarte inofensivo ante Cancelar o tecla Escape",
+    "Zero Scope Creep: cero persistencia en base de datos; filtros 100% reactivos en memoria"
+  ],
+  "unlocked_next": "FIA-A06.02 · Hook useItemFilters, Reactividad en Caliente y Botón [Limpiar Filtros]"
+}

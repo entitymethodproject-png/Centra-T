@@ -1,0 +1,31 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "FilterModal",
+    "SortMenu",
+    "TasksAccordion",
+    "ShoppingAccordion",
+    "CleaningAccordion",
+    "TaskCard",
+    "ShoppingCard",
+    "CleaningCard",
+    "MonthlyCalendarGrid",
+    "CalendarDropZone",
+    "CalendarTaskPill",
+    "ReassignmentConfirmModal",
+    "BulkShoppingConfirmModal",
+    "TopNavbar",
+    "LoginPage"
+  ],
+  "observable_states": {
+    "workbench": "monthly_calendar_grid_with_past_date_blocking_and_task_pills",
+    "calendar_header": "month_year_controls_previous_next_today",
+    "hub_cards": "draggable_cards_with_html5_dnd_payload",
+    "calendar_pills": "draggable_task_pills_between_dates",
+    "reassignment_modal": "dialog_modal_origin_vs_target_date_confirmation",
+    "hub_shopping_header": "master_bulk_drag_handle_active",
+    "bulk_shopping_modal": "dialog_modal_bulk_schedule_confirmation"
+  }
+}

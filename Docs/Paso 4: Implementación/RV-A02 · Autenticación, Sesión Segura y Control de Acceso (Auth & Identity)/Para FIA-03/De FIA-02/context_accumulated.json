@@ -1,0 +1,13 @@
+{
+  "capabilities_completed": [
+    "RV-A01: Topología espacial y scaffolding completo del Workspace (WorkspaceLayout, HubContainer reactivo, TopNavbar)",
+    "FIA-A02.01: Entidad User, validación de Email RFC 5322, hashing bcrypt (coste 12), DTOs y UsersService con control de unicidad 409",
+    "FIA-A02.02: Componente de interfaz RegisterTab con validación inline de contraseñas desiguales (Caso Forense VV-009), matriz de 5 estados y consumo de UsersService"
+  ],
+  "active_constraints": [
+    "Validación innegociable de doble contraseña (VV-009)",
+    "Contención perimetral de formulario sin scroll parásito",
+    "Consumo desacoplado de UsersService sin manipulación directa de credenciales"
+  ],
+  "unlocked_next": "FIA-A02.03 (Autenticación Exitosa y Sesión Segura HttpOnly - VV-001)"
+}

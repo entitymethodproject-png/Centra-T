@@ -1,0 +1,32 @@
+{
+  "active_slice": "RV-A05 · Gestión de Tareas de Limpieza Doméstica (Cleaning Vertical Slice)",
+  "completed_fias": [
+    "FIA-A01.01",
+    "FIA-A01.02",
+    "FIA-A01.03",
+    "FIA-A02.01",
+    "FIA-A02.02",
+    "FIA-A02.03",
+    "FIA-A02.04",
+    "FIA-A02.05",
+    "FIA-A03.01",
+    "FIA-A03.02",
+    "FIA-A03.03",
+    "FIA-A03.04",
+    "FIA-A03.05",
+    "FIA-A04.01",
+    "FIA-A04.02",
+    "FIA-A04.03",
+    "FIA-A05.01"
+  ],
+  "latest_locked_fia": "FIA-A05.01",
+  "architectural_decisions_applied": [
+    "Aislamiento absoluto de tenant por userId en todas las consultas y mutaciones de limpieza",
+    "Decisión 2B innegociable: corte estricto en 120 caracteres de nombre de tarea de limpieza",
+    "Zonas canónicas fijadas: 'cocina', 'baño', 'salon', 'general'",
+    "Frecuencias canónicas fijadas: 'diaria' (+1d), 'semanal' (+7d), 'quincenal' (+14d), 'mensual' (+30d)",
+    "Cálculo matemático determinista de proximaFechaSugerida al crear y al completar tareas",
+    "Registro inmutable de lastCompletedAt como base temporal para la recurrencia"
+  ],
+  "unlocked_next": "FIA-A05.02 (Acordeón de Limpieza y Modal de Alta Periódica)"
+}

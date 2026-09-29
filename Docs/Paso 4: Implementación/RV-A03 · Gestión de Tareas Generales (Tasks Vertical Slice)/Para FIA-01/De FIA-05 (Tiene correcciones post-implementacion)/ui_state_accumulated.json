@@ -1,0 +1,26 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "TopNavbar",
+    "RegisterTab",
+    "LoginPage"
+  ],
+  "viewport_topology": {
+    "root": "100vw x 100vh, padding 16px, background #0B0F17",
+    "navbar": "TopNavbar (h=64px, logout reactivo)",
+    "hub": "HubContainer (w=380px/colapsado)",
+    "workbench": "flex 1",
+    "auth_surface": "LoginPage (card 440px centrada, tabs conmutables, inputs empáticos, visible por defecto sin sesión)"
+  },
+  "observable_states": {
+    "hub": "reactivo_toggle",
+    "navbar_telemetry": "navigator_online_offline_reactive",
+    "register_tab": "validado_vv009_5_estados_transicion_inmediata",
+    "login_page": "empatica_onblur_vv001_transicion_workspace",
+    "session_lifecycle": "login_guard_logout_purgado_completo",
+    "app_root_flow": "login_workspace_bifurcation_active_sessionstorage_persisted",
+    "user_persistence": "localstorage_inmemory_repository_synced"
+  }
+}

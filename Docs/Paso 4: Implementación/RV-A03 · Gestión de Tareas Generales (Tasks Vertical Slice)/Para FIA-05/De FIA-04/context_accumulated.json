@@ -1,0 +1,27 @@
+{
+  "active_slice": "RV-A03 · Gestión de Tareas Generales (Tasks Vertical Slice)",
+  "completed_fias": [
+    "FIA-A01.01",
+    "FIA-A01.02",
+    "FIA-A01.03",
+    "FIA-A02.01",
+    "FIA-A02.02",
+    "FIA-A02.03",
+    "FIA-A02.04",
+    "FIA-A02.05",
+    "FIA-A03.01",
+    "FIA-A03.02",
+    "FIA-A03.03",
+    "FIA-A03.04"
+  ],
+  "latest_locked_fia": "FIA-A03.04",
+  "architectural_decisions_applied": [
+    "Aislamiento absoluto de tenant por userId en todas las consultas y creaciones de tareas",
+    "Decisión 2B innegociable: corte estricto en 120 caracteres de título y 1000 de descripción",
+    "Decisión 3A & Caso Forense VV-004: Rollback total a cero en memoria al cancelar o presionar ESC",
+    "Caso Forense VV-005: Mutación optimista en <50ms con reversión automática y Toast empático ante fallo 500",
+    "Prohibición de spinners a pantalla completa: modal autocontenido y carga local",
+    "Usuario demo elena@centrat.local con acceso out-of-the-box blindado"
+  ],
+  "unlocked_next": "FIA-A03.05 (TaskActionMenu con Menú Contextual y Modal Preventivo de Eliminación)"
+}

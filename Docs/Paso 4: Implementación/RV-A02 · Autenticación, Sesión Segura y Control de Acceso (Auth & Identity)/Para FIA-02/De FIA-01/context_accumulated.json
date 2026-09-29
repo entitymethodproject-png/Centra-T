@@ -1,0 +1,12 @@
+{
+  "capabilities_completed": [
+    "RV-A01: Topología espacial y scaffolding completo del Workspace (WorkspaceLayout, HubContainer reactivo, TopNavbar con telemetría de red)",
+    "FIA-A02.01: Entidad User, validación de Email RFC 5322, hashing bcrypt (coste 12), DTOs y UsersService con control de unicidad 409"
+  ],
+  "active_constraints": [
+    "Coste de hashing bcrypt fijado estrictamente en 12",
+    "Prohibida la exposición de passwordHash en DTOs o respuestas",
+    "Aislamiento de dominio de usuarios verificado"
+  ],
+  "unlocked_next": "FIA-A02.02 (Componente de Registro en UI y Pestaña [Crear Cuenta] - VV-009)"
+}

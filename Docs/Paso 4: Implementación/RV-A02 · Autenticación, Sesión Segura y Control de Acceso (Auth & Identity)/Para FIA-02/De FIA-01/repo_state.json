@@ -1,0 +1,14 @@
+{
+  "files_created": [
+    "src/users/entities/user.entity.ts",
+    "src/users/dto/register-user.dto.ts",
+    "src/users/dto/user-response.dto.ts",
+    "src/users/repositories/user.repository.ts",
+    "src/users/services/users.service.ts",
+    "src/users/services/users.service.test.ts"
+  ],
+  "files_modified": [
+    "package.json"
+  ],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

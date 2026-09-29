@@ -1,0 +1,36 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "OfflineBanner",
+    "Toast",
+    "HubContainer",
+    "FilterModal",
+    "SortMenu",
+    "TasksAccordion",
+    "ShoppingAccordion",
+    "CleaningAccordion",
+    "TaskCard",
+    "ShoppingCard",
+    "CleaningCard",
+    "MonthlyCalendarGrid",
+    "CalendarDropZone",
+    "CalendarTaskPill",
+    "CalendarItemContextMenu",
+    "ReassignmentConfirmModal",
+    "BulkShoppingConfirmModal",
+    "TopNavbar",
+    "LoginPage"
+  ],
+  "observable_states": {
+    "toast_notification": "floating_alert_with_empathic_3_component_message",
+    "optimistic_ui": "immediate_toggle_with_guaranteed_rollback_on_500_failure",
+    "offline_banner": "rendered_when_navigator_offline_with_status_role",
+    "hub_creation_buttons": "disabled_in_offline_mode_preserving_filters_and_sort",
+    "workbench": "monthly_calendar_grid_with_past_date_blocking_and_task_pills",
+    "calendar_header": "month_year_controls_previous_next_today",
+    "hub_cards": "draggable_cards_with_html5_dnd_payload",
+    "calendar_pills": "draggable_task_pills_between_dates",
+    "calendar_context_menu": "accessible_context_menu_with_unschedule_option"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "TasksAccordion",
+    "TaskCard",
+    "TaskActionMenu",
+    "TaskCreationWizard",
+    "TopNavbar",
+    "RegisterTab",
+    "LoginPage"
+  ],
+  "viewport_topology": {
+    "root": "100vw x 100vh, padding 16px, background #0B0F17",
+    "navbar": "TopNavbar (h=64px, logout reactivo)",
+    "hub": "HubContainer (w=380px/colapsado) -> aloja TasksAccordion",
+    "workbench": "flex 1",
+    "auth_surface": "LoginPage (card 440px centrada, tabs conmutables, inputs empáticos)"
+  },
+  "observable_states": {
+    "hub": "reactivo_toggle_con_acordeon_tareas_y_wizard",
+    "shopping_backend": "crud_tenant_isolated_decision_1a_2b_bulk_schedule_active",
+    "tasks_backend": "crud_tenant_isolated_decision_2b_active",
+    "vertical_slice_rv_a03": "completed_100_percent_closed",
+    "vertical_slice_rv_a04": "backend_foundation_active"
+  }
+}

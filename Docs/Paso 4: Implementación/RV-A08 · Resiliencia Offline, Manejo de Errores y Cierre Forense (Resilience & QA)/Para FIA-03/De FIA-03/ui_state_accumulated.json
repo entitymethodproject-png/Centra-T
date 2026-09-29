@@ -1,0 +1,32 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "OfflineBanner",
+    "Toast",
+    "HubContainer",
+    "FilterModal",
+    "SortMenu",
+    "TasksAccordion",
+    "ShoppingAccordion",
+    "CleaningAccordion",
+    "TaskCard",
+    "ShoppingCard",
+    "CleaningCard",
+    "MonthlyCalendarGrid",
+    "CalendarDropZone",
+    "CalendarTaskPill",
+    "CalendarItemContextMenu",
+    "ReassignmentConfirmModal",
+    "BulkShoppingConfirmModal",
+    "TopNavbar",
+    "LoginPage"
+  ],
+  "observable_states": {
+    "full_system": "production_ready_and_e2e_verified",
+    "resilience_offline": "active_with_banner_and_read_only_protection",
+    "error_handling": "empathic_3_component_toast_with_guaranteed_rollback",
+    "calendar_workspace": "monthly_grid_with_dnd_and_context_menu",
+    "hub_tools": "reactive_filters_and_multilevel_sorting"
+  }
+}

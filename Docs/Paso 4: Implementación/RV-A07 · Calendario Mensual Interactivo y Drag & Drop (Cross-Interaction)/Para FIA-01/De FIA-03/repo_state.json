@@ -1,0 +1,38 @@
+{
+  "files_created": [
+    "src/filters/types/filter.types.ts",
+    "src/filters/utils/filterEngine.ts",
+    "src/filters/utils/filterEngine.test.ts",
+    "src/filters/components/FilterModal.tsx",
+    "src/filters/components/FilterModal.module.css",
+    "src/filters/components/FilterModal.test.tsx",
+    "src/filters/hooks/useItemFilters.ts",
+    "src/filters/hooks/useItemFilters.test.ts",
+    "src/filters/types/sort.types.ts",
+    "src/filters/utils/sortEngine.ts",
+    "src/filters/utils/sortEngine.test.ts",
+    "src/filters/components/SortMenu.tsx",
+    "src/filters/components/SortMenu.module.css",
+    "src/filters/components/SortMenu.test.tsx"
+  ],
+  "files_modified": [
+    "src/App.tsx",
+    "src/App.test.tsx",
+    "src/hub/components/HubContainer.tsx",
+    "src/hub/components/HubContainer.module.css",
+    "src/hub/components/HubContainer.test.tsx",
+    "src/hub/components/TasksAccordion.tsx",
+    "src/hub/components/ShoppingAccordion.tsx",
+    "src/hub/components/CleaningAccordion.tsx",
+    "src/tasks/components/TaskActionMenu.tsx",
+    "src/tasks/components/TaskActionMenu.module.css",
+    "src/tasks/components/TaskActionMenu.test.tsx",
+    "src/shopping/components/ShoppingActionMenu.tsx",
+    "src/shopping/components/ShoppingActionMenu.module.css",
+    "src/shopping/components/ShoppingActionMenu.test.tsx",
+    "src/cleaning/components/CleaningActionMenu.tsx",
+    "src/cleaning/components/CleaningActionMenu.module.css",
+    "src/cleaning/components/CleaningActionMenu.test.tsx"
+  ],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

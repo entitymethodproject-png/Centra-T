@@ -1,0 +1,27 @@
+{
+  "active_slice": "RV-A08 · Resiliencia Offline, Manejo de Errores y Cierre Forense (Resilience & QA)",
+  "completed_fias": [
+    "FIA-A01.01", "FIA-A01.02", "FIA-A01.03",
+    "FIA-A02.01", "FIA-A02.02", "FIA-A02.03", "FIA-A02.04", "FIA-A02.05",
+    "FIA-A03.01", "FIA-A03.02", "FIA-A03.03", "FIA-A03.04", "FIA-A03.05",
+    "FIA-A04.01", "FIA-A04.02", "FIA-A04.03",
+    "FIA-A05.01", "FIA-A05.02", "FIA-A05.03",
+    "FIA-A06.01", "FIA-A06.02", "FIA-A06.03",
+    "FIA-A07.01", "FIA-A07.02", "FIA-A07.03", "FIA-A07.04", "FIA-A07.05", "FIA-A07.06",
+    "FIA-A08.01", "FIA-A08.02", "FIA-A08.03"
+  ],
+  "latest_locked_fia": "FIA-A08.03",
+  "project_status": "FULLY_COMPLETED_AND_LOCKED",
+  "rv_status": {
+    "RV-A01": "COMPLETED_AND_LOCKED",
+    "RV-A02": "COMPLETED_AND_LOCKED",
+    "RV-A03": "COMPLETED_AND_LOCKED",
+    "RV-A04": "COMPLETED_AND_LOCKED",
+    "RV-A05": "COMPLETED_AND_LOCKED",
+    "RV-A06": "COMPLETED_AND_LOCKED",
+    "RV-A07": "COMPLETED_AND_LOCKED",
+    "RV-A08": "COMPLETED_AND_LOCKED"
+  },
+  "total_slices": 8,
+  "total_fias": 31
+}

@@ -1,0 +1,20 @@
+{
+  "mounted_components": [
+    "WorkspaceLayout",
+    "HubContainer",
+    "TopNavbar",
+    "RegisterTab"
+  ],
+  "viewport_topology": {
+    "root": "100vw x 100vh, padding 16px, background #0B0F17",
+    "navbar": "TopNavbar (h=64px)",
+    "hub": "HubContainer (w=380px/colapsado)",
+    "workbench": "flex 1",
+    "auth_surface": "RegisterTab (activo)"
+  },
+  "observable_states": {
+    "hub": "reactivo_toggle",
+    "navbar_telemetry": "navigator_online_offline_reactive",
+    "backend_auth": "login_controller_session_cookie_httponly_active"
+  }
+}

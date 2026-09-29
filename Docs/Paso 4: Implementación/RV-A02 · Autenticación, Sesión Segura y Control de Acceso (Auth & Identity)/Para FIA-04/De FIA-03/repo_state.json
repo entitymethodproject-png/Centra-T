@@ -1,0 +1,12 @@
+{
+  "files_created": [
+    "src/authentication/dto/login-credentials.dto.ts",
+    "src/authentication/dto/auth-response.dto.ts",
+    "src/authentication/services/throttler.service.ts",
+    "src/authentication/services/auth.service.ts",
+    "src/authentication/controllers/auth.controller.ts",
+    "src/authentication/controllers/auth.controller.test.ts"
+  ],
+  "files_modified": [],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

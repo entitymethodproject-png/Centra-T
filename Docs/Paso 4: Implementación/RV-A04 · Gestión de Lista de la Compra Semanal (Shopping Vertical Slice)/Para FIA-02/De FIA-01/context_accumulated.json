@@ -1,0 +1,13 @@
+{
+  "active_slice": "RV-A04 · Gestión de Lista de la Compra Semanal (Shopping Vertical Slice)",
+  "completed_fias": ["FIA-A01.01", "FIA-A01.02", "FIA-A01.03", "FIA-A02.01", "FIA-A02.02", "FIA-A02.03", "FIA-A02.04", "FIA-A02.05", "FIA-A03.01", "FIA-A03.02", "FIA-A03.03", "FIA-A03.04", "FIA-A03.05", "FIA-A04.01"],
+  "latest_locked_fia": "FIA-A04.01",
+  "architectural_decisions_applied": [
+    "Aislamiento absoluto de tenant por userId en todas las consultas y mutaciones de shopping",
+    "Decisión 2B innegociable: corte estricto en 120 caracteres de nombre de producto",
+    "Decisión 1A: Bloqueo estricto de fechas pasadas en asignaciones temporales de compra",
+    "Endpoint transaccional POST /shopping/schedule-all para compra en bloque (base de VV-006)",
+    "Rebanada Vertical RV-A03 cerrada con éxito; apertura formal de RV-A04"
+  ],
+  "unlocked_next": "FIA-A04.02 (Acordeón Compra con Telemetría e Input Rápido en Hub)"
+}

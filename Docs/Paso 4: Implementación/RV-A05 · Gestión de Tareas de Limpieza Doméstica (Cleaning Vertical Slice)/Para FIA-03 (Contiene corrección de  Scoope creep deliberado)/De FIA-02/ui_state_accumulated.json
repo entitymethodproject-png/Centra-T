@@ -1,0 +1,38 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "TasksAccordion",
+    "TaskCard",
+    "TaskActionMenu",
+    "TaskCreationWizard",
+    "ShoppingAccordion",
+    "ShoppingCard",
+    "ShoppingActionMenu",
+    "ShoppingCreationWizard",
+    "CleaningAccordion",
+    "CleaningCard",
+    "CleaningActionMenu",
+    "CleaningCreationWizard",
+    "TopNavbar",
+    "RegisterTab",
+    "LoginPage"
+  ],
+  "viewport_topology": {
+    "root": "100vw x 100vh, padding 16px, background #0B0F17",
+    "navbar": "TopNavbar (h=64px, logout reactivo)",
+    "hub": "HubContainer (w=380px/colapsado) -> aloja la tríada completamente homogénea: TasksAccordion, ShoppingAccordion y CleaningAccordion",
+    "workbench": "flex 1",
+    "auth_surface": "LoginPage (card 440px centrada, tabs conmutables, inputs empáticos)"
+  },
+  "observable_states": {
+    "hub": "reactivo_triada_homogenea_tasks_shopping_cleaning",
+    "cleaning_accordion": "cabecera_limpia_con_boton_mas_tarjetas_card_y_wizard_3_pasos",
+    "shopping_accordion": "cabecera_limpia_con_boton_mas_tarjetas_card_y_wizard_3_pasos",
+    "tasks_accordion": "cabecera_limpia_con_boton_mas_tarjetas_card_y_wizard_3_pasos",
+    "cleaning_backend": "crud_tenant_isolated_modelo_universal_activo",
+    "shopping_backend": "crud_tenant_isolated_modelo_universal_activo",
+    "tasks_backend": "crud_tenant_isolated_modelo_universal_activo"
+  }
+}

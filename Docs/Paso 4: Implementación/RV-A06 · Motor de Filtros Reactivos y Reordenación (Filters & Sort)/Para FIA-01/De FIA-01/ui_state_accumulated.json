@@ -1,0 +1,17 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "FilterModal",
+    "TasksAccordion",
+    "ShoppingAccordion",
+    "CleaningAccordion",
+    "TopNavbar",
+    "LoginPage"
+  ],
+  "observable_states": {
+    "filter_modal": "modal_accesible_con_evaluacion_and_y_buffer_desacoplado",
+    "hub_toolbar": "boton_filtrar_integrado_en_hub_container"
+  }
+}

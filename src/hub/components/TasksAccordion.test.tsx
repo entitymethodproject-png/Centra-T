@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TasksAccordion } from './TasksAccordion';
-import { TaskItem } from '../../tasks/entities/task-item.entity';
+import { TaskItem } from '../../items/entities/item.entity';
 
 describe('TasksAccordion Component (EV-LIST-01 a EV-LIST-05)', () => {
   const mockTasks: TaskItem[] = [

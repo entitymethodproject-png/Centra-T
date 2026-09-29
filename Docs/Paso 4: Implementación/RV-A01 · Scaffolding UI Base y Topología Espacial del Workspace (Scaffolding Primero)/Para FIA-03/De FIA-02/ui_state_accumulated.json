@@ -1,0 +1,16 @@
+{
+  "mounted_components": [
+    "WorkspaceLayout",
+    "HubContainer"
+  ],
+  "viewport_topology": {
+    "root": "100vw x 100vh, padding 16px, background #0B0F17",
+    "navbar": "height 64px, role banner",
+    "hub": "width 380px (expandido) / 48px o 0px (colapsado), role complementary",
+    "workbench": "flex 1 (expande dinámicamente al colapsar el Hub), role main"
+  },
+  "observable_states": {
+    "hub": "reactivo_toggle_expandido_colapsado",
+    "active_route": "/workspace"
+  }
+}

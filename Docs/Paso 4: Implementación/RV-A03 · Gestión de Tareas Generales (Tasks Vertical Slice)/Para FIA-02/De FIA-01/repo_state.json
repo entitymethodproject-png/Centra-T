@@ -1,0 +1,16 @@
+{
+  "files_created": [
+    "src/tasks/entities/task-item.entity.ts",
+    "src/tasks/dto/create-task.dto.ts",
+    "src/tasks/dto/update-task.dto.ts",
+    "src/tasks/repositories/task.repository.ts",
+    "src/tasks/services/tasks.service.ts",
+    "src/tasks/services/tasks.service.test.ts",
+    "src/tasks/controllers/tasks.controller.ts",
+    "src/tasks/controllers/tasks.controller.test.ts"
+  ],
+  "files_modified": [
+    "src/test/setup.ts"
+  ],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

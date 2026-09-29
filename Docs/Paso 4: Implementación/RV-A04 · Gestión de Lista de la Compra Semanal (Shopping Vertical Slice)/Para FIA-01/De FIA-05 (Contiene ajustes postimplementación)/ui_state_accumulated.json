@@ -1,0 +1,33 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "TasksAccordion",
+    "TaskCard",
+    "TaskActionMenu",
+    "TaskCreationWizard",
+    "TopNavbar",
+    "RegisterTab",
+    "LoginPage"
+  ],
+  "viewport_topology": {
+    "root": "100vw x 100vh, padding 16px, background #0B0F17",
+    "navbar": "TopNavbar (h=64px, logout reactivo)",
+    "hub": "HubContainer (w=380px/colapsado) -> aloja TasksAccordion",
+    "task_items": "TaskCard -> aloja Checkbox optimista, Toast de reversión y TaskActionMenu",
+    "action_menu": "TaskActionMenu (dropdown flotante z-index 50 + modal confirmación preventivo z-index 1000)",
+    "modal_layer": "TaskCreationWizard (fixed inset-0, z-index 1000, card 500px centrada)",
+    "workbench": "flex 1",
+    "auth_surface": "LoginPage (card 440px centrada, tabs conmutables, inputs empáticos)"
+  },
+  "observable_states": {
+    "hub": "reactivo_toggle_con_acordeon_tareas_y_wizard",
+    "task_card": "optimistic_toggle_rollback_toast_vv005_active",
+    "task_action_menu": "context_menu_safe_delete_modal_active",
+    "tasks_wizard": "step_flow_1_2_3_atomic_rollback_vv004",
+    "session_lifecycle": "login_guard_logout_purgado_completo",
+    "tasks_backend": "crud_tenant_isolated_decision_2b_active",
+    "vertical_slice_rv_a03": "completed_100_percent_closed"
+  }
+}

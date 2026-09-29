@@ -1,0 +1,17 @@
+{
+  "files_created": [
+    "src/infrastructure/http/apiClient.ts",
+    "src/infrastructure/http/apiClient.test.ts",
+    "src/workspace/components/Toast.tsx",
+    "src/workspace/components/Toast.module.css",
+    "src/workspace/components/Toast.test.tsx"
+  ],
+  "files_modified": [
+    "src/App.tsx",
+    "src/App.test.tsx",
+    "src/tasks/components/TaskCard.tsx",
+    "src/shopping/components/ShoppingCard.tsx",
+    "src/cleaning/components/CleaningCard.tsx"
+  ],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

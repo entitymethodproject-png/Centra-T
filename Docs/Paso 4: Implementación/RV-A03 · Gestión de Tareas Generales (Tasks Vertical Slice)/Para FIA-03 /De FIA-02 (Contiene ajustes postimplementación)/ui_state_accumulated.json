@@ -1,0 +1,25 @@
+{
+  "mounted_components": [
+    "App",
+    "WorkspaceLayout",
+    "HubContainer",
+    "TasksAccordion",
+    "TopNavbar",
+    "RegisterTab",
+    "LoginPage"
+  ],
+  "viewport_topology": {
+    "root": "100vw x 100vh, padding 16px, background #0B0F17",
+    "navbar": "TopNavbar (h=64px, logout reactivo)",
+    "hub": "HubContainer (w=380px/colapsado) -> aloja TasksAccordion",
+    "workbench": "flex 1",
+    "auth_surface": "LoginPage (card 440px centrada, tabs conmutables, inputs empáticos)"
+  },
+  "observable_states": {
+    "hub": "reactivo_toggle_con_acordeon_tareas",
+    "tasks_accordion": "ev_list_matrix_active_01_05",
+    "session_lifecycle": "login_guard_logout_purgado_completo",
+    "demo_credentials_access": "out_of_the_box_ready_elena_centrat_local",
+    "tasks_backend": "crud_tenant_isolated_decision_2b_active"
+  }
+}

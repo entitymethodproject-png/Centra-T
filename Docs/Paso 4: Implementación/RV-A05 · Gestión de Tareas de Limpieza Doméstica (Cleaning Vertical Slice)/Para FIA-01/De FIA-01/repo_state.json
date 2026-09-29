@@ -1,0 +1,15 @@
+{
+  "files_created": [
+    "src/cleaning/entities/cleaning-item.entity.ts",
+    "src/cleaning/dto/create-cleaning-item.dto.ts",
+    "src/cleaning/dto/update-cleaning-item.dto.ts",
+    "src/cleaning/dto/complete-cleaning-item.dto.ts",
+    "src/cleaning/repositories/cleaning.repository.ts",
+    "src/cleaning/services/cleaning.service.ts",
+    "src/cleaning/services/cleaning.service.test.ts",
+    "src/cleaning/controllers/cleaning.controller.ts",
+    "src/cleaning/controllers/cleaning.controller.test.ts"
+  ],
+  "files_modified": [],
+  "quality_gates_passed": ["QG-01", "QG-02", "QG-03", "QG-04", "QG-05"]
+}

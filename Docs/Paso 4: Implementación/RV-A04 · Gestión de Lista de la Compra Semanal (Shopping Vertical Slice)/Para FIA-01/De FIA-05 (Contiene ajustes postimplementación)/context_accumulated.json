@@ -1,0 +1,14 @@
+{
+  "active_slice": "RV-A03 · Gestión de Tareas Generales (Tasks Vertical Slice)",
+  "completed_fias": ["FIA-A01.01", "FIA-A01.02", "FIA-A01.03", "FIA-A02.01", "FIA-A02.02", "FIA-A02.03", "FIA-A02.04", "FIA-A02.05", "FIA-A03.01", "FIA-A03.02", "FIA-A03.03", "FIA-A03.04", "FIA-A03.05"],
+  "latest_locked_fia": "FIA-A03.05",
+  "architectural_decisions_applied": [
+    "Aislamiento absoluto de tenant por userId en todas las consultas y mutaciones de tareas",
+    "Decisión 2B innegociable: corte estricto en 120 caracteres de título y 1000 de descripción",
+    "Decisión 3A & Caso Forense VV-004: Rollback total a cero en memoria al cancelar o presionar ESC",
+    "Caso Forense VV-005: Mutación optimista en <50ms con reversión automática y Toast empático ante fallo 500",
+    "Diálogo preventivo de confirmación con foco seguro en Cancelar antes de cualquier DELETE",
+    "Rebanada Vertical RV-A03 completada y cerrada al 100%"
+  ],
+  "unlocked_next": "FIA-A04.01 (Módulo Backend Shopping y Asignación Grupal en RV-A04)"
+}

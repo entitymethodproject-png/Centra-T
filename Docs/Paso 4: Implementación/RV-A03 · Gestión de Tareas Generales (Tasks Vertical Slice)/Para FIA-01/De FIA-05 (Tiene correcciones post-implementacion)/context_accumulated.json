@@ -1,0 +1,18 @@
+{
+  "capabilities_completed": [
+    "RV-A01: Topología espacial y scaffolding completo del Workspace (WorkspaceLayout, HubContainer reactivo, TopNavbar)",
+    "FIA-A02.01: Entidad User, validación de Email RFC 5322, hashing bcrypt (coste 12), DTOs y UsersService con control de unicidad 409",
+    "FIA-A02.02: Componente de interfaz RegisterTab con validación inline de contraseñas desiguales (Caso Forense VV-009), matriz de 5 estados y consumo de UsersService",
+    "FIA-A02.03: Autenticación segura en backend con AuthController, AuthService, ThrottlerService (fuerza bruta 429) y sesión segura HttpOnly (Caso Forense VV-001)",
+    "FIA-A02.04: Vista LoginPage con selector de pestañas (Iniciar Sesión / Crear Cuenta), validación empática en onBlur/onSubmit (Caso Forense VV-001), bloqueo 429 y redirección a /workspace",
+    "FIA-A02.05: Invalidación de sesión (POST /auth/logout con Max-Age=0), SessionAuthGuard (HTTP 401 perimetral), conexión en App.tsx con auto-transición tras registro, persistencia cliente sincronizada (localStorage/sessionStorage) y suite global de 56 tests verdes. Cierre formal total de RV-A02."
+  ],
+  "active_constraints": [
+    "Aislamiento absoluto de tenant por userId derivado exclusivamente de la sesión verificada",
+    "Protección de endpoints privados mediante SessionAuthGuard con cookie HttpOnly SameSite=Strict",
+    "Revocación inmediata en servidor y purga de cliente con Max-Age=0 ante logout",
+    "Cláusula de escape: ante fallo de red en logout, forzar purga local y redirección a /auth/login",
+    "Aislamiento hermético de tests en Vitest sin contaminación cruzada de almacenamiento"
+  ],
+  "unlocked_next": "RV-A03 · FIA-A03.01 (Entidad DomesticItem (Task) y Endpoints CRUD)"
+}
