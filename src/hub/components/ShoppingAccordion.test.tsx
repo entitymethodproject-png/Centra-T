@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ShoppingAccordion } from './ShoppingAccordion';
 import { ShoppingItem } from '../../shopping/entities/shopping-item.entity';
@@ -113,4 +113,77 @@ describe('ShoppingAccordion Component (Homogeneidad con Tareas)', () => {
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText(/paso 1 de 3/i)).toBeInTheDocument();
   });
+
+  it('renderiza el asa de arrastre maestro cuando hay productos pendientes sin fecha (pendingCount > 0)', () => {
+    // mockItems tiene shop-2 y shop-3 pendientes sin fecha (pendingCount = 2)
+    render(<ShoppingAccordion items={mockItems} />);
+
+    const dragHandle = screen.getByTestId('shopping-bulk-drag-handle');
+    expect(dragHandle).toBeInTheDocument();
+    expect(dragHandle).toHaveAttribute('draggable', 'true');
+    expect(dragHandle).toHaveTextContent('⠿');
+  });
+
+  it('no renderiza el asa de arrastre maestro cuando no hay productos pendientes sin fecha (pendingCount = 0)', () => {
+    const allCompletedOrScheduled: ShoppingItem[] = [
+      {
+        id: 'shop-comp-1',
+        userId: 'usr-1',
+        modulo: 'shopping',
+        titulo: 'Pan de molde',
+        descripcion: '',
+        prioridad: 'baja',
+        completado: true,
+        fechaProgramada: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'shop-sched-1',
+        userId: 'usr-1',
+        modulo: 'shopping',
+        titulo: 'Huevos docena',
+        descripcion: '',
+        prioridad: 'alta',
+        completado: false,
+        fechaProgramada: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    render(<ShoppingAccordion items={allCompletedOrScheduled} />);
+    expect(screen.queryByTestId('shopping-bulk-drag-handle')).not.toBeInTheDocument();
+  });
+
+  it('empaqueta BulkShoppingDragPayload en onDragStart del asa maestro', () => {
+    render(<ShoppingAccordion items={mockItems} />);
+
+    const dragHandle = screen.getByTestId('shopping-bulk-drag-handle');
+    const dataTransferData: Record<string, string> = {};
+    const dataTransfer = {
+      setData: (format: string, data: string) => {
+        dataTransferData[format] = data;
+      },
+      getData: (format: string) => dataTransferData[format] || '',
+      effectAllowed: 'none',
+      dropEffect: 'none',
+    };
+
+    fireEvent.dragStart(dragHandle, { dataTransfer });
+
+    expect(dataTransfer.effectAllowed).toBe('move');
+    const rawPayload = dataTransferData['application/x-centrat-item'];
+    expect(rawPayload).toBeDefined();
+
+    const parsed = JSON.parse(rawPayload);
+    expect(parsed).toEqual({
+      id: 'bulk-shopping',
+      modulo: 'shopping',
+      titulo: 'Compra Semanal',
+      isBulk: true,
+      pendingCount: 2,
+    });
+  });
 });
+

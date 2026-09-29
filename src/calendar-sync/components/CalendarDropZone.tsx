@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import styles from './CalendarDropZone.module.css';
-import { DRAG_TRANSFER_MIME, DragItemPayload } from '../types/drag-drop.types';
+import { DRAG_TRANSFER_MIME, SchedulableDragPayload } from '../types/drag-drop.types';
 
 export interface CalendarDropZoneProps {
   dateString: string;
   isPast?: boolean;
   isCurrentMonth?: boolean;
   children?: React.ReactNode;
-  onItemDrop?: (item: DragItemPayload, targetDate: string) => void;
+  onItemDrop?: (item: SchedulableDragPayload, targetDate: string) => void;
   className?: string;
 }
 
@@ -76,7 +76,7 @@ export const CalendarDropZone: React.FC<CalendarDropZoneProps> = ({
     }
 
     try {
-      const payload = JSON.parse(rawData) as DragItemPayload;
+      const payload = JSON.parse(rawData) as SchedulableDragPayload;
       if (payload && payload.id && payload.modulo) {
         onItemDrop?.(payload, dateString);
       }

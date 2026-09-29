@@ -19,6 +19,12 @@
   border-color: var(--accent-primary, #38BDF8);
 }
 
+.bulkShoppingPill {
+  border-color: rgba(59, 130, 246, 0.4);
+  background-color: rgba(59, 130, 246, 0.12);
+}
+
+
 .priorityDot {
   width: 7px;
   height: 7px;

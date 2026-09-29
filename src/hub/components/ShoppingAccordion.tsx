@@ -4,6 +4,7 @@ import { ShoppingItem } from '../../shopping/entities/shopping-item.entity';
 import { ShoppingService } from '../../shopping/services/shopping.service';
 import { ShoppingCreationWizard } from '../../shopping/components/ShoppingCreationWizard';
 import { ShoppingCard } from '../../shopping/components/ShoppingCard';
+import { DRAG_TRANSFER_MIME, BulkShoppingDragPayload } from '../../calendar-sync/types/drag-drop.types';
 
 export interface ShoppingAccordionProps {
   items?: ShoppingItem[];
@@ -119,6 +120,22 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
     }
   };
 
+  const pendingCount = items.filter((i) => !i.completado && !i.fechaProgramada).length;
+
+  const handleBulkDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    const payload: BulkShoppingDragPayload = {
+      id: 'bulk-shopping',
+      modulo: 'shopping',
+      titulo: 'Compra Semanal',
+      isBulk: true,
+      pendingCount,
+    };
+    e.dataTransfer.setData(DRAG_TRANSFER_MIME, JSON.stringify(payload));
+    e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
     <div className={styles.accordionContainer} data-testid="shopping-accordion">
       {/* Cabecera del Acordeón */}
@@ -144,6 +161,20 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
             ▶
           </span>
           <h3 className={styles.title}>Compra ({items.length})</h3>
+          {pendingCount > 0 && (
+            <span
+              role="button"
+              tabIndex={0}
+              draggable={true}
+              onDragStart={handleBulkDragStart}
+              onClick={(e) => e.stopPropagation()}
+              className={styles.bulkDragHandle}
+              title="Arrastrar lista de compra al calendario"
+              data-testid="shopping-bulk-drag-handle"
+            >
+              ⠿
+            </span>
+          )}
         </div>
 
         <button

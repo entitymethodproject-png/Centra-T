@@ -19,8 +19,10 @@ import { CleaningItem } from './cleaning/entities/cleaning-item.entity';
 import {
   CalendarSchedulableItem,
   DragItemPayload,
+  SchedulableDragPayload,
 } from './calendar-sync/types/drag-drop.types';
 import { ReassignmentConfirmModal } from './calendar-sync/components/ReassignmentConfirmModal';
+import { BulkShoppingConfirmModal } from './calendar-sync/components/BulkShoppingConfirmModal';
 
 export interface AppProps {
   initialAuthenticated?: boolean;
@@ -58,6 +60,12 @@ export const App: React.FC<AppProps> = ({
     item: DragItemPayload;
     targetDate: string;
     originDate: string;
+  } | null>(null);
+
+  // Buffer de conflicto para asignación masiva de compras (Caso Forense VV-006)
+  const [bulkShoppingConflict, setBulkShoppingConflict] = useState<{
+    targetDate: string;
+    pendingCount: number;
   } | null>(null);
 
   useEffect(() => {
@@ -181,17 +189,41 @@ export const App: React.FC<AppProps> = ({
     }
   };
 
-  const handleScheduleItem = (draggedItem: DragItemPayload, targetDate: string) => {
-    let existingItemDate: Date | string | null = draggedItem.fechaProgramada || null;
+  const handleConfirmBulkShopping = () => {
+    if (!bulkShoppingConflict) return;
+    const targetDateObj = new Date(`${bulkShoppingConflict.targetDate}T00:00:00`);
+    setAllShopping((prev) =>
+      prev.map((item) =>
+        !item.completado && !item.fechaProgramada
+          ? { ...item, fechaProgramada: targetDateObj }
+          : item
+      )
+    );
+    setBulkShoppingConflict(null);
+  };
+
+  const handleScheduleItem = (draggedItem: SchedulableDragPayload, targetDate: string) => {
+    // Manejo de Compra Masiva (Caso VV-006)
+    if ('isBulk' in draggedItem && draggedItem.isBulk === true && draggedItem.modulo === 'shopping') {
+      const pendingCount = allShopping.filter(
+        (s) => !s.completado && !s.fechaProgramada
+      ).length;
+      if (pendingCount === 0) return;
+      setBulkShoppingConflict({ targetDate, pendingCount });
+      return;
+    }
+
+    const item = draggedItem as DragItemPayload;
+    let existingItemDate: Date | string | null = item.fechaProgramada || null;
     if (!existingItemDate) {
-      if (draggedItem.modulo === 'tasks') {
-        const found = allTasks.find((t) => t.id === draggedItem.id);
+      if (item.modulo === 'tasks') {
+        const found = allTasks.find((t) => t.id === item.id);
         if (found?.fechaProgramada) existingItemDate = found.fechaProgramada;
-      } else if (draggedItem.modulo === 'shopping') {
-        const found = allShopping.find((s) => s.id === draggedItem.id);
+      } else if (item.modulo === 'shopping') {
+        const found = allShopping.find((s) => s.id === item.id);
         if (found?.fechaProgramada) existingItemDate = found.fechaProgramada;
-      } else if (draggedItem.modulo === 'cleaning') {
-        const found = allCleaning.find((c) => c.id === draggedItem.id);
+      } else if (item.modulo === 'cleaning') {
+        const found = allCleaning.find((c) => c.id === item.id);
         if (found?.fechaProgramada) existingItemDate = found.fechaProgramada;
       }
     }
@@ -207,7 +239,7 @@ export const App: React.FC<AppProps> = ({
     // Si ya tenía fecha asignada y es distinta a la fecha de destino -> CONFLICTO (Decisión 4B / VV-003)
     if (originDateStr && originDateStr !== targetDate) {
       setReassignConflict({
-        item: draggedItem,
+        item,
         targetDate,
         originDate: originDateStr,
       });
@@ -215,7 +247,7 @@ export const App: React.FC<AppProps> = ({
     }
 
     // Si no tenía fecha previa o es la misma, asignación directa sin modal
-    applySchedule(draggedItem, targetDate);
+    applySchedule(item, targetDate);
   };
 
   if (!isAuthenticated) {
@@ -314,6 +346,14 @@ export const App: React.FC<AppProps> = ({
           }
         }}
         onCancel={() => setReassignConflict(null)}
+      />
+
+      <BulkShoppingConfirmModal
+        isOpen={Boolean(bulkShoppingConflict)}
+        pendingCount={bulkShoppingConflict?.pendingCount || 0}
+        targetDate={bulkShoppingConflict?.targetDate || ''}
+        onConfirm={handleConfirmBulkShopping}
+        onCancel={() => setBulkShoppingConflict(null)}
       />
     </>
   );

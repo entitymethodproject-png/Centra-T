@@ -532,6 +532,152 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
       expect(within(nextDayZone).getByTestId('calendar-pill-task-conflict-confirm')).toBeInTheDocument();
     });
   });
+
+  describe('Asignación Masiva de Compra al Calendario (Caso Forense VV-006)', () => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const todayIso = `${y}-${m}-${d}`;
+
+    const createMockShopping = () => [
+      {
+        id: 'shop-bulk-1',
+        titulo: 'Tomates cherry',
+        descripcion: 'Bolsa de 500g',
+        modulo: 'shopping' as const,
+        prioridad: 'media' as const,
+        completado: false,
+        fechaProgramada: null,
+        userId: 'usr-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'shop-bulk-2',
+        titulo: 'Pasta integral',
+        descripcion: 'Paquete de espaguetis',
+        modulo: 'shopping' as const,
+        prioridad: 'baja' as const,
+        completado: false,
+        fechaProgramada: null,
+        userId: 'usr-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'shop-bulk-completed',
+        titulo: 'Manzanas',
+        descripcion: '1 kg golden',
+        modulo: 'shopping' as const,
+        prioridad: 'alta' as const,
+        completado: true,
+        fechaProgramada: null,
+        userId: 'usr-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    it('[VV-006]: Arrastrar el asa de Compra Semanal al calendario abre el modal de confirmación con el número de productos pendientes', () => {
+      render(<App initialAuthenticated={true} initialShoppingItems={createMockShopping()} />);
+
+      const bulkHandle = screen.getByTestId('shopping-bulk-drag-handle');
+      expect(bulkHandle).toBeInTheDocument();
+
+      const dataTransferData: Record<string, string> = {};
+      const dataTransfer = {
+        setData: (format: string, data: string) => {
+          dataTransferData[format] = data;
+        },
+        getData: (format: string) => dataTransferData[format] || '',
+        dropEffect: 'none',
+        effectAllowed: 'none',
+      };
+
+      fireEvent.dragStart(bulkHandle, { dataTransfer });
+
+      const todayZone = screen.getByTestId(`calendar-drop-zone-${todayIso}`);
+      fireEvent.drop(todayZone, { dataTransfer });
+
+      // Modal de confirmación masiva desplegado
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toBeInTheDocument();
+      expect(within(dialog).getByText('Programar Compra Semanal')).toBeInTheDocument();
+      expect(within(dialog).getByText('2')).toBeInTheDocument();
+      expect(within(dialog).getByText(todayIso)).toBeInTheDocument();
+    });
+
+    it('[VV-006]: Cancelar la asignación masiva descarta la operación sin modificar las fechas de los productos', async () => {
+      render(<App initialAuthenticated={true} initialShoppingItems={createMockShopping()} />);
+
+      const bulkHandle = screen.getByTestId('shopping-bulk-drag-handle');
+      const dataTransferData: Record<string, string> = {};
+      const dataTransfer = {
+        setData: (format: string, data: string) => {
+          dataTransferData[format] = data;
+        },
+        getData: (format: string) => dataTransferData[format] || '',
+        dropEffect: 'none',
+        effectAllowed: 'none',
+      };
+
+      fireEvent.dragStart(bulkHandle, { dataTransfer });
+
+      const todayZone = screen.getByTestId(`calendar-drop-zone-${todayIso}`);
+      fireEvent.drop(todayZone, { dataTransfer });
+
+      // Modal abierto
+      expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+      // Pulsar [Cancelar]
+      const cancelBtn = screen.getByRole('button', { name: /cancelar/i });
+      fireEvent.click(cancelBtn);
+
+      // Modal cerrado
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+      // Ningún producto debe haberse materializado en la celda del calendario
+      expect(within(todayZone).queryByTestId('calendar-pill-shop-bulk-1')).not.toBeInTheDocument();
+      expect(within(todayZone).queryByTestId('calendar-pill-shop-bulk-2')).not.toBeInTheDocument();
+    });
+
+    it('[VV-006]: Confirmar la asignación masiva programa todos los productos pendientes en el día seleccionado y materializa la pastilla en el calendario', async () => {
+      render(<App initialAuthenticated={true} initialShoppingItems={createMockShopping()} />);
+
+      const bulkHandle = screen.getByTestId('shopping-bulk-drag-handle');
+      const dataTransferData: Record<string, string> = {};
+      const dataTransfer = {
+        setData: (format: string, data: string) => {
+          dataTransferData[format] = data;
+        },
+        getData: (format: string) => dataTransferData[format] || '',
+        dropEffect: 'none',
+        effectAllowed: 'none',
+      };
+
+      fireEvent.dragStart(bulkHandle, { dataTransfer });
+
+      const todayZone = screen.getByTestId(`calendar-drop-zone-${todayIso}`);
+      fireEvent.drop(todayZone, { dataTransfer });
+
+      // Confirmar pulsando [Asignar Fecha a Todos]
+      const confirmBtn = screen.getByRole('button', { name: /asignar fecha a todos/i });
+      fireEvent.click(confirmBtn);
+
+      // Modal cerrado
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+      // Ambos productos pendientes ahora están materializados en la casilla del calendario
+      await waitFor(() => {
+        expect(within(todayZone).getByTestId('calendar-pill-shop-bulk-1')).toBeInTheDocument();
+        expect(within(todayZone).getByTestId('calendar-pill-shop-bulk-2')).toBeInTheDocument();
+      });
+
+      // El producto completado NO se programa en el calendario
+      expect(within(todayZone).queryByTestId('calendar-pill-shop-bulk-completed')).not.toBeInTheDocument();
+    });
+  });
 });
 
 

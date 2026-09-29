@@ -54,6 +54,33 @@
   color: #F8FAFC;
 }
 
+.bulkDragHandle {
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #94A3B8;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle, #233144);
+  border-radius: 6px;
+  cursor: grab;
+  user-select: none;
+  transition: all 150ms ease;
+  line-height: 1;
+}
+
+.bulkDragHandle:hover {
+  background-color: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #60A5FA;
+}
+
+.bulkDragHandle:active {
+  cursor: grabbing;
+}
+
 .newButton {
   background-color: rgba(59, 130, 246, 0.15);
   color: #60A5FA;

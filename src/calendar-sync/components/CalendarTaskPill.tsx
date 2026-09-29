@@ -10,6 +10,7 @@ export interface CalendarTaskPillProps {
   completado?: boolean;
   fechaProgramada?: string | Date | null;
   isDraggable?: boolean;
+  isBulk?: boolean;
   onClick?: (id: string) => void;
 }
 
@@ -27,6 +28,7 @@ export const CalendarTaskPill: React.FC<CalendarTaskPillProps> = ({
   completado = false,
   fechaProgramada = null,
   isDraggable = true,
+  isBulk = false,
   onClick,
 }) => {
   const moduleInitial = MODULE_INITIALS[modulo] || 'T';
@@ -44,6 +46,7 @@ export const CalendarTaskPill: React.FC<CalendarTaskPillProps> = ({
       prioridad,
       completado: Boolean(completado),
       fechaProgramada: dateStr,
+      isBulk,
     };
     e.dataTransfer.setData(DRAG_TRANSFER_MIME, JSON.stringify(payload));
     e.dataTransfer.setData('text/plain', JSON.stringify(payload));
@@ -52,10 +55,11 @@ export const CalendarTaskPill: React.FC<CalendarTaskPillProps> = ({
 
   return (
     <div
-      className={styles.pillContainer}
+      className={`${styles.pillContainer} ${isBulk ? styles.bulkShoppingPill : ''}`}
       data-testid={`calendar-pill-${id}`}
       data-item-id={id}
       data-modulo={modulo}
+      data-is-bulk={isBulk ? 'true' : undefined}
       draggable={isDraggable}
       onDragStart={handleDragStart}
       onClick={() => onClick?.(id)}

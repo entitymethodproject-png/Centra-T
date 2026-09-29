@@ -10,7 +10,7 @@ import { CalendarDropZone } from '../../calendar-sync/components/CalendarDropZon
 import { CalendarTaskPill } from '../../calendar-sync/components/CalendarTaskPill';
 import {
   CalendarSchedulableItem,
-  DragItemPayload,
+  SchedulableDragPayload,
 } from '../../calendar-sync/types/drag-drop.types';
 
 export interface MonthlyCalendarGridProps {
@@ -18,7 +18,7 @@ export interface MonthlyCalendarGridProps {
   scheduledItems?: CalendarSchedulableItem[];
   onMonthChange?: (year: number, month: number) => void;
   onDayClick?: (day: CalendarDay) => void;
-  onItemDrop?: (item: DragItemPayload, targetDate: string) => void;
+  onItemDrop?: (item: SchedulableDragPayload, targetDate: string) => void;
 }
 
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
