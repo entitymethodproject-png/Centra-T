@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import styles from './LoginPage.module.css';
 import { AuthController } from '../controllers/auth.controller';
+import { AuthService, InvalidCredentialsError } from '../services/auth.service';
 import { UsersService, InvalidEmailError } from '../../users/services/users.service';
-import { InvalidCredentialsError } from '../services/auth.service';
 import { TooManyRequestsError } from '../services/throttler.service';
 import { RegisterTab } from './RegisterTab';
 
@@ -15,13 +15,23 @@ export interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({
-  authController = new AuthController(),
-  usersService = new UsersService(),
+  authController: propAuthController,
+  usersService: propUsersService,
   defaultTab = 'login',
   onNavigateToWorkspace,
   onSuccess,
 }) => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(defaultTab);
+
+  // Compartir la misma instancia en memoria para que RegisterTab y AuthController sincronicen usuarios
+  const usersService = useMemo(
+    () => propUsersService || new UsersService(),
+    [propUsersService]
+  );
+  const authController = useMemo(
+    () => propAuthController || new AuthController(new AuthService(usersService)),
+    [propAuthController, usersService]
+  );
 
   // Estados del formulario de Login
   const [email, setEmail] = useState('');
@@ -262,6 +272,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <div className={styles.tabContent} role="tabpanel">
             <RegisterTab
               usersService={usersService}
+              onSuccess={(createdUser) => {
+                setEmail(createdUser.email);
+                setTimeout(() => setActiveTab('login'), 1000);
+              }}
               onSwitchToLogin={() => setActiveTab('login')}
             />
           </div>
