@@ -1,0 +1,25 @@
+:root {
+  /* Surface colors */
+  --bg-base: #0B0F17;
+  --bg-hub: #131B26;
+  --bg-card: #1A2433;
+  --border-subtle: #233144;
+  --border-strong: #33445C;
+
+  /* Typography colors */
+  --text-primary: #F0F4F8;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  /* Accents */
+  --accent-primary: #38BDF8;
+  --accent-cobalt: #2563EB;
+  --accent-danger: #EF4444;
+
+  /* Layout dimensions */
+  --navbar-height: 64px;
+  --hub-width: 380px;
+  --shell-padding: 16px;
+  --panel-gap: 16px;
+  --panel-radius: 14px;
+}
