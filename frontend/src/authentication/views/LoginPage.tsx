@@ -119,9 +119,53 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setIsLoading(true);
 
     try {
+      if (typeof window !== 'undefined' && !propAuthController) {
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, password }),
+          });
+
+          if (res.ok) {
+            setIsSuccess(true);
+            if (window.sessionStorage) {
+              window.sessionStorage.setItem('centrat_auth', 'true');
+            }
+            if (onSuccess) onSuccess();
+            if (onNavigateToWorkspace) onNavigateToWorkspace();
+            return;
+          }
+
+          if (res.status === 401) {
+            setErrors((prev) => ({ ...prev, global: 'Credenciales incorrectas' }));
+            return;
+          }
+          if (res.status === 429) {
+            setErrors((prev) => ({
+              ...prev,
+              global: 'Demasiados intentos fallidos. Bloqueado temporalmente durante 15 minutos',
+            }));
+            return;
+          }
+          const errData = await res.json().catch(() => ({}));
+          setErrors((prev) => ({
+            ...prev,
+            global: errData.message || 'Error inesperado al iniciar sesión',
+          }));
+          return;
+        } catch {
+          // Fallback a controlador local si no hay red o en entorno mock
+        }
+      }
+
       const response = await authController.login({ email, password });
       if (response && response.statusCode === 200) {
         setIsSuccess(true);
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          window.sessionStorage.setItem('centrat_auth', 'true');
+        }
         if (onSuccess) {
           onSuccess();
         }

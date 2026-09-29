@@ -107,6 +107,73 @@ export function useWorkspaceController({
     }
   }, [initialCleaningItems]);
 
+  // Comprobación de sesión HttpOnly activa en NestJS al montar
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let isMounted = true;
+
+    const checkServerSession = async () => {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (res.ok && isMounted) {
+          setIsAuthenticated(true);
+          if (window.sessionStorage) {
+            window.sessionStorage.setItem('centrat_auth', 'true');
+          }
+        }
+      } catch {
+        // En entorno mock o sin red
+      }
+    };
+
+    if (!isAuthenticated && !initialAuthenticated) {
+      checkServerSession();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, initialAuthenticated]);
+
+  // Carga de colecciones reales desde PostgreSQL cuando la sesión está activa
+  useEffect(() => {
+    if (!isAuthenticated || initialTasks !== undefined) return;
+    if (typeof window === 'undefined') return;
+
+    let isMounted = true;
+    const fetchCollections = async () => {
+      try {
+        const [tasksRes, shoppingRes, cleaningRes] = await Promise.all([
+          fetch('/api/tasks', { credentials: 'include' }).then((r) => (r.ok ? r.json() : [])),
+          fetch('/api/shopping', { credentials: 'include' }).then((r) => (r.ok ? r.json() : [])),
+          fetch('/api/cleaning', { credentials: 'include' }).then((r) => (r.ok ? r.json() : [])),
+        ]);
+
+        if (!isMounted) return;
+
+        const normalize = (item: any) => ({
+          ...item,
+          nombre: item.titulo,
+          fechaProgramada: item.fechaProgramada
+            ? new Date(`${String(item.fechaProgramada).slice(0, 10)}T00:00:00`)
+            : null,
+          createdAt: new Date(item.createdAt || Date.now()),
+          updatedAt: new Date(item.updatedAt || Date.now()),
+        });
+
+        if (Array.isArray(tasksRes)) setAllTasks(tasksRes.map(normalize));
+        if (Array.isArray(shoppingRes)) setAllShopping(shoppingRes.map(normalize));
+        if (Array.isArray(cleaningRes)) setAllCleaning(cleaningRes.map(normalize));
+      } catch {
+        // En entorno mock o sin backend
+      }
+    };
+
+    fetchCollections();
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, initialTasks]);
+
   // Hook reactivo de filtrado para tareas
   const {
     criteria,
@@ -141,10 +208,15 @@ export function useWorkspaceController({
   }, []);
 
   const handleLogout = useCallback(() => {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      window.sessionStorage.removeItem('centrat_auth');
-    }
     setIsAuthenticated(false);
+    if (typeof window !== 'undefined') {
+      if (window.sessionStorage) {
+        window.sessionStorage.removeItem('centrat_auth');
+      }
+      try {
+        fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+      } catch {}
+    }
   }, []);
 
   // Mutación optimista genérica con rollback empático
@@ -180,21 +252,39 @@ export function useWorkspaceController({
   );
 
   const handleTaskToggle = useCallback(
-    (taskId: string) =>
-      toggleOptimisticItem(taskId, 'Actualización de tarea', () => allTasks, setAllTasks),
-    [allTasks, toggleOptimisticItem]
+    async (taskId: string) => {
+      toggleOptimisticItem(taskId, 'Actualización de tarea', () => allTasks, setAllTasks);
+      if (!simulateApiErrorOnToggle && initialTasks === undefined && typeof window !== 'undefined') {
+        try {
+          await fetch(`/api/tasks/${taskId}/toggle`, { method: 'PATCH', credentials: 'include' });
+        } catch {}
+      }
+    },
+    [allTasks, toggleOptimisticItem, simulateApiErrorOnToggle, initialTasks]
   );
 
   const handleShoppingToggle = useCallback(
-    (itemId: string) =>
-      toggleOptimisticItem(itemId, 'Actualización de compra', () => allShopping, setAllShopping),
-    [allShopping, toggleOptimisticItem]
+    async (itemId: string) => {
+      toggleOptimisticItem(itemId, 'Actualización de compra', () => allShopping, setAllShopping);
+      if (!simulateApiErrorOnToggle && initialShoppingItems === undefined && typeof window !== 'undefined') {
+        try {
+          await fetch(`/api/shopping/${itemId}/toggle`, { method: 'PATCH', credentials: 'include' });
+        } catch {}
+      }
+    },
+    [allShopping, toggleOptimisticItem, simulateApiErrorOnToggle, initialShoppingItems]
   );
 
   const handleCleaningToggle = useCallback(
-    (itemId: string) =>
-      toggleOptimisticItem(itemId, 'Actualización de limpieza', () => allCleaning, setAllCleaning),
-    [allCleaning, toggleOptimisticItem]
+    async (itemId: string) => {
+      toggleOptimisticItem(itemId, 'Actualización de limpieza', () => allCleaning, setAllCleaning);
+      if (!simulateApiErrorOnToggle && initialCleaningItems === undefined && typeof window !== 'undefined') {
+        try {
+          await fetch(`/api/cleaning/${itemId}/toggle`, { method: 'PATCH', credentials: 'include' });
+        } catch {}
+      }
+    },
+    [allCleaning, toggleOptimisticItem, simulateApiErrorOnToggle, initialCleaningItems]
   );
 
   // Colección agregada de ítems asignados al calendario mensual
@@ -243,12 +333,21 @@ export function useWorkspaceController({
         prev.map((c) => (c.id === item.id ? { ...c, fechaProgramada: targetDateObj } : c))
       );
     }
+    if (typeof window !== 'undefined') {
+      fetch(`/api/${item.modulo}/${item.id}/schedule`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ fechaProgramada: targetDate }),
+      }).catch(() => {});
+    }
   }, []);
 
   // Confirmación de asignación masiva de compras (Caso VV-006)
   const handleConfirmBulkShopping = useCallback(() => {
     if (!bulkShoppingConflict) return;
     const targetDateObj = new Date(`${bulkShoppingConflict.targetDate}T00:00:00`);
+    const dateStr = bulkShoppingConflict.targetDate;
     setAllShopping((prev) =>
       prev.map((item) =>
         !item.completado && !item.fechaProgramada
@@ -256,6 +355,14 @@ export function useWorkspaceController({
           : item
       )
     );
+    if (typeof window !== 'undefined') {
+      fetch('/api/shopping/bulk-schedule', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ fechaProgramada: dateStr }),
+      }).catch(() => {});
+    }
     setBulkShoppingConflict(null);
   }, [bulkShoppingConflict]);
 
@@ -285,6 +392,12 @@ export function useWorkspaceController({
       setAllCleaning((prev) =>
         prev.map((c) => (c.id === itemId ? { ...c, fechaProgramada: null } : c))
       );
+    }
+    if (typeof window !== 'undefined') {
+      fetch(`/api/${modulo}/${itemId}/unschedule`, {
+        method: 'PATCH',
+        credentials: 'include',
+      }).catch(() => {});
     }
     setContextMenuState(null);
   }, []);
@@ -362,21 +475,36 @@ export function useWorkspaceController({
     handleTaskCreated: (newTask: TaskItem) => setAllTasks((prev) => [newTask, ...prev]),
     handleTaskUpdated: (updated: TaskItem) =>
       setAllTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t))),
-    handleTaskDeleted: (id: string) => setAllTasks((prev) => prev.filter((t) => t.id !== id)),
+    handleTaskDeleted: (id: string) => {
+      setAllTasks((prev) => prev.filter((t) => t.id !== id));
+      if (typeof window !== 'undefined') {
+        fetch(`/api/tasks/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => {});
+      }
+    },
     handleTaskToggle,
 
     // Acciones de Compras
     handleShoppingCreated: (newItem: ShoppingItem) => setAllShopping((prev) => [newItem, ...prev]),
     handleShoppingUpdated: (updated: ShoppingItem) =>
       setAllShopping((prev) => prev.map((i) => (i.id === updated.id ? updated : i))),
-    handleShoppingDeleted: (id: string) => setAllShopping((prev) => prev.filter((i) => i.id !== id)),
+    handleShoppingDeleted: (id: string) => {
+      setAllShopping((prev) => prev.filter((i) => i.id !== id));
+      if (typeof window !== 'undefined') {
+        fetch(`/api/shopping/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => {});
+      }
+    },
     handleShoppingToggle,
 
     // Acciones de Limpiezas
     handleCleaningCreated: (newItem: CleaningItem) => setAllCleaning((prev) => [newItem, ...prev]),
     handleCleaningUpdated: (updated: CleaningItem) =>
       setAllCleaning((prev) => prev.map((i) => (i.id === updated.id ? updated : i))),
-    handleCleaningDeleted: (id: string) => setAllCleaning((prev) => prev.filter((i) => i.id !== id)),
+    handleCleaningDeleted: (id: string) => {
+      setAllCleaning((prev) => prev.filter((i) => i.id !== id));
+      if (typeof window !== 'undefined') {
+        fetch(`/api/cleaning/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => {});
+      }
+    },
     handleCleaningToggle,
 
     // Filtrado y Ordenación

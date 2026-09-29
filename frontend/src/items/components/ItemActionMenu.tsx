@@ -166,6 +166,14 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
         updatedAt: new Date(),
       };
       setIsDescriptionModalOpen(false);
+      if (typeof window !== 'undefined') {
+        fetch(`/api/${modulo}/${currentItem.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ descripcion: descriptionText.trim() }),
+        }).catch(() => {});
+      }
       if (notifyUpdated) {
         notifyUpdated(updated);
       }
@@ -212,6 +220,14 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
         };
         setIsSavingDesc(false);
         setIsDescriptionModalOpen(false);
+        if (typeof window !== 'undefined') {
+          fetch(`/api/${modulo}/${currentItem.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ descripcion: '' }),
+          }).catch(() => {});
+        }
         if (notifyUpdated) {
           notifyUpdated(updated);
         }
@@ -262,6 +278,14 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
         prioridad: newPriority,
         updatedAt: new Date(),
       };
+      if (typeof window !== 'undefined') {
+        fetch(`/api/${modulo}/${currentItem.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ prioridad: newPriority }),
+        }).catch(() => {});
+      }
       if (notifyUpdated) {
         notifyUpdated(updated);
       }

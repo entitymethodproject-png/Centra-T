@@ -10,10 +10,11 @@ export interface RegisterTabProps {
 }
 
 export const RegisterTab: React.FC<RegisterTabProps> = ({
-  usersService = new UsersService(),
+  usersService: propUsersService,
   onSuccess,
   onSwitchToLogin,
 }) => {
+  const usersService = propUsersService || new UsersService();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
@@ -57,8 +58,49 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
     setIsLoading(true);
 
     try {
+      if (typeof window !== 'undefined' && !propUsersService) {
+        try {
+          const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              email: email.trim(),
+              password,
+              name: email.trim().split('@')[0],
+            }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            setIsSuccess(true);
+            if (window.sessionStorage) {
+              window.sessionStorage.setItem('centrat_auth', 'true');
+            }
+            if (onSuccess) onSuccess(data.user);
+            return;
+          }
+
+          if (res.status === 409) {
+            setErrors({
+              global: 'No ha sido posible completar el registro. Compruebe los datos o intente iniciar sesión',
+            });
+            return;
+          }
+
+          const errData = await res.json().catch(() => ({}));
+          setErrors({ global: errData.message || 'Error inesperado al registrar el usuario' });
+          return;
+        } catch {
+          // Fallback a servicio local si no hay red o en entorno mock
+        }
+      }
+
       const createdUser = await usersService.createUser({ email, password });
       setIsSuccess(true);
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.setItem('centrat_auth', 'true');
+      }
       if (onSuccess) {
         onSuccess(createdUser);
       }
