@@ -5,6 +5,7 @@ import { TopNavbar } from './workspace/components/TopNavbar';
 import { HubContainer } from './hub/components/HubContainer';
 import { TasksAccordion } from './hub/components/TasksAccordion';
 import { ShoppingAccordion } from './hub/components/ShoppingAccordion';
+import { CleaningAccordion } from './hub/components/CleaningAccordion';
 
 export interface AppProps {
   initialAuthenticated?: boolean;
@@ -54,6 +55,7 @@ export const App: React.FC<AppProps> = ({ initialAuthenticated = false }) => {
         <HubContainer>
           <TasksAccordion />
           <ShoppingAccordion />
+          <CleaningAccordion />
         </HubContainer>
       }
     />
