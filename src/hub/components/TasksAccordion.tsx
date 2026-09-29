@@ -15,7 +15,9 @@ export interface TasksAccordionProps {
   onToggleExpand?: (expanded: boolean) => void;
   onCreateTaskClick?: () => void;
   onTaskCreated?: (task: TaskItem) => void;
-  onTaskToggle?: (taskId: string) => void;
+  onTaskUpdated?: (task: TaskItem) => void;
+  onTaskDeleted?: (taskId: string) => void;
+  onTaskToggle?: (taskId: string, newStatus?: boolean) => void;
   onRetry?: () => void;
 }
 
@@ -29,16 +31,24 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
   onToggleExpand,
   onCreateTaskClick,
   onTaskCreated,
+  onTaskUpdated,
+  onTaskDeleted,
   onTaskToggle,
   onRetry,
 }) => {
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
   const [tasks, setTasks] = useState<TaskItem[]>(propTasks || []);
+  const [prevPropTasks, setPrevPropTasks] = useState(propTasks);
   const [isLoading, setIsLoading] = useState(propLoading);
   const [error, setError] = useState<string | null>(propError);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
 
-  // Sincronizar props cuando cambian
+  // Sincronizar props cuando cambian en fase de render para reactividad inmediata
+  if (propTasks !== prevPropTasks) {
+    setPrevPropTasks(propTasks);
+    setTasks(propTasks || []);
+  }
+
   useEffect(() => {
     if (propTasks !== undefined) {
       setTasks(propTasks);
@@ -92,10 +102,16 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
 
   const handleTaskUpdated = (updatedTask: TaskItem) => {
     setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
+    if (onTaskUpdated) {
+      onTaskUpdated(updatedTask);
+    }
   };
 
   const handleTaskDeleted = (deletedId: string) => {
     setTasks((prev) => prev.filter((t) => t.id !== deletedId));
+    if (onTaskDeleted) {
+      onTaskDeleted(deletedId);
+    }
   };
 
   return (

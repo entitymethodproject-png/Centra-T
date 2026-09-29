@@ -15,7 +15,9 @@ export interface CleaningAccordionProps {
   onToggleExpand?: (expanded: boolean) => void;
   onCreateItemClick?: () => void;
   onItemCreated?: (item: CleaningItem) => void;
-  onItemToggle?: (itemId: string) => void;
+  onItemUpdated?: (item: CleaningItem) => void;
+  onItemDeleted?: (itemId: string) => void;
+  onItemToggle?: (itemId: string, newStatus?: boolean) => void;
   onRetry?: () => void;
 }
 
@@ -29,14 +31,23 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
   onToggleExpand,
   onCreateItemClick,
   onItemCreated,
+  onItemUpdated,
+  onItemDeleted,
   onItemToggle,
   onRetry,
 }) => {
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
   const [items, setItems] = useState<CleaningItem[]>(propItems || []);
+  const [prevPropItems, setPrevPropItems] = useState(propItems);
   const [isLoading, setIsLoading] = useState(propLoading);
   const [error, setError] = useState<string | null>(propError);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
+
+  // Sincronizar props cuando cambian en fase de render para reactividad inmediata
+  if (propItems !== prevPropItems) {
+    setPrevPropItems(propItems);
+    setItems(propItems || []);
+  }
 
   useEffect(() => {
     if (propItems !== undefined) {
@@ -90,15 +101,21 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
 
   const handleItemUpdated = (updatedItem: CleaningItem) => {
     setItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
+    if (onItemUpdated) {
+      onItemUpdated(updatedItem);
+    }
   };
 
   const handleItemDeleted = (deletedId: string) => {
     setItems((prev) => prev.filter((item) => item.id !== deletedId));
+    if (onItemDeleted) {
+      onItemDeleted(deletedId);
+    }
   };
 
-  const handleToggleItem = (itemId: string) => {
+  const handleToggleItem = (itemId: string, newStatus?: boolean) => {
     if (onItemToggle) {
-      onItemToggle(itemId);
+      onItemToggle(itemId, newStatus);
     }
   };
 

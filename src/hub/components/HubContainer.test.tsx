@@ -72,4 +72,93 @@ describe('PVF-A01.02 · HubContainer (Mecanismo Colapsable Reactivo del Hub)', (
     expect(toggleBtn).toHaveAttribute('aria-expanded', 'false');
     expect(screen.getByTestId('test-content')).toBeInTheDocument();
   });
+
+  it('debe renderizar el botón [Filtrar] cuando el Hub está expandido e invocar onFilterClick al pulsar', async () => {
+    const user = userEvent.setup();
+    const onFilterClickMock = vi.fn();
+
+    render(<HubContainer onFilterClick={onFilterClickMock} />);
+
+    const filterBtn = screen.getByRole('button', { name: /filtrar/i });
+    expect(filterBtn).toBeInTheDocument();
+
+    await user.click(filterBtn);
+    expect(onFilterClickMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('debe ocultar el botón [Filtrar] cuando el Hub está colapsado', () => {
+    render(<HubContainer initialCollapsed={true} />);
+
+    expect(screen.queryByRole('button', { name: /filtrar/i })).not.toBeInTheDocument();
+  });
+
+  it('debe renderizar el botón [Limpiar] cuando isFilterActive={true} y se provee onClearFilters', () => {
+    render(
+      <HubContainer
+        isFilterActive={true}
+        onClearFilters={vi.fn()}
+      />
+    );
+
+    const clearBtn = screen.getByRole('button', { name: /limpiar filtros/i });
+    expect(clearBtn).toBeInTheDocument();
+  });
+
+  it('debe no renderizar el botón [Limpiar] cuando isFilterActive={false}', () => {
+    render(
+      <HubContainer
+        isFilterActive={false}
+        onClearFilters={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByRole('button', { name: /limpiar/i })).not.toBeInTheDocument();
+  });
+
+  it('debe invocar onClearFilters al hacer clic en el botón [Limpiar]', async () => {
+    const user = userEvent.setup();
+    const onClearMock = vi.fn();
+
+    render(
+      <HubContainer
+        isFilterActive={true}
+        onClearFilters={onClearMock}
+      />
+    );
+
+    const clearBtn = screen.getByRole('button', { name: /limpiar filtros/i });
+    await user.click(clearBtn);
+
+    expect(onClearMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('debe mostrar el contador activeFilterCount en el botón [Filtrar] cuando es mayor que 0', () => {
+    render(
+      <HubContainer
+        isFilterActive={true}
+        activeFilterCount={2}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: /filtrar/i })).toHaveTextContent('Filtrar (2)');
+  });
+
+  it('debe renderizar el botón [Reordenar] cuando el Hub está expandido e invocar onSortClick al pulsar', async () => {
+    const user = userEvent.setup();
+    const onSortClickMock = vi.fn();
+
+    render(<HubContainer onSortClick={onSortClickMock} />);
+
+    const sortBtn = screen.getByRole('button', { name: /reordenar/i });
+    expect(sortBtn).toBeInTheDocument();
+
+    await user.click(sortBtn);
+    expect(onSortClickMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('debe ocultar el botón [Reordenar] cuando el Hub está colapsado', () => {
+    render(<HubContainer initialCollapsed={true} />);
+
+    expect(screen.queryByRole('button', { name: /reordenar/i })).not.toBeInTheDocument();
+  });
 });

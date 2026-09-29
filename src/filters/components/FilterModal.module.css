@@ -1,0 +1,283 @@
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(11, 15, 23, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.modalCard {
+  background-color: var(--bg-card, #1A2433);
+  border: 1px solid var(--border-subtle, #233144);
+  border-radius: var(--panel-radius, 14px);
+  width: 90%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  color: var(--text-primary, #F0F4F8);
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-subtle, #233144);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-primary, #F0F4F8);
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #94A3B8);
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: color 150ms ease, background-color 150ms ease;
+}
+
+.closeButton:hover {
+  color: var(--text-primary, #F0F4F8);
+  background-color: var(--border-subtle, #233144);
+}
+
+.modalBody {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionLabel {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary, #94A3B8);
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.optionButton {
+  flex: 1;
+  min-width: 75px;
+  padding: 8px 12px;
+  background-color: var(--bg-hub, #131B26);
+  border: 1px solid var(--border-subtle, #233144);
+  color: var(--text-secondary, #94A3B8);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.optionButton:hover {
+  border-color: var(--border-strong, #33445C);
+  color: var(--text-primary, #F0F4F8);
+}
+
+.optionButton[aria-pressed="true"] {
+  background-color: var(--accent-cobalt, #2563EB);
+  border-color: var(--accent-cobalt, #2563EB);
+  color: #FFFFFF;
+}
+
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: var(--text-primary, #F0F4F8);
+  user-select: none;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-cobalt, #2563EB);
+  cursor: pointer;
+}
+
+.dateControls {
+  margin-top: 10px;
+  padding: 12px;
+  background-color: var(--bg-hub, #131B26);
+  border: 1px solid var(--border-subtle, #233144);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.radioGroup {
+  display: flex;
+  gap: 16px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--text-secondary, #94A3B8);
+  cursor: pointer;
+}
+
+.radioInput {
+  accent-color: var(--accent-cobalt, #2563EB);
+  cursor: pointer;
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inputRow {
+  display: flex;
+  gap: 12px;
+}
+
+.inputRow .inputGroup {
+  flex: 1;
+}
+
+.inputLabel {
+  font-size: 0.8rem;
+  color: var(--text-secondary, #94A3B8);
+}
+
+.dateInput {
+  background-color: var(--bg-card, #1A2433);
+  border: 1px solid var(--border-subtle, #233144);
+  border-radius: 6px;
+  color: var(--text-primary, #F0F4F8);
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 150ms ease;
+}
+
+.dateInput:focus {
+  border-color: var(--accent-primary, #38BDF8);
+}
+
+.errorMessage {
+  color: var(--accent-danger, #EF4444);
+  font-size: 0.82rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-subtle, #233144);
+  background-color: rgba(19, 27, 38, 0.4);
+  border-bottom-left-radius: var(--panel-radius, 14px);
+  border-bottom-right-radius: var(--panel-radius, 14px);
+  gap: 10px;
+}
+
+.footerActionsRight {
+  display: flex;
+  gap: 10px;
+}
+
+.btnCancel {
+  background: transparent;
+  border: 1px solid var(--border-subtle, #233144);
+  color: var(--text-secondary, #94A3B8);
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 150ms ease;
+}
+
+.btnCancel:hover {
+  border-color: var(--border-strong, #33445C);
+  color: var(--text-primary, #F0F4F8);
+}
+
+.btnReset {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #64748B);
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  transition: color 150ms ease;
+}
+
+.btnReset:hover {
+  color: var(--text-secondary, #94A3B8);
+}
+
+.btnApply {
+  background-color: var(--accent-cobalt, #2563EB);
+  border: 1px solid var(--accent-cobalt, #2563EB);
+  color: #FFFFFF;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 150ms ease;
+}
+
+.btnApply:hover:not(:disabled) {
+  background-color: #1D4ED8;
+  border-color: #1D4ED8;
+}
+
+.btnApply:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(40%);
+}

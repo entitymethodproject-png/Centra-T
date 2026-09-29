@@ -37,8 +37,135 @@ describe('ShoppingActionMenu Component (Menú Contextual y Modal Preventivo)', (
 
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
     expect(screen.getByRole('menu', { name: /opciones de producto/i })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: /descripción/i })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /cambiar prioridad/i })).toBeInTheDocument();
     expect(screen.getByRole('menuitem', { name: /eliminar producto/i })).toBeInTheDocument();
+  });
+
+  it('debe abrir el modal de descripción y mostrar la descripción actual para su lectura', async () => {
+    const user = userEvent.setup();
+    render(<ShoppingActionMenu item={baseItem} />);
+
+    await user.click(screen.getByRole('button', { name: /acciones de producto/i }));
+    await user.click(screen.getByRole('menuitem', { name: /descripción/i }));
+
+    const modal = screen.getByRole('dialog');
+    expect(modal).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /descripción del producto/i })).toBeInTheDocument();
+    expect(screen.getByText(/aceite de oliva virgen extra/i)).toBeInTheDocument();
+
+    const textarea = screen.getByRole('textbox', { name: /descripción del producto/i });
+    expect(textarea).toHaveValue('Botella de 1 litro');
+  });
+
+  it('debe permitir editar la descripción y persistir los cambios al pulsar Guardar', async () => {
+    const user = userEvent.setup();
+    const handleUpdated = vi.fn();
+    const mockService = {
+      updateItem: vi.fn().mockResolvedValue({
+        ...baseItem,
+        descripcion: 'Botella de 2 litros prensado en frío',
+      }),
+    } as unknown as ShoppingService;
+
+    render(
+      <ShoppingActionMenu
+        item={baseItem}
+        shoppingService={mockService}
+        userId="usr-demo-elena-001"
+        onItemUpdated={handleUpdated}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /acciones de producto/i }));
+    await user.click(screen.getByRole('menuitem', { name: /descripción/i }));
+
+    const textarea = screen.getByRole('textbox', { name: /descripción del producto/i });
+    await user.clear(textarea);
+    await user.type(textarea, 'Botella de 2 litros prensado en frío');
+
+    const saveBtn = screen.getByTestId('save-description-btn');
+    await user.click(saveBtn);
+
+    await waitFor(() => {
+      expect(mockService.updateItem).toHaveBeenCalledWith(
+        'usr-demo-elena-001',
+        'shop-action-01',
+        { descripcion: 'Botella de 2 litros prensado en frío' }
+      );
+      expect(handleUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({ descripcion: 'Botella de 2 litros prensado en frío' })
+      );
+    });
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('debe permitir borrar la descripción existente al pulsar Borrar descripción', async () => {
+    const user = userEvent.setup();
+    const handleUpdated = vi.fn();
+    const mockService = {
+      updateItem: vi.fn().mockResolvedValue({
+        ...baseItem,
+        descripcion: '',
+      }),
+    } as unknown as ShoppingService;
+
+    render(
+      <ShoppingActionMenu
+        item={baseItem}
+        shoppingService={mockService}
+        userId="usr-demo-elena-001"
+        onItemUpdated={handleUpdated}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: /acciones de producto/i }));
+    await user.click(screen.getByRole('menuitem', { name: /descripción/i }));
+
+    const clearBtn = screen.getByTestId('clear-description-btn');
+    await user.click(clearBtn);
+
+    await waitFor(() => {
+      expect(mockService.updateItem).toHaveBeenCalledWith(
+        'usr-demo-elena-001',
+        'shop-action-01',
+        { descripcion: '' }
+      );
+      expect(handleUpdated).toHaveBeenCalledWith(
+        expect.objectContaining({ descripcion: '' })
+      );
+    });
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('debe cancelar la edición de descripción sin guardar al pulsar Cancelar o presionar Escape', async () => {
+    const user = userEvent.setup();
+    const mockService = {
+      updateItem: vi.fn(),
+    } as unknown as ShoppingService;
+
+    render(<ShoppingActionMenu item={baseItem} shoppingService={mockService} />);
+
+    // Cancelar con botón Cancelar
+    await user.click(screen.getByRole('button', { name: /acciones de producto/i }));
+    await user.click(screen.getByRole('menuitem', { name: /descripción/i }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    const cancelBtn = screen.getByRole('button', { name: /cancelar/i });
+    await user.click(cancelBtn);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(mockService.updateItem).not.toHaveBeenCalled();
+
+    // Cancelar con tecla Escape
+    await user.click(screen.getByRole('button', { name: /acciones de producto/i }));
+    await user.click(screen.getByRole('menuitem', { name: /descripción/i }));
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(mockService.updateItem).not.toHaveBeenCalled();
   });
 
   it('debe cerrar el menú contextual al presionar la tecla Escape', async () => {

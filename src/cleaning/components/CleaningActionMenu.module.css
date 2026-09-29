@@ -294,3 +294,102 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Modal de Descripción */
+.descriptionItemTitle {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0 0 12px 0;
+}
+
+.descriptionItemTitle strong {
+  color: #f8fafc;
+}
+
+.inputLabel {
+  display: block;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.descriptionTextarea {
+  width: 100%;
+  box-sizing: border-box;
+  background: #0b0f17;
+  border: 1px solid #233144;
+  border-radius: 6px;
+  color: #f8fafc;
+  font-size: 13px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  resize: vertical;
+  min-height: 90px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.descriptionTextarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.charCount {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.deleteDescButton {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #ef4444;
+  transition: all 0.15s ease;
+}
+
+.deleteDescButton:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.deleteDescButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.footerActionsRight {
+  display: flex;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.confirmSaveButton {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #3b82f6;
+  border: 1px solid #2563eb;
+  color: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.confirmSaveButton:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.confirmSaveButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+

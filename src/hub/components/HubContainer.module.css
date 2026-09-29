@@ -21,13 +21,116 @@
 
 .toggleBar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   padding: 8px;
   box-sizing: border-box;
 }
 
 .hubContainer.collapsed .toggleBar {
   justify-content: center;
+}
+
+.filterButton {
+  background: transparent;
+  border: 1px solid var(--border-subtle, #233144);
+  color: var(--text-secondary, #94A3B8);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 150ms ease;
+}
+
+.filterButton:hover {
+  color: var(--text-primary, #F0F4F8);
+  border-color: var(--accent-cobalt, #2563EB);
+  background-color: rgba(37, 99, 235, 0.08);
+}
+
+.sortButton {
+  background: transparent;
+  border: 1px solid var(--border-subtle, #233144);
+  color: var(--text-secondary, #94A3B8);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 150ms ease;
+}
+
+.sortButton:hover {
+  color: var(--text-primary, #F0F4F8);
+  border-color: var(--accent-cobalt, #2563EB);
+  background-color: rgba(37, 99, 235, 0.08);
+}
+
+.sortIcon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.sortText {
+  line-height: 1;
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.clearFilterButton {
+  background: transparent;
+  border: 1px solid var(--border-subtle, #233144);
+  color: var(--text-muted, #64748B);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 150ms ease;
+}
+
+.clearFilterButton:hover {
+  color: var(--accent-danger, #EF4444);
+  border-color: var(--accent-danger, #EF4444);
+  background-color: rgba(239, 68, 68, 0.08);
+}
+
+.clearIcon {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.clearText {
+  line-height: 1;
+}
+
+.filterButtonActive {
+  background-color: var(--accent-cobalt, #2563EB);
+  border-color: var(--accent-cobalt, #2563EB);
+  color: #FFFFFF;
+}
+
+.filterIcon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.filterText {
+  line-height: 1;
 }
 
 .toggleButton {
