@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { TaskItem, ShoppingItem, CleaningItem } from '../../items/entities/item.entity';
 import {
   CalendarSchedulableItem,
@@ -41,6 +41,57 @@ export interface ToastState {
   isOpen: boolean;
   message: EmpathicMessage;
   type?: 'error' | 'warning' | 'info' | 'success';
+}
+
+/**
+ * Helper para sincronizar mutaciones de ítems directamente con PostgreSQL vía API REST.
+ * Desacopla la serialización de fechas y compatibilidad de campos entre módulos.
+ */
+function syncItemUpdateToApi(
+  modulo: 'tasks' | 'shopping' | 'cleaning',
+  item: any,
+  isMockEnvironment: boolean
+) {
+  if (typeof window === 'undefined' || isMockEnvironment) return;
+
+  const fechaStr = item.fechaProgramada
+    ? typeof item.fechaProgramada === 'string'
+      ? (item.fechaProgramada as string).slice(0, 10)
+      : item.fechaProgramada instanceof Date
+      ? item.fechaProgramada.toISOString().slice(0, 10)
+      : undefined
+    : null;
+
+  const payload: Record<string, any> = {
+    titulo: item.titulo || item.nombre,
+    descripcion: item.descripcion,
+    prioridad: item.prioridad,
+    completado: item.completado,
+    fechaProgramada: fechaStr,
+  };
+
+  if (modulo === 'shopping') {
+    payload.comprado = Boolean(item.comprado || item.completado);
+  }
+
+  fetch(`/api/${modulo}/${item.id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(payload),
+  }).catch(() => {});
+}
+
+function syncItemDeleteToApi(
+  modulo: 'tasks' | 'shopping' | 'cleaning',
+  id: string,
+  isMockEnvironment: boolean
+) {
+  if (typeof window === 'undefined' || isMockEnvironment) return;
+  fetch(`/api/${modulo}/${id}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  }).catch(() => {});
 }
 
 /**
@@ -88,30 +139,6 @@ export function useWorkspaceController({
   const [contextMenuState, setContextMenuState] = useState<ContextMenuState | null>(null);
   const [toastState, setToastState] = useState<ToastState | null>(null);
 
-  const lastTasksRef = useRef(initialTasks);
-  const lastShoppingRef = useRef(initialShoppingItems);
-  const lastCleaningRef = useRef(initialCleaningItems);
-
-  useEffect(() => {
-    if (initialTasks !== undefined && initialTasks !== lastTasksRef.current) {
-      lastTasksRef.current = initialTasks;
-      setAllTasks(initialTasks);
-    }
-  }, [initialTasks]);
-
-  useEffect(() => {
-    if (initialShoppingItems !== undefined && initialShoppingItems !== lastShoppingRef.current) {
-      lastShoppingRef.current = initialShoppingItems;
-      setAllShopping(initialShoppingItems);
-    }
-  }, [initialShoppingItems]);
-
-  useEffect(() => {
-    if (initialCleaningItems !== undefined && initialCleaningItems !== lastCleaningRef.current) {
-      lastCleaningRef.current = initialCleaningItems;
-      setAllCleaning(initialCleaningItems);
-    }
-  }, [initialCleaningItems]);
 
   // Comprobación de sesión HttpOnly activa en NestJS al montar
   useEffect(() => {
@@ -510,32 +537,11 @@ export function useWorkspaceController({
     handleTaskCreated: (newTask: TaskItem) => setAllTasks((prev) => [newTask, ...prev]),
     handleTaskUpdated: (updated: TaskItem) => {
       setAllTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
-      if (typeof window !== 'undefined' && initialTasks === undefined) {
-        fetch(`/api/tasks/${updated.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            titulo: updated.titulo,
-            descripcion: updated.descripcion,
-            prioridad: updated.prioridad,
-            completado: updated.completado,
-            fechaProgramada: updated.fechaProgramada
-              ? typeof updated.fechaProgramada === 'string'
-                ? (updated.fechaProgramada as string).slice(0, 10)
-                : updated.fechaProgramada instanceof Date
-                ? updated.fechaProgramada.toISOString().slice(0, 10)
-                : undefined
-              : null,
-          }),
-        }).catch(() => {});
-      }
+      syncItemUpdateToApi('tasks', updated, initialTasks !== undefined);
     },
     handleTaskDeleted: (id: string) => {
       setAllTasks((prev) => prev.filter((t) => t.id !== id));
-      if (typeof window !== 'undefined') {
-        fetch(`/api/tasks/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => {});
-      }
+      syncItemDeleteToApi('tasks', id, initialTasks !== undefined);
     },
     handleTaskToggle,
 
@@ -543,33 +549,11 @@ export function useWorkspaceController({
     handleShoppingCreated: (newItem: ShoppingItem) => setAllShopping((prev) => [newItem, ...prev]),
     handleShoppingUpdated: (updated: ShoppingItem) => {
       setAllShopping((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
-      if (typeof window !== 'undefined' && initialShoppingItems === undefined) {
-        fetch(`/api/shopping/${updated.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            titulo: updated.titulo || updated.nombre,
-            descripcion: updated.descripcion,
-            prioridad: updated.prioridad,
-            completado: updated.completado || updated.comprado,
-            comprado: updated.completado || updated.comprado,
-            fechaProgramada: updated.fechaProgramada
-              ? typeof updated.fechaProgramada === 'string'
-                ? (updated.fechaProgramada as string).slice(0, 10)
-                : updated.fechaProgramada instanceof Date
-                ? updated.fechaProgramada.toISOString().slice(0, 10)
-                : undefined
-              : null,
-          }),
-        }).catch(() => {});
-      }
+      syncItemUpdateToApi('shopping', updated, initialShoppingItems !== undefined);
     },
     handleShoppingDeleted: (id: string) => {
       setAllShopping((prev) => prev.filter((i) => i.id !== id));
-      if (typeof window !== 'undefined') {
-        fetch(`/api/shopping/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => {});
-      }
+      syncItemDeleteToApi('shopping', id, initialShoppingItems !== undefined);
     },
     handleShoppingToggle,
 
@@ -577,32 +561,11 @@ export function useWorkspaceController({
     handleCleaningCreated: (newItem: CleaningItem) => setAllCleaning((prev) => [newItem, ...prev]),
     handleCleaningUpdated: (updated: CleaningItem) => {
       setAllCleaning((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
-      if (typeof window !== 'undefined' && initialCleaningItems === undefined) {
-        fetch(`/api/cleaning/${updated.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            titulo: updated.titulo || updated.nombre,
-            descripcion: updated.descripcion,
-            prioridad: updated.prioridad,
-            completado: updated.completado,
-            fechaProgramada: updated.fechaProgramada
-              ? typeof updated.fechaProgramada === 'string'
-                ? (updated.fechaProgramada as string).slice(0, 10)
-                : updated.fechaProgramada instanceof Date
-                ? updated.fechaProgramada.toISOString().slice(0, 10)
-                : undefined
-              : null,
-          }),
-        }).catch(() => {});
-      }
+      syncItemUpdateToApi('cleaning', updated, initialCleaningItems !== undefined);
     },
     handleCleaningDeleted: (id: string) => {
       setAllCleaning((prev) => prev.filter((i) => i.id !== id));
-      if (typeof window !== 'undefined') {
-        fetch(`/api/cleaning/${id}`, { method: 'DELETE', credentials: 'include' }).catch(() => {});
-      }
+      syncItemDeleteToApi('cleaning', id, initialCleaningItems !== undefined);
     },
     handleCleaningToggle,
 

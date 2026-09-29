@@ -126,6 +126,65 @@ describe('PVF-A02.01 · RegisterTab (Componente de Registro y Caso Forense VV-00
     expect(screen.getByRole('alert')).toBeInTheDocument();
   });
 
+  it('debe mostrar el botón de actualización de contraseña y permitir entrar si la cuenta ya existe', async () => {
+    const user = userEvent.setup();
+    const onSuccessMock = vi.fn();
+
+    const mockFetch = vi.fn().mockImplementation((url) => {
+      if (url === '/api/auth/register') {
+        return Promise.resolve({
+          ok: false,
+          status: 409,
+          json: () => Promise.resolve({ message: 'El correo electrónico ya está registrado' }),
+        });
+      }
+      if (url === '/api/auth/reset-password') {
+        return Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              user: { id: 'usr-existing-1', email: 'existente@example.com', name: 'Existente' },
+            }),
+        });
+      }
+      return Promise.reject(new Error('Unknown url'));
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    // Sin usersService prop para activar la ruta fetch real
+    render(<RegisterTab onSuccess={onSuccessMock} />);
+
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'existente@example.com');
+    await user.type(screen.getByLabelText(/^contraseña/i), 'NuevaPass123!');
+    await user.type(screen.getByLabelText(/confirmar contraseña/i), 'NuevaPass123!');
+
+    await user.click(screen.getByRole('button', { name: /crear cuenta/i }));
+
+    // Aparece el botón de actualización directa
+    const resetBtn = await screen.findByRole('button', { name: /actualizar contraseña y entrar/i });
+    expect(resetBtn).toBeInTheDocument();
+
+    await user.click(resetBtn);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/auth/reset-password',
+        expect.objectContaining({
+          method: 'POST',
+          credentials: 'include',
+        })
+      );
+      expect(onSuccessMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'usr-existing-1',
+          email: 'existente@example.com',
+        })
+      );
+    });
+
+    vi.unstubAllGlobals();
+  });
+
   it('debe invocar onSuccess tras un registro exitoso con datos válidos', async () => {
     const user = userEvent.setup();
     const onSuccessMock = vi.fn();

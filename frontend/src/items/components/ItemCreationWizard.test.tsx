@@ -110,4 +110,96 @@ describe('ItemCreationWizard Component (Wizard 3 Pasos, Caso Forense VV-004 y De
     expect(screen.getByRole('heading', { name: /nueva tarea: título/i })).toBeInTheDocument();
     expect(screen.getByLabelText(/título o nombre de la tarea/i)).toHaveValue('');
   });
+
+  it('debe persistir a través de fetch (/api/tasks) sin enviar modulo en el body', async () => {
+    const onItemCreated = vi.fn();
+    const onClose = vi.fn();
+    const user = userEvent.setup();
+
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () =>
+        Promise.resolve({
+          id: 'task-real-pg-uuid',
+          titulo: 'Tarea Real Postgres',
+          descripcion: 'Notas',
+          prioridad: 'media',
+          completado: false,
+          fechaProgramada: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    render(
+      <ItemCreationWizard
+        isOpen={true}
+        onClose={onClose}
+        modulo="tasks"
+        onItemCreated={onItemCreated}
+      />
+    );
+
+    await user.type(screen.getByLabelText(/título o nombre de la tarea/i), 'Tarea Real Postgres');
+    await user.click(screen.getByRole('button', { name: /siguiente/i }));
+    await user.click(screen.getByRole('button', { name: /siguiente/i }));
+    await user.click(screen.getByRole('button', { name: /guardar tarea/i }));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        '/api/tasks',
+        expect.objectContaining({
+          method: 'POST',
+          credentials: 'include',
+        })
+      );
+      // Comprobar que modulo NO está en el cuerpo JSON
+      const callBody = JSON.parse(mockFetch.mock.calls[0][1].body);
+      expect(callBody.modulo).toBeUndefined();
+      expect(callBody.titulo).toBe('Tarea Real Postgres');
+
+      expect(onItemCreated).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'task-real-pg-uuid',
+          titulo: 'Tarea Real Postgres',
+        })
+      );
+      expect(onClose).toHaveBeenCalled();
+    });
+
+    vi.unstubAllGlobals();
+  });
+
+  it('debe mostrar error del servidor y NO simular guardado en memoria ante respuesta fallida', async () => {
+    const onItemCreated = vi.fn();
+    const user = userEvent.setup();
+
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: false,
+      json: () => Promise.resolve({ message: 'Error de validación en el servidor' }),
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
+    render(
+      <ItemCreationWizard
+        isOpen={true}
+        onClose={vi.fn()}
+        modulo="tasks"
+        onItemCreated={onItemCreated}
+      />
+    );
+
+    await user.type(screen.getByLabelText(/título o nombre de la tarea/i), 'Tarea Rechazada');
+    await user.click(screen.getByRole('button', { name: /siguiente/i }));
+    await user.click(screen.getByRole('button', { name: /siguiente/i }));
+    await user.click(screen.getByRole('button', { name: /guardar tarea/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent('Error de validación en el servidor');
+      expect(onItemCreated).not.toHaveBeenCalled();
+    });
+
+    vi.unstubAllGlobals();
+  });
 });

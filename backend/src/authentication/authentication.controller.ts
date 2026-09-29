@@ -13,6 +13,7 @@ import { Response, Request } from 'express';
 import { AuthenticationService, AuthSession } from './authentication.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { SessionAuthGuard } from './guards/session-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 
@@ -54,7 +55,7 @@ export class AuthenticationController {
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   async resetPassword(
-    @Body() dto: LoginDto,
+    @Body() dto: ResetPasswordDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     const { user, sessionToken } = await this.authService.resetPassword(dto.email, dto.password);

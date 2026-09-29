@@ -163,4 +163,41 @@ describe('useWorkspaceController (Workspace State & Business Orchestration Hook)
 
     expect(result.current.allScheduledItems).toHaveLength(0);
   });
+
+  it('debe actualizar una tarea en el estado mediante handleTaskUpdated', () => {
+    const { result } = renderHook(() =>
+      useWorkspaceController({
+        initialAuthenticated: true,
+        initialTasks: [initialTask],
+      })
+    );
+
+    act(() => {
+      result.current.handleTaskUpdated({
+        ...initialTask,
+        titulo: 'Título Actualizado',
+        prioridad: 'baja',
+      });
+    });
+
+    expect(result.current.processedTasks[0].titulo).toBe('Título Actualizado');
+    expect(result.current.processedTasks[0].prioridad).toBe('baja');
+  });
+
+  it('debe eliminar una tarea del estado mediante handleTaskDeleted', () => {
+    const { result } = renderHook(() =>
+      useWorkspaceController({
+        initialAuthenticated: true,
+        initialTasks: [initialTask],
+      })
+    );
+
+    expect(result.current.processedTasks).toHaveLength(1);
+
+    act(() => {
+      result.current.handleTaskDeleted('t-1');
+    });
+
+    expect(result.current.processedTasks).toHaveLength(0);
+  });
 });
