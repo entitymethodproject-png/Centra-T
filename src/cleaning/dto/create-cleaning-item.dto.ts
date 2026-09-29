@@ -1,8 +1,10 @@
-import { CleaningZone, CleaningFrequency } from '../entities/cleaning-item.entity';
+import { CleaningPriority } from '../entities/cleaning-item.entity';
 
 export interface CreateCleaningItemDto {
-  nombre: string;
-  zona: CleaningZone;
-  frecuencia: CleaningFrequency;
+  titulo?: string;
+  descripcion?: string;
+  prioridad?: CleaningPriority;
   fechaProgramada?: Date | string | null;
+  // Compatibilidad hacia atrás
+  nombre?: string;
 }

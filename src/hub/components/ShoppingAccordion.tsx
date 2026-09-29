@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styles from './ShoppingAccordion.module.css';
 import { ShoppingItem } from '../../shopping/entities/shopping-item.entity';
 import { ShoppingService } from '../../shopping/services/shopping.service';
-import { QuickItemInput } from '../../shopping/components/QuickItemInput';
-import { ShoppingItemList } from '../../shopping/components/ShoppingItemList';
+import { ShoppingCreationWizard } from '../../shopping/components/ShoppingCreationWizard';
+import { ShoppingCard } from '../../shopping/components/ShoppingCard';
 
 export interface ShoppingAccordionProps {
   items?: ShoppingItem[];
@@ -13,6 +13,7 @@ export interface ShoppingAccordionProps {
   isLoading?: boolean;
   error?: string | null;
   onToggleExpand?: (expanded: boolean) => void;
+  onCreateItemClick?: () => void;
   onItemCreated?: (item: ShoppingItem) => void;
   onItemToggle?: (itemId: string) => void;
   onRetry?: () => void;
@@ -26,6 +27,7 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
   isLoading: propLoading = false,
   error: propError = null,
   onToggleExpand,
+  onCreateItemClick,
   onItemCreated,
   onItemToggle,
   onRetry,
@@ -34,6 +36,7 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
   const [items, setItems] = useState<ShoppingItem[]>(propItems || []);
   const [isLoading, setIsLoading] = useState(propLoading);
   const [error, setError] = useState<string | null>(propError);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
 
   useEffect(() => {
     if (propItems !== undefined) {
@@ -61,10 +64,6 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
     }
   }, [shoppingService, userId, propItems]);
 
-  const total = items.length;
-  const comprados = items.filter((i) => i.comprado).length;
-  const pendientes = total - comprados;
-
   const handleHeaderClick = () => {
     const next = !isExpanded;
     setIsExpanded(next);
@@ -73,62 +72,44 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
     }
   };
 
-  const handleToggleItem = async (itemId: string) => {
-    if (onItemToggle) {
-      onItemToggle(itemId);
-    }
-
-    if (shoppingService && userId) {
-      try {
-        const updated = await shoppingService.toggleBoughtStatus(userId, itemId);
-        setItems((prev) => prev.map((item) => (item.id === itemId ? updated : item)));
-      } catch {
-        // En caso de fallo se preserva el estado
-      }
+  const handleOpenWizard = () => {
+    if (onCreateItemClick) {
+      onCreateItemClick();
     } else {
-      setItems((prev) =>
-        prev.map((item) =>
-          item.id === itemId ? { ...item, comprado: !item.comprado } : item
-        )
-      );
+      setIsWizardOpen(true);
     }
   };
 
-  const handleQuickAdd = async (dto: { nombre: string; cantidad: number; unidad: string }) => {
-    if (shoppingService && userId) {
-      try {
-        const newItem = await shoppingService.createItem(userId, dto);
-        setItems((prev) => [...prev, newItem]);
-        if (onItemCreated) onItemCreated(newItem);
-      } catch {
-        setError('Error al añadir producto');
-      }
-    } else {
-      const mockItem: ShoppingItem = {
-        id: crypto.randomUUID(),
-        userId,
-        modulo: 'shopping',
-        nombre: dto.nombre,
-        cantidad: dto.cantidad,
-        unidad: dto.unidad,
-        comprado: false,
-        fechaProgramada: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      setItems((prev) => [...prev, mockItem]);
-      if (onItemCreated) onItemCreated(mockItem);
+  const handleItemCreated = (newItem: ShoppingItem) => {
+    setItems((prev) => [newItem, ...prev]);
+    setIsWizardOpen(false);
+    if (onItemCreated) {
+      onItemCreated(newItem);
+    }
+  };
+
+  const handleItemUpdated = (updatedItem: ShoppingItem) => {
+    setItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
+  };
+
+  const handleItemDeleted = (deletedId: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== deletedId));
+  };
+
+  const handleToggleItem = (itemId: string) => {
+    if (onItemToggle) {
+      onItemToggle(itemId);
     }
   };
 
   return (
     <div className={styles.accordionContainer} data-testid="shopping-accordion">
-      {/* Cabecera con Telemetría */}
+      {/* Cabecera del Acordeón */}
       <div
         role="button"
         tabIndex={0}
         aria-expanded={isExpanded}
-        className={styles.header}
+        className={`${styles.header} ${!isExpanded ? styles.headerCollapsed : ''}`}
         onClick={handleHeaderClick}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -145,25 +126,22 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
           >
             ▶
           </span>
-          <h3 className={styles.title}>
-            Compra Semanal ({comprados}/{total})
-          </h3>
+          <h3 className={styles.title}>Compra ({items.length})</h3>
         </div>
 
-        <div className={styles.headerRight}>
-          {pendientes > 0 && (
-            <span className={styles.pendingBadge} data-testid="shopping-pending-badge">
-              {pendientes} pendientes
-            </span>
-          )}
-          <span
-            className={styles.dragHandleIcon}
-            title="Arrastrar lista de compra al calendario"
-            aria-label="Arrastrar compra completa"
-          >
-            ⋮⋮
-          </span>
-        </div>
+        <button
+          type="button"
+          className={styles.newButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenWizard();
+          }}
+          aria-label="Crear nuevo producto"
+          title="Crear nuevo producto"
+          data-testid="shopping-create-button"
+        >
+          +
+        </button>
       </div>
 
       {/* Cuerpo del Acordeón */}
@@ -197,24 +175,44 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
                 🛒
               </div>
               <p className={styles.emptyTitle}>No hay productos en la lista de compra</p>
-              <p className={styles.emptySubtitle}>Añade productos abajo para organizar tu compra</p>
+              <p className={styles.emptySubtitle}>Añade productos para organizar tu compra</p>
+              <button
+                type="button"
+                onClick={handleOpenWizard}
+                className={styles.emptyCtaButton}
+              >
+                + Crear Producto
+              </button>
             </div>
           )}
 
-          {/* Populated List delegada en ShoppingItemList (Modo Compra Activa) */}
+          {/* Populated List con ShoppingCard */}
           {!isLoading && !error && items.length > 0 && (
-            <ShoppingItemList
-              items={items}
-              onToggleItem={handleToggleItem}
-            />
+            <ul className={styles.shoppingList} role="list" data-testid="shopping-populated-list">
+              {items.map((item) => (
+                <ShoppingCard
+                  key={item.id}
+                  item={item}
+                  userId={userId}
+                  shoppingService={shoppingService}
+                  onToggleOptimistic={handleToggleItem}
+                  onItemUpdated={handleItemUpdated}
+                  onItemDeleted={handleItemDeleted}
+                />
+              ))}
+            </ul>
           )}
-
-          {/* Input Rápido Inline en el pie */}
-          <div className={styles.footerInputContainer}>
-            <QuickItemInput onAddItem={handleQuickAdd} disabled={isLoading} />
-          </div>
         </div>
       )}
+
+      {/* Modal Wizard de Creación en 3 Pasos */}
+      <ShoppingCreationWizard
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+        userId={userId}
+        shoppingService={shoppingService}
+        onItemCreated={handleItemCreated}
+      />
     </div>
   );
 };

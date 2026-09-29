@@ -22,36 +22,33 @@ describe('CleaningController (Endpoints REST de Limpieza)', () => {
   it('2. POST /cleaning debe crear tarea y retornar código 201', async () => {
     const response = await controller.create({
       userId,
-      body: { nombre: 'Limpiar cristales', zona: 'salon', frecuencia: 'quincenal' },
+      body: { titulo: 'Limpiar cristales', descripcion: 'Salón', prioridad: 'alta' },
     });
     expect(response.status).toBe(201);
-    expect(response.body.nombre).toBe('Limpiar cristales');
-    expect(response.body.zona).toBe('salon');
-    expect(response.body.proximaFechaSugerida).toBeDefined();
+    expect(response.body.titulo).toBe('Limpiar cristales');
+    expect(response.body.prioridad).toBe('alta');
   });
 
-  it('3. POST /cleaning/:id/complete debe retornar código 200 con recurrencia recalculada', async () => {
+  it('3. POST /cleaning/:id/complete debe retornar código 200 con completado=true', async () => {
     const created = await controller.create({
       userId,
-      body: { nombre: 'Desinfectar inodoro', zona: 'baño', frecuencia: 'semanal' },
+      body: { titulo: 'Desinfectar inodoro', prioridad: 'media' },
     });
 
     const completeRes = await controller.complete({
       userId,
       params: { id: created.body.id },
-      body: { completedAt: '2026-10-05T08:00:00.000Z' },
+      body: {},
     });
 
     expect(completeRes.status).toBe(200);
     expect(completeRes.body.completado).toBe(true);
-    expect(completeRes.body.lastCompletedAt).toBeDefined();
-    expect(completeRes.body.proximaFechaSugerida).toBeDefined();
   });
 
   it('4. debe retornar código 400 ante payloads inválidos y 404 ante id inexistente', async () => {
     const badCreate = await controller.create({
       userId,
-      body: { nombre: '', zona: 'baño', frecuencia: 'semanal' },
+      body: { titulo: '' },
     });
     expect(badCreate.status).toBe(400);
 

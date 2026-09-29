@@ -1,37 +1,47 @@
+export type ShoppingPriority = 'alta' | 'media' | 'baja';
+
 export interface ShoppingItem {
   id: string;
   userId: string;
   modulo: 'shopping';
-  nombre: string;
-  cantidad: number;
-  unidad: string;
-  comprado: boolean;
+  titulo: string;
+  nombre?: string; // alias retrocompatible
+  descripcion: string;
+  prioridad: ShoppingPriority;
+  completado: boolean;
+  comprado?: boolean; // alias retrocompatible
   fechaProgramada: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export const SHOPPING_LIMITS = {
-  MIN_NAME_LENGTH: 1,
-  MAX_NAME_LENGTH: 120, // Decisión 2B
-  MIN_QUANTITY: 0.001,
-  DEFAULT_QUANTITY: 1,
-  DEFAULT_UNIT: 'ud',
+  MIN_TITLE_LENGTH: 1,
+  MAX_TITLE_LENGTH: 120, // Decisión 2B
+  MAX_DESCRIPTION_LENGTH: 1000,
 } as const;
 
-export class InvalidShoppingItemNameError extends Error {
+export class InvalidShoppingTitleError extends Error {
   readonly statusCode = 400;
-  constructor(message = 'El nombre del producto debe tener entre 1 y 120 caracteres') {
+  constructor(message = 'El título del producto debe tener entre 1 y 120 caracteres') {
     super(message);
-    this.name = 'InvalidShoppingItemNameError';
+    this.name = 'InvalidShoppingTitleError';
   }
 }
 
-export class InvalidShoppingQuantityError extends Error {
+export class InvalidShoppingDescriptionError extends Error {
   readonly statusCode = 400;
-  constructor(message = 'La cantidad debe ser un número estrictamente mayor que cero') {
+  constructor(message = 'La descripción no puede superar los 1000 caracteres') {
     super(message);
-    this.name = 'InvalidShoppingQuantityError';
+    this.name = 'InvalidShoppingDescriptionError';
+  }
+}
+
+export class InvalidShoppingPriorityError extends Error {
+  readonly statusCode = 400;
+  constructor(message = "La prioridad debe ser 'alta', 'media' o 'baja'") {
+    super(message);
+    this.name = 'InvalidShoppingPriorityError';
   }
 }
 
@@ -50,3 +60,6 @@ export class ShoppingItemNotFoundError extends Error {
     this.name = 'ShoppingItemNotFoundError';
   }
 }
+
+// Alias retrocompatibles
+export const InvalidShoppingItemNameError = InvalidShoppingTitleError;

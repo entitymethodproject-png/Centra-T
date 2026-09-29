@@ -1,7 +1,11 @@
+import { ShoppingPriority } from '../entities/shopping-item.entity';
+
 export interface UpdateShoppingItemDto {
+  titulo?: string;
   nombre?: string;
-  cantidad?: number;
-  unidad?: string;
+  descripcion?: string;
+  prioridad?: ShoppingPriority;
+  completado?: boolean;
   comprado?: boolean;
   fechaProgramada?: Date | string | null;
 }

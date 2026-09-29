@@ -1,11 +1,8 @@
-import { CleaningItem, CleaningZone, CleaningFrequency } from '../entities/cleaning-item.entity';
+import { CleaningItem } from '../entities/cleaning-item.entity';
 
 export interface ICleaningRepository {
   save(item: CleaningItem): Promise<CleaningItem>;
-  findAllByUser(
-    userId: string,
-    filter?: { zona?: CleaningZone; frecuencia?: CleaningFrequency }
-  ): Promise<CleaningItem[]>;
+  findAllByUser(userId: string): Promise<CleaningItem[]>;
   findById(userId: string, id: string): Promise<CleaningItem | null>;
   delete(userId: string, id: string): Promise<boolean>;
 }
@@ -18,14 +15,8 @@ export class InMemoryCleaningRepository implements ICleaningRepository {
     return { ...item };
   }
 
-  async findAllByUser(
-    userId: string,
-    filter?: { zona?: CleaningZone; frecuencia?: CleaningFrequency }
-  ): Promise<CleaningItem[]> {
-    return Array.from(this.items.values())
-      .filter((item) => item.userId === userId)
-      .filter((item) => (filter?.zona ? item.zona === filter.zona : true))
-      .filter((item) => (filter?.frecuencia ? item.frecuencia === filter.frecuencia : true));
+  async findAllByUser(userId: string): Promise<CleaningItem[]> {
+    return Array.from(this.items.values()).filter((item) => item.userId === userId);
   }
 
   async findById(userId: string, id: string): Promise<CleaningItem | null> {

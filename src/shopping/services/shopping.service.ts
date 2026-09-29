@@ -1,8 +1,10 @@
 import {
   ShoppingItem,
+  ShoppingPriority,
   SHOPPING_LIMITS,
-  InvalidShoppingItemNameError,
-  InvalidShoppingQuantityError,
+  InvalidShoppingTitleError,
+  InvalidShoppingDescriptionError,
+  InvalidShoppingPriorityError,
   InvalidScheduleDateError,
   ShoppingItemNotFoundError,
 } from '../entities/shopping-item.entity';
@@ -14,25 +16,32 @@ import { IShoppingRepository, InMemoryShoppingRepository } from '../repositories
 export class ShoppingService {
   constructor(private shoppingRepository: IShoppingRepository = new InMemoryShoppingRepository()) {}
 
-  static validateName(nombre: string): string {
-    const trimmed = nombre ? nombre.trim() : '';
+  static validateTitle(titulo?: string, fallbackNombre?: string): string {
+    const raw = titulo !== undefined ? titulo : fallbackNombre;
+    const trimmed = raw ? raw.trim() : '';
     if (
-      trimmed.length < SHOPPING_LIMITS.MIN_NAME_LENGTH ||
-      trimmed.length > SHOPPING_LIMITS.MAX_NAME_LENGTH
+      trimmed.length < SHOPPING_LIMITS.MIN_TITLE_LENGTH ||
+      trimmed.length > SHOPPING_LIMITS.MAX_TITLE_LENGTH
     ) {
-      throw new InvalidShoppingItemNameError();
+      throw new InvalidShoppingTitleError();
     }
     return trimmed;
   }
 
-  static validateQuantity(cantidad?: number): number {
-    if (cantidad === undefined || cantidad === null) {
-      return SHOPPING_LIMITS.DEFAULT_QUANTITY;
+  static validateDescription(desc?: string): string {
+    if (!desc) return '';
+    if (desc.length > SHOPPING_LIMITS.MAX_DESCRIPTION_LENGTH) {
+      throw new InvalidShoppingDescriptionError();
     }
-    if (typeof cantidad !== 'number' || isNaN(cantidad) || cantidad <= 0) {
-      throw new InvalidShoppingQuantityError();
+    return desc.trim();
+  }
+
+  static validatePriority(prioridad?: ShoppingPriority): ShoppingPriority {
+    if (!prioridad) return 'media';
+    if (!['alta', 'media', 'baja'].includes(prioridad)) {
+      throw new InvalidShoppingPriorityError();
     }
-    return cantidad;
+    return prioridad;
   }
 
   static validateScheduleDate(dateInput?: Date | string | null): Date | null {
@@ -59,8 +68,9 @@ export class ShoppingService {
       throw new Error('El userId es obligatorio para aislar el ítem de compra');
     }
 
-    const validName = ShoppingService.validateName(dto.nombre);
-    const validQty = ShoppingService.validateQuantity(dto.cantidad);
+    const validTitle = ShoppingService.validateTitle(dto.titulo, dto.nombre);
+    const validDesc = ShoppingService.validateDescription(dto.descripcion);
+    const validPriority = ShoppingService.validatePriority(dto.prioridad);
     const validDate = ShoppingService.validateScheduleDate(dto.fechaProgramada);
 
     const now = new Date();
@@ -68,9 +78,11 @@ export class ShoppingService {
       id: crypto.randomUUID(),
       userId: userId.trim(),
       modulo: 'shopping',
-      nombre: validName,
-      cantidad: validQty,
-      unidad: (dto.unidad && dto.unidad.trim()) || SHOPPING_LIMITS.DEFAULT_UNIT,
+      titulo: validTitle,
+      nombre: validTitle,
+      descripcion: validDesc,
+      prioridad: validPriority,
+      completado: false,
       comprado: false,
       fechaProgramada: validDate,
       createdAt: now,
@@ -96,14 +108,19 @@ export class ShoppingService {
   async updateItem(userId: string, id: string, dto: UpdateShoppingItemDto): Promise<ShoppingItem> {
     const existing = await this.findById(userId, id);
 
-    let updatedName = existing.nombre;
-    if (dto.nombre !== undefined) {
-      updatedName = ShoppingService.validateName(dto.nombre);
+    let updatedTitle = existing.titulo;
+    if (dto.titulo !== undefined || dto.nombre !== undefined) {
+      updatedTitle = ShoppingService.validateTitle(dto.titulo, dto.nombre);
     }
 
-    let updatedQty = existing.cantidad;
-    if (dto.cantidad !== undefined) {
-      updatedQty = ShoppingService.validateQuantity(dto.cantidad);
+    let updatedDesc = existing.descripcion;
+    if (dto.descripcion !== undefined) {
+      updatedDesc = ShoppingService.validateDescription(dto.descripcion);
+    }
+
+    let updatedPriority = existing.prioridad;
+    if (dto.prioridad !== undefined) {
+      updatedPriority = ShoppingService.validatePriority(dto.prioridad);
     }
 
     let updatedDate = existing.fechaProgramada;
@@ -111,12 +128,16 @@ export class ShoppingService {
       updatedDate = ShoppingService.validateScheduleDate(dto.fechaProgramada);
     }
 
+    const isCompleted = dto.completado !== undefined ? dto.completado : (dto.comprado !== undefined ? dto.comprado : existing.completado);
+
     const updatedItem: ShoppingItem = {
       ...existing,
-      nombre: updatedName,
-      cantidad: updatedQty,
-      unidad: dto.unidad !== undefined ? dto.unidad.trim() : existing.unidad,
-      comprado: dto.comprado !== undefined ? dto.comprado : existing.comprado,
+      titulo: updatedTitle,
+      nombre: updatedTitle,
+      descripcion: updatedDesc,
+      prioridad: updatedPriority,
+      completado: isCompleted,
+      comprado: isCompleted,
       fechaProgramada: updatedDate,
       updatedAt: new Date(),
     };
@@ -126,10 +147,12 @@ export class ShoppingService {
 
   async toggleBoughtStatus(userId: string, id: string): Promise<ShoppingItem> {
     const existing = await this.findById(userId, id);
+    const nextStatus = !existing.completado;
 
     const toggledItem: ShoppingItem = {
       ...existing,
-      comprado: !existing.comprado,
+      completado: nextStatus,
+      comprado: nextStatus,
       updatedAt: new Date(),
     };
 

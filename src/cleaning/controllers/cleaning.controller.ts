@@ -1,8 +1,6 @@
 import { CleaningService } from '../services/cleaning.service';
 import { CreateCleaningItemDto } from '../dto/create-cleaning-item.dto';
 import { UpdateCleaningItemDto } from '../dto/update-cleaning-item.dto';
-import { CompleteCleaningItemDto } from '../dto/complete-cleaning-item.dto';
-import { CleaningZone, CleaningFrequency } from '../entities/cleaning-item.entity';
 
 export interface HttpRequest {
   userId?: string;
@@ -26,11 +24,7 @@ export class CleaningController {
         return { status: 401, body: { error: 'No autorizado' } };
       }
 
-      const filter: { zona?: CleaningZone; frecuencia?: CleaningFrequency } = {};
-      if (req.query?.zona) filter.zona = req.query.zona as CleaningZone;
-      if (req.query?.frecuencia) filter.frecuencia = req.query.frecuencia as CleaningFrequency;
-
-      const items = await this.cleaningService.findAllByUser(userId, filter);
+      const items = await this.cleaningService.findAllByUser(userId);
       return { status: 200, body: items };
     } catch (error: any) {
       return { status: 500, body: { error: error.message } };
@@ -91,8 +85,7 @@ export class CleaningController {
       if (!userId) return { status: 401, body: { error: 'No autorizado' } };
       if (!id) return { status: 400, body: { error: 'ID requerido' } };
 
-      const dto: CompleteCleaningItemDto = req.body || {};
-      const completed = await this.cleaningService.completeTask(userId, id, dto.completedAt);
+      const completed = await this.cleaningService.completeTask(userId, id);
       return { status: 200, body: completed };
     } catch (error: any) {
       const statusCode = error.statusCode || 400;

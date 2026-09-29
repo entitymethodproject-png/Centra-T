@@ -1,0 +1,140 @@
+.taskItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #131b26;
+  border: 1px solid #233144;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  transition: all 0.15s ease;
+  overflow: visible;
+}
+
+.taskItem:focus-within {
+  z-index: 20;
+}
+
+.taskItem:hover {
+  border-color: #334155;
+  background: #17212f;
+}
+
+.taskMain {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+  border-radius: 4px;
+}
+
+.checkbox:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.taskTitle {
+  flex: 1;
+  font-size: 14px;
+  color: #f8fafc;
+  word-break: break-word;
+  transition: color 0.15s, text-decoration 0.15s;
+}
+
+.titleCompleted {
+  text-decoration: line-through;
+  color: #64748b;
+}
+
+.completed {
+  opacity: 0.75;
+}
+
+.priorityBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.priority_alta {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.priority_media {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.priority_baja {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.toastAlert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 6px;
+  color: #ef4444;
+  font-size: 12px;
+  line-height: 1.4;
+  animation: fadeIn 0.15s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.toastText {
+  flex: 1;
+  font-weight: 500;
+}
+
+.toastDismissButton {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  padding: 2px 6px;
+  font-size: 13px;
+  border-radius: 4px;
+  margin-left: 8px;
+  line-height: 1;
+  transition: background 0.15s;
+}
+
+.toastDismissButton:hover {
+  background: rgba(239, 68, 68, 0.2);
+}

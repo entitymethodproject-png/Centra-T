@@ -2,122 +2,100 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { CleaningService } from './cleaning.service';
 import { InMemoryCleaningRepository } from '../repositories/cleaning.repository';
 import {
-  InvalidCleaningNameError,
-  InvalidCleaningZoneError,
-  InvalidCleaningFrequencyError,
+  InvalidCleaningTitleError,
+  InvalidCleaningDescriptionError,
+  InvalidCleaningPriorityError,
   CleaningItemNotFoundError,
 } from '../entities/cleaning-item.entity';
 
-describe('CleaningService (Lógica de Dominio y Cálculo de Recurrencia)', () => {
+describe('CleaningService (Lógica de Dominio Homogénea)', () => {
   let repository: InMemoryCleaningRepository;
   let service: CleaningService;
-  const userId = 'usr-demo-cleaning-001';
+  const USER_A = 'usr-demo-cleaning-001';
+  const USER_B = 'usr-demo-cleaning-002';
 
   beforeEach(() => {
     repository = new InMemoryCleaningRepository();
     service = new CleaningService(repository);
   });
 
-  it('1. debe crear una tarea de limpieza calculando proximaFechaSugerida (+7 días para semanal)', async () => {
-    const item = await service.createItem(userId, {
-      nombre: 'Limpiar encimera y campana',
-      zona: 'cocina',
-      frecuencia: 'semanal',
+  it('1. debe crear una tarea de limpieza exitosamente con valores por defecto y sanitización', async () => {
+    const item = await service.createItem(USER_A, {
+      titulo: '  Limpiar encimera y campana  ',
     });
 
     expect(item.id).toBeDefined();
-    expect(item.userId).toBe(userId);
+    expect(item.userId).toBe(USER_A);
     expect(item.modulo).toBe('cleaning');
-    expect(item.nombre).toBe('Limpiar encimera y campana');
-    expect(item.zona).toBe('cocina');
-    expect(item.frecuencia).toBe('semanal');
+    expect(item.titulo).toBe('Limpiar encimera y campana');
+    expect(item.descripcion).toBe('');
+    expect(item.prioridad).toBe('media');
     expect(item.completado).toBe(false);
-    expect(item.lastCompletedAt).toBeNull();
-
-    // 7 días = 7 * 24 * 60 * 60 * 1000 = 604,800,000 ms
-    const diffMs = item.proximaFechaSugerida!.getTime() - item.createdAt.getTime();
-    expect(diffMs).toBeCloseTo(7 * 24 * 60 * 60 * 1000, -3);
+    expect(item.fechaProgramada).toBeNull();
   });
 
-  it('2. debe calcular matemáticamente las frecuencias diaria (+1d), quincenal (+14d) y mensual (+30d)', () => {
-    const base = new Date('2026-10-01T10:00:00.000Z');
-
-    const nextDiaria = CleaningService.calculateNextSuggestedDate(base, 'diaria');
-    expect(nextDiaria.toISOString()).toBe('2026-10-02T10:00:00.000Z');
-
-    const nextQuincenal = CleaningService.calculateNextSuggestedDate(base, 'quincenal');
-    expect(nextQuincenal.toISOString()).toBe('2026-10-15T10:00:00.000Z');
-
-    const nextMensual = CleaningService.calculateNextSuggestedDate(base, 'mensual');
-    expect(nextMensual.toISOString()).toBe('2026-10-31T10:00:00.000Z');
+  it('2. debe rechazar títulos vacíos o con solo espacios (400)', async () => {
+    await expect(service.createItem(USER_A, { titulo: '' })).rejects.toThrow(InvalidCleaningTitleError);
+    await expect(service.createItem(USER_A, { titulo: '    ' })).rejects.toThrow(InvalidCleaningTitleError);
   });
 
-  it('3. debe rechazar nombres con longitud < 1 o > 120 caracteres bajo Decisión 2B', async () => {
-    await expect(
-      service.createItem(userId, { nombre: '   ', zona: 'baño', frecuencia: 'semanal' })
-    ).rejects.toThrow(InvalidCleaningNameError);
-
-    const longName = 'A'.repeat(121);
-    await expect(
-      service.createItem(userId, { nombre: longName, zona: 'baño', frecuencia: 'semanal' })
-    ).rejects.toThrow(InvalidCleaningNameError);
+  it('3. debe rechazar títulos con longitud > 120 caracteres bajo Decisión 2B', async () => {
+    const longTitle = 'A'.repeat(121);
+    await expect(service.createItem(USER_A, { titulo: longTitle })).rejects.toThrow(InvalidCleaningTitleError);
   });
 
-  it('4. debe rechazar zonas no admitidas fuera del catálogo', async () => {
+  it('4. debe rechazar descripciones que superen los 1000 caracteres (Decisión 2B)', async () => {
+    const longDesc = 'B'.repeat(1001);
     await expect(
-      service.createItem(userId, { nombre: 'Limpiar terraza', zona: 'terraza' as any, frecuencia: 'semanal' })
-    ).rejects.toThrow(InvalidCleaningZoneError);
+      service.createItem(USER_A, {
+        titulo: 'Limpiar cristales',
+        descripcion: longDesc,
+      })
+    ).rejects.toThrow(InvalidCleaningDescriptionError);
   });
 
-  it('5. debe rechazar frecuencias no válidas', async () => {
+  it('5. debe rechazar prioridades desconocidas', async () => {
     await expect(
-      service.createItem(userId, { nombre: 'Fregar suelo', zona: 'salon', frecuencia: 'anual' as any })
-    ).rejects.toThrow(InvalidCleaningFrequencyError);
+      service.createItem(USER_A, {
+        titulo: 'Limpiar baño',
+        prioridad: 'urgente' as any,
+      })
+    ).rejects.toThrow(InvalidCleaningPriorityError);
   });
 
   it('6. debe garantizar aislamiento absoluto de tenant por userId', async () => {
-    const userA = 'usr-tenant-A';
-    const userB = 'usr-tenant-B';
-
-    await service.createItem(userA, { nombre: 'Desinfectar baño', zona: 'baño', frecuencia: 'semanal' });
-    const itemsB = await service.findAllByUser(userB);
+    await service.createItem(USER_A, { titulo: 'Desinfectar baño' });
+    const itemsB = await service.findAllByUser(USER_B);
 
     expect(itemsB).toHaveLength(0);
   });
 
-  it('7. debe registrar completado (completeTask), fijar lastCompletedAt y recalcular proximaFechaSugerida', async () => {
-    const created = await service.createItem(userId, {
-      nombre: 'Limpiar mampara de ducha',
-      zona: 'baño',
-      frecuencia: 'quincenal',
-    });
+  it('7. debe alternar atómicamente el estado completado con toggleTaskStatus', async () => {
+    const item = await service.createItem(USER_A, { titulo: 'Limpiar mampara de ducha' });
+    expect(item.completado).toBe(false);
 
-    const completionDate = new Date('2026-10-10T12:00:00.000Z');
-    const completed = await service.completeTask(userId, created.id, completionDate);
+    const toggled = await service.toggleTaskStatus(USER_A, item.id);
+    expect(toggled.completado).toBe(true);
 
-    expect(completed.completado).toBe(true);
-    expect(completed.lastCompletedAt?.toISOString()).toBe(completionDate.toISOString());
-    // Quincenal: +14 días -> 2026-10-24T12:00:00.000Z
-    expect(completed.proximaFechaSugerida?.toISOString()).toBe('2026-10-24T12:00:00.000Z');
+    const pendingAgain = await service.toggleTaskStatus(USER_A, item.id);
+    expect(pendingAgain.completado).toBe(false);
   });
 
-  it('8. debe permitir filtrar tareas por zona y frecuencia', async () => {
-    await service.createItem(userId, { nombre: 'Limpiar horno', zona: 'cocina', frecuencia: 'mensual' });
-    await service.createItem(userId, { nombre: 'Fregar cocina', zona: 'cocina', frecuencia: 'semanal' });
-    await service.createItem(userId, { nombre: 'Aspirar alfombra', zona: 'salon', frecuencia: 'semanal' });
+  it('8. debe actualizar campos selectivos y eliminar la tarea', async () => {
+    const item = await service.createItem(USER_A, { titulo: 'Original', prioridad: 'baja' });
 
-    const cocinaItems = await service.findAllByUser(userId, { zona: 'cocina' });
-    expect(cocinaItems).toHaveLength(2);
+    const updated = await service.updateItem(USER_A, item.id, {
+      titulo: 'Modificado',
+      prioridad: 'alta',
+    });
+    expect(updated.titulo).toBe('Modificado');
+    expect(updated.prioridad).toBe('alta');
 
-    const semanalItems = await service.findAllByUser(userId, { frecuencia: 'semanal' });
-    expect(semanalItems).toHaveLength(2);
-
-    const cocinaSemanal = await service.findAllByUser(userId, { zona: 'cocina', frecuencia: 'semanal' });
-    expect(cocinaSemanal).toHaveLength(1);
-    expect(cocinaSemanal[0].nombre).toBe('Fregar cocina');
+    await service.deleteItem(USER_A, item.id);
+    await expect(service.findById(USER_A, item.id)).rejects.toThrow(CleaningItemNotFoundError);
   });
 
   it('9. debe lanzar CleaningItemNotFoundError ante un id inexistente o de otro usuario', async () => {
-    await expect(service.findById(userId, 'non-existent-id')).rejects.toThrow(CleaningItemNotFoundError);
+    await expect(service.findById(USER_A, 'non-existent-id')).rejects.toThrow(CleaningItemNotFoundError);
   });
 });

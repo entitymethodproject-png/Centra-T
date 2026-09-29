@@ -1,55 +1,55 @@
-export type CleaningZone = 'cocina' | 'baño' | 'salon' | 'general';
-export type CleaningFrequency = 'diaria' | 'semanal' | 'quincenal' | 'mensual';
+export type CleaningPriority = 'alta' | 'media' | 'baja';
 
 export interface CleaningItem {
   id: string;
   userId: string;
   modulo: 'cleaning';
-  nombre: string;
-  zona: CleaningZone;
-  frecuencia: CleaningFrequency;
+  titulo: string;
+  descripcion: string;
+  prioridad: CleaningPriority;
   completado: boolean;
-  lastCompletedAt: Date | null;
-  proximaFechaSugerida: Date | null;
   fechaProgramada: Date | null;
   createdAt: Date;
   updatedAt: Date;
+  // Alias de compatibilidad hacia atrás
+  nombre?: string;
 }
 
 export const CLEANING_LIMITS = {
-  MIN_NAME_LENGTH: 1,
-  MAX_NAME_LENGTH: 120, // Decisión 2B
-  VALID_ZONES: ['cocina', 'baño', 'salon', 'general'] as const,
-  VALID_FREQUENCIES: ['diaria', 'semanal', 'quincenal', 'mensual'] as const,
-  FREQUENCY_DAYS: {
-    diaria: 1,
-    semanal: 7,
-    quincenal: 14,
-    mensual: 30,
-  } as const,
+  MIN_TITLE_LENGTH: 1,
+  MAX_TITLE_LENGTH: 120, // Decisión 2B
+  MAX_DESCRIPTION_LENGTH: 1000,
+  VALID_PRIORITIES: ['alta', 'media', 'baja'] as const,
 } as const;
 
-export class InvalidCleaningNameError extends Error {
+export class InvalidCleaningTitleError extends Error {
   readonly statusCode = 400;
-  constructor(message = 'El nombre de la tarea debe tener entre 1 y 120 caracteres') {
+  constructor(message = 'El título de la tarea de limpieza debe tener entre 1 y 120 caracteres') {
+    super(message);
+    this.name = 'InvalidCleaningTitleError';
+  }
+}
+
+export class InvalidCleaningNameError extends InvalidCleaningTitleError {
+  constructor(message = 'El título de la tarea de limpieza debe tener entre 1 y 120 caracteres') {
     super(message);
     this.name = 'InvalidCleaningNameError';
   }
 }
 
-export class InvalidCleaningZoneError extends Error {
+export class InvalidCleaningDescriptionError extends Error {
   readonly statusCode = 400;
-  constructor(message = "La zona debe ser una de las siguientes: 'cocina', 'baño', 'salon', 'general'") {
+  constructor(message = 'La descripción no puede exceder los 1000 caracteres') {
     super(message);
-    this.name = 'InvalidCleaningZoneError';
+    this.name = 'InvalidCleaningDescriptionError';
   }
 }
 
-export class InvalidCleaningFrequencyError extends Error {
+export class InvalidCleaningPriorityError extends Error {
   readonly statusCode = 400;
-  constructor(message = "La frecuencia debe ser una de las siguientes: 'diaria', 'semanal', 'quincenal', 'mensual'") {
+  constructor(message = "La prioridad debe ser 'alta', 'media' o 'baja'") {
     super(message);
-    this.name = 'InvalidCleaningFrequencyError';
+    this.name = 'InvalidCleaningPriorityError';
   }
 }
 

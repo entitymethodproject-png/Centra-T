@@ -1,11 +1,10 @@
 import {
   CleaningItem,
-  CleaningZone,
-  CleaningFrequency,
+  CleaningPriority,
   CLEANING_LIMITS,
-  InvalidCleaningNameError,
-  InvalidCleaningZoneError,
-  InvalidCleaningFrequencyError,
+  InvalidCleaningTitleError,
+  InvalidCleaningDescriptionError,
+  InvalidCleaningPriorityError,
   InvalidCleaningDateError,
   CleaningItemNotFoundError,
 } from '../entities/cleaning-item.entity';
@@ -16,43 +15,37 @@ import { ICleaningRepository, InMemoryCleaningRepository } from '../repositories
 export class CleaningService {
   constructor(private cleaningRepository: ICleaningRepository = new InMemoryCleaningRepository()) {}
 
-  static calculateNextSuggestedDate(baseDateInput: Date | string, frecuencia: CleaningFrequency): Date {
-    const base = new Date(baseDateInput);
-    if (isNaN(base.getTime())) {
-      throw new InvalidCleaningDateError('Fecha base inválida para el cálculo de recurrencia');
-    }
-    const daysToAdd = CLEANING_LIMITS.FREQUENCY_DAYS[frecuencia];
-    if (daysToAdd === undefined) {
-      throw new InvalidCleaningFrequencyError();
-    }
-    return new Date(base.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
-  }
-
-  static validateName(nombre: string): string {
-    const trimmed = nombre ? nombre.trim() : '';
+  static validateTitle(titulo?: string, fallbackNombre?: string): string {
+    const raw = titulo !== undefined ? titulo : fallbackNombre;
+    const trimmed = raw ? raw.trim() : '';
     if (
-      trimmed.length < CLEANING_LIMITS.MIN_NAME_LENGTH ||
-      trimmed.length > CLEANING_LIMITS.MAX_NAME_LENGTH
+      trimmed.length < CLEANING_LIMITS.MIN_TITLE_LENGTH ||
+      trimmed.length > CLEANING_LIMITS.MAX_TITLE_LENGTH
     ) {
-      throw new InvalidCleaningNameError();
+      throw new InvalidCleaningTitleError();
     }
     return trimmed;
   }
 
-  static validateZone(zona: string): CleaningZone {
-    const valid = CLEANING_LIMITS.VALID_ZONES.includes(zona as CleaningZone);
-    if (!valid) {
-      throw new InvalidCleaningZoneError();
-    }
-    return zona as CleaningZone;
+  // Alias for backward compatibility
+  static validateName(nombre: string): string {
+    return CleaningService.validateTitle(nombre);
   }
 
-  static validateFrequency(frecuencia: string): CleaningFrequency {
-    const valid = CLEANING_LIMITS.VALID_FREQUENCIES.includes(frecuencia as CleaningFrequency);
-    if (!valid) {
-      throw new InvalidCleaningFrequencyError();
+  static validateDescription(desc?: string): string {
+    if (!desc) return '';
+    if (desc.length > CLEANING_LIMITS.MAX_DESCRIPTION_LENGTH) {
+      throw new InvalidCleaningDescriptionError();
     }
-    return frecuencia as CleaningFrequency;
+    return desc.trim();
+  }
+
+  static validatePriority(prioridad?: CleaningPriority): CleaningPriority {
+    if (!prioridad) return 'media';
+    if (!['alta', 'media', 'baja'].includes(prioridad)) {
+      throw new InvalidCleaningPriorityError();
+    }
+    return prioridad;
   }
 
   static validateScheduleDate(dateInput?: Date | string | null): Date | null {
@@ -79,24 +72,21 @@ export class CleaningService {
       throw new Error('El userId es obligatorio para aislar la tarea de limpieza');
     }
 
-    const validName = CleaningService.validateName(dto.nombre);
-    const validZone = CleaningService.validateZone(dto.zona);
-    const validFreq = CleaningService.validateFrequency(dto.frecuencia);
+    const validTitle = CleaningService.validateTitle(dto.titulo, dto.nombre);
+    const validDesc = CleaningService.validateDescription(dto.descripcion);
+    const validPriority = CleaningService.validatePriority(dto.prioridad);
     const validDate = CleaningService.validateScheduleDate(dto.fechaProgramada);
 
     const now = new Date();
-    const initialSuggested = CleaningService.calculateNextSuggestedDate(now, validFreq);
-
     const newItem: CleaningItem = {
       id: crypto.randomUUID(),
       userId: userId.trim(),
       modulo: 'cleaning',
-      nombre: validName,
-      zona: validZone,
-      frecuencia: validFreq,
+      titulo: validTitle,
+      nombre: validTitle,
+      descripcion: validDesc,
+      prioridad: validPriority,
       completado: false,
-      lastCompletedAt: null,
-      proximaFechaSugerida: initialSuggested,
       fechaProgramada: validDate,
       createdAt: now,
       updatedAt: now,
@@ -105,12 +95,9 @@ export class CleaningService {
     return this.cleaningRepository.save(newItem);
   }
 
-  async findAllByUser(
-    userId: string,
-    filter?: { zona?: CleaningZone; frecuencia?: CleaningFrequency }
-  ): Promise<CleaningItem[]> {
+  async findAllByUser(userId: string): Promise<CleaningItem[]> {
     if (!userId) return [];
-    return this.cleaningRepository.findAllByUser(userId.trim(), filter);
+    return this.cleaningRepository.findAllByUser(userId.trim());
   }
 
   async findById(userId: string, id: string): Promise<CleaningItem> {
@@ -124,64 +111,56 @@ export class CleaningService {
   async updateItem(userId: string, id: string, dto: UpdateCleaningItemDto): Promise<CleaningItem> {
     const existing = await this.findById(userId, id);
 
-    let updatedName = existing.nombre;
-    if (dto.nombre !== undefined) {
-      updatedName = CleaningService.validateName(dto.nombre);
+    let updatedTitle = existing.titulo;
+    if (dto.titulo !== undefined || dto.nombre !== undefined) {
+      updatedTitle = CleaningService.validateTitle(dto.titulo, dto.nombre);
     }
 
-    let updatedZone = existing.zona;
-    if (dto.zona !== undefined) {
-      updatedZone = CleaningService.validateZone(dto.zona);
+    let updatedDesc = existing.descripcion;
+    if (dto.descripcion !== undefined) {
+      updatedDesc = CleaningService.validateDescription(dto.descripcion);
     }
 
-    let updatedFreq = existing.frecuencia;
-    if (dto.frecuencia !== undefined) {
-      updatedFreq = CleaningService.validateFrequency(dto.frecuencia);
+    let updatedPriority = existing.prioridad;
+    if (dto.prioridad !== undefined) {
+      updatedPriority = CleaningService.validatePriority(dto.prioridad);
     }
 
-    let updatedScheduleDate = existing.fechaProgramada;
+    let updatedDate = existing.fechaProgramada;
     if (dto.fechaProgramada !== undefined) {
-      updatedScheduleDate = CleaningService.validateScheduleDate(dto.fechaProgramada);
-    }
-
-    let updatedSuggested = existing.proximaFechaSugerida;
-    if (dto.frecuencia !== undefined && existing.lastCompletedAt) {
-      updatedSuggested = CleaningService.calculateNextSuggestedDate(existing.lastCompletedAt, updatedFreq);
+      updatedDate = CleaningService.validateScheduleDate(dto.fechaProgramada);
     }
 
     const updatedItem: CleaningItem = {
       ...existing,
-      nombre: updatedName,
-      zona: updatedZone,
-      frecuencia: updatedFreq,
+      titulo: updatedTitle,
+      nombre: updatedTitle,
+      descripcion: updatedDesc,
+      prioridad: updatedPriority,
       completado: dto.completado !== undefined ? dto.completado : existing.completado,
-      fechaProgramada: updatedScheduleDate,
-      proximaFechaSugerida: updatedSuggested,
+      fechaProgramada: updatedDate,
       updatedAt: new Date(),
     };
 
     return this.cleaningRepository.save(updatedItem);
   }
 
-  async completeTask(userId: string, id: string, completedAtInput?: Date | string): Promise<CleaningItem> {
+  async toggleTaskStatus(userId: string, id: string): Promise<CleaningItem> {
     const existing = await this.findById(userId, id);
+    const nextStatus = !existing.completado;
 
-    const completedAt = completedAtInput ? new Date(completedAtInput) : new Date();
-    if (isNaN(completedAt.getTime())) {
-      throw new InvalidCleaningDateError('Fecha de completado inválida');
-    }
-
-    const nextSuggested = CleaningService.calculateNextSuggestedDate(completedAt, existing.frecuencia);
-
-    const updatedItem: CleaningItem = {
+    const toggledItem: CleaningItem = {
       ...existing,
-      completado: true,
-      lastCompletedAt: completedAt,
-      proximaFechaSugerida: nextSuggested,
+      completado: nextStatus,
       updatedAt: new Date(),
     };
 
-    return this.cleaningRepository.save(updatedItem);
+    return this.cleaningRepository.save(toggledItem);
+  }
+
+  // Alias compatible
+  async completeTask(userId: string, id: string): Promise<CleaningItem> {
+    return this.updateItem(userId, id, { completado: true });
   }
 
   async deleteItem(userId: string, id: string): Promise<void> {

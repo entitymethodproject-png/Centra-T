@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styles from './CleaningAccordion.module.css';
 import { CleaningItem } from '../../cleaning/entities/cleaning-item.entity';
 import { CleaningService } from '../../cleaning/services/cleaning.service';
-import { CleaningCreationModal } from '../../cleaning/components/CleaningCreationModal';
-import { CreateCleaningItemDto } from '../../cleaning/dto/create-cleaning-item.dto';
+import { CleaningCreationWizard } from '../../cleaning/components/CleaningCreationWizard';
+import { CleaningCard } from '../../cleaning/components/CleaningCard';
 
 export interface CleaningAccordionProps {
   items?: CleaningItem[];
@@ -13,6 +13,7 @@ export interface CleaningAccordionProps {
   isLoading?: boolean;
   error?: string | null;
   onToggleExpand?: (expanded: boolean) => void;
+  onCreateItemClick?: () => void;
   onItemCreated?: (item: CleaningItem) => void;
   onItemToggle?: (itemId: string) => void;
   onRetry?: () => void;
@@ -26,6 +27,7 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
   isLoading: propLoading = false,
   error: propError = null,
   onToggleExpand,
+  onCreateItemClick,
   onItemCreated,
   onItemToggle,
   onRetry,
@@ -34,7 +36,7 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
   const [items, setItems] = useState<CleaningItem[]>(propItems || []);
   const [isLoading, setIsLoading] = useState(propLoading);
   const [error, setError] = useState<string | null>(propError);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
 
   useEffect(() => {
     if (propItems !== undefined) {
@@ -62,81 +64,52 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
     }
   }, [cleaningService, userId, propItems]);
 
-  const total = items.length;
-  const pendientes = items.filter((i) => !i.completado).length;
-
   const handleHeaderClick = () => {
     const next = !isExpanded;
     setIsExpanded(next);
-    if (onToggleExpand) onToggleExpand(next);
-  };
-
-  const handleOpenModal = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsModalOpen(true);
-  };
-
-  const handleToggleItem = async (itemId: string) => {
-    if (onItemToggle) onItemToggle(itemId);
-
-    if (cleaningService && userId) {
-      try {
-        const target = items.find((i) => i.id === itemId);
-        if (target && !target.completado) {
-          const updated = await cleaningService.completeTask(userId, itemId);
-          setItems((prev) => prev.map((i) => (i.id === itemId ? updated : i)));
-        } else {
-          const updated = await cleaningService.updateItem(userId, itemId, { completado: false });
-          setItems((prev) => prev.map((i) => (i.id === itemId ? updated : i)));
-        }
-      } catch {
-        // Preservar estado en caso de fallo
-      }
-    } else {
-      setItems((prev) =>
-        prev.map((i) => (i.id === itemId ? { ...i, completado: !i.completado } : i))
-      );
+    if (onToggleExpand) {
+      onToggleExpand(next);
     }
   };
 
-  const handleCreateTask = async (dto: CreateCleaningItemDto) => {
-    if (cleaningService && userId) {
-      const newItem = await cleaningService.createItem(userId, dto);
-      setItems((prev) => [...prev, newItem]);
-      if (onItemCreated) onItemCreated(newItem);
+  const handleOpenWizard = () => {
+    if (onCreateItemClick) {
+      onCreateItemClick();
     } else {
-      const now = new Date();
-      const daysMap: Record<string, number> = { diaria: 1, semanal: 7, quincenal: 14, mensual: 30 };
-      const days = daysMap[dto.frecuencia] || 7;
-      const suggested = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+      setIsWizardOpen(true);
+    }
+  };
 
-      const mockItem: CleaningItem = {
-        id: crypto.randomUUID(),
-        userId,
-        modulo: 'cleaning',
-        nombre: dto.nombre,
-        zona: dto.zona,
-        frecuencia: dto.frecuencia,
-        completado: false,
-        lastCompletedAt: null,
-        proximaFechaSugerida: suggested,
-        fechaProgramada: null,
-        createdAt: now,
-        updatedAt: now,
-      };
-      setItems((prev) => [...prev, mockItem]);
-      if (onItemCreated) onItemCreated(mockItem);
+  const handleItemCreated = (newItem: CleaningItem) => {
+    setItems((prev) => [newItem, ...prev]);
+    setIsWizardOpen(false);
+    if (onItemCreated) {
+      onItemCreated(newItem);
+    }
+  };
+
+  const handleItemUpdated = (updatedItem: CleaningItem) => {
+    setItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
+  };
+
+  const handleItemDeleted = (deletedId: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== deletedId));
+  };
+
+  const handleToggleItem = (itemId: string) => {
+    if (onItemToggle) {
+      onItemToggle(itemId);
     }
   };
 
   return (
     <div className={styles.accordionContainer} data-testid="cleaning-accordion">
-      {/* Cabecera */}
+      {/* Cabecera del Acordeón */}
       <div
         role="button"
         tabIndex={0}
         aria-expanded={isExpanded}
-        className={styles.header}
+        className={`${styles.header} ${!isExpanded ? styles.headerCollapsed : ''}`}
         onClick={handleHeaderClick}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -153,28 +126,22 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
           >
             ▶
           </span>
-          <h3 className={styles.title}>
-            Limpieza ({pendientes} pend / {total} tot)
-          </h3>
+          <h3 className={styles.title}>Limpieza ({items.length})</h3>
         </div>
 
-        <div className={styles.headerRight}>
-          {pendientes > 0 && (
-            <span className={styles.pendingBadge} data-testid="cleaning-pending-badge">
-              {pendientes}
-            </span>
-          )}
-          <button
-            type="button"
-            onClick={handleOpenModal}
-            className={styles.createButton}
-            data-testid="cleaning-create-button"
-            aria-label="Nueva tarea de limpieza"
-            title="Nueva tarea de limpieza"
-          >
-            +
-          </button>
-        </div>
+        <button
+          type="button"
+          className={styles.newButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenWizard();
+          }}
+          aria-label="Crear nueva tarea de limpieza"
+          title="Crear nueva tarea de limpieza"
+          data-testid="cleaning-create-button"
+        >
+          +
+        </button>
       </div>
 
       {/* Cuerpo del Acordeón */}
@@ -189,7 +156,7 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
             </div>
           )}
 
-          {/* Error State */}
+          {/* Estado de Error */}
           {!isLoading && error && (
             <div role="alert" className={styles.errorContainer} data-testid="cleaning-error-state">
               <span className={styles.errorMessage}>{error}</span>
@@ -204,56 +171,47 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
           {/* Empty State */}
           {!isLoading && !error && items.length === 0 && (
             <div className={styles.emptyContainer} data-testid="cleaning-empty-state">
-              <div className={styles.emptyIcon} aria-hidden="true">🧹</div>
+              <div className={styles.emptyIcon} aria-hidden="true">
+                🧹
+              </div>
               <p className={styles.emptyTitle}>No hay tareas de limpieza</p>
-              <p className={styles.emptySubtitle}>
-                Pulsa [+] para programar el cuidado del hogar
-              </p>
+              <p className={styles.emptySubtitle}>Añade tareas para organizar la limpieza de casa</p>
+              <button
+                type="button"
+                onClick={handleOpenWizard}
+                className={styles.emptyCtaButton}
+              >
+                + Crear Limpieza
+              </button>
             </div>
           )}
 
-          {/* Populated List */}
+          {/* Populated List con CleaningCard */}
           {!isLoading && !error && items.length > 0 && (
             <ul className={styles.cleaningList} role="list" data-testid="cleaning-populated-list">
               {items.map((item) => (
-                <li
+                <CleaningCard
                   key={item.id}
-                  className={`${styles.cleaningItem} ${item.completado ? styles.itemCompleted : ''}`}
-                  data-testid={`cleaning-item-${item.id}`}
-                >
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={item.completado}
-                      onChange={() => handleToggleItem(item.id)}
-                      className={styles.checkbox}
-                      aria-label={`Completar limpieza ${item.nombre}`}
-                    />
-                  </label>
-
-                  <div className={styles.itemInfo}>
-                    <span className={`${styles.itemName} ${item.completado ? styles.nameCompleted : ''}`}>
-                      {item.nombre}
-                    </span>
-                    <div className={styles.badgesRow}>
-                      <span className={`${styles.zoneBadge} ${styles[`zone_${item.zona}`]}`}>
-                        {item.zona}
-                      </span>
-                      <span className={styles.frequencyBadge}>{item.frecuencia}</span>
-                    </div>
-                  </div>
-                </li>
+                  item={item}
+                  userId={userId}
+                  cleaningService={cleaningService}
+                  onToggleOptimistic={handleToggleItem}
+                  onItemUpdated={handleItemUpdated}
+                  onItemDeleted={handleItemDeleted}
+                />
               ))}
             </ul>
           )}
         </div>
       )}
 
-      {/* Modal de Creación */}
-      <CleaningCreationModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleCreateTask}
+      {/* Modal Wizard de Creación en 3 Pasos */}
+      <CleaningCreationWizard
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+        userId={userId}
+        cleaningService={cleaningService}
+        onItemCreated={handleItemCreated}
       />
     </div>
   );

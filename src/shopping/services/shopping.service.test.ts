@@ -2,13 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ShoppingService } from './shopping.service';
 import { InMemoryShoppingRepository } from '../repositories/shopping.repository';
 import {
-  InvalidShoppingItemNameError,
-  InvalidShoppingQuantityError,
+  InvalidShoppingTitleError,
   InvalidScheduleDateError,
   ShoppingItemNotFoundError,
 } from '../entities/shopping-item.entity';
 
-describe('ShoppingService (Dominio Shopping y Bulk Schedule)', () => {
+describe('ShoppingService (Dominio Shopping Homogéneo)', () => {
   let repository: InMemoryShoppingRepository;
   let service: ShoppingService;
   const userId = 'usr-demo-elena-001';
@@ -20,38 +19,39 @@ describe('ShoppingService (Dominio Shopping y Bulk Schedule)', () => {
     service = new ShoppingService(repository);
   });
 
-  it('debe crear un ítem de compra con valores por defecto (cantidad: 1, unidad: ud, comprado: false)', async () => {
-    const item = await service.createItem(userId, { nombre: 'Leche entera' });
+  it('debe crear un ítem de compra homogéneo (titulo, descripcion, prioridad: media, completado: false)', async () => {
+    const item = await service.createItem(userId, {
+      titulo: 'Leche entera',
+      descripcion: '2 botellas desnatadas',
+      prioridad: 'alta',
+    });
 
     expect(item.id).toBeDefined();
     expect(item.userId).toBe(userId);
     expect(item.modulo).toBe('shopping');
-    expect(item.nombre).toBe('Leche entera');
-    expect(item.cantidad).toBe(1);
-    expect(item.unidad).toBe('ud');
-    expect(item.comprado).toBe(false);
+    expect(item.titulo).toBe('Leche entera');
+    expect(item.descripcion).toBe('2 botellas desnatadas');
+    expect(item.prioridad).toBe('alta');
+    expect(item.completado).toBe(false);
     expect(item.fechaProgramada).toBeNull();
   });
 
-  it('debe rechazar nombres vacíos o que excedan 120 caracteres (Decisión 2B)', async () => {
-    await expect(service.createItem(userId, { nombre: '' })).rejects.toThrow(
-      InvalidShoppingItemNameError
+  it('debe rechazar títulos vacíos o que excedan 120 caracteres (Decisión 2B)', async () => {
+    await expect(service.createItem(userId, { titulo: '' })).rejects.toThrow(
+      InvalidShoppingTitleError
     );
-    await expect(service.createItem(userId, { nombre: '   ' })).rejects.toThrow(
-      InvalidShoppingItemNameError
+    await expect(service.createItem(userId, { titulo: '   ' })).rejects.toThrow(
+      InvalidShoppingTitleError
     );
-    await expect(service.createItem(userId, { nombre: 'A'.repeat(121) })).rejects.toThrow(
-      InvalidShoppingItemNameError
+    await expect(service.createItem(userId, { titulo: 'A'.repeat(121) })).rejects.toThrow(
+      InvalidShoppingTitleError
     );
   });
 
-  it('debe rechazar cantidades menores o iguales a cero', async () => {
-    await expect(service.createItem(userId, { nombre: 'Manzanas', cantidad: 0 })).rejects.toThrow(
-      InvalidShoppingQuantityError
-    );
-    await expect(service.createItem(userId, { nombre: 'Manzanas', cantidad: -3 })).rejects.toThrow(
-      InvalidShoppingQuantityError
-    );
+  it('debe asignar prioridad media por defecto si no se especifica', async () => {
+    const item = await service.createItem(userId, { titulo: 'Manzanas' });
+    expect(item.prioridad).toBe('media');
+    expect(item.descripcion).toBe('');
   });
 
   it('debe rechazar fechas pasadas anteriores al día actual (Decisión 1A)', async () => {
@@ -59,32 +59,32 @@ describe('ShoppingService (Dominio Shopping y Bulk Schedule)', () => {
     pastDate.setDate(pastDate.getDate() - 3);
 
     await expect(
-      service.createItem(userId, { nombre: 'Pan de molde', fechaProgramada: pastDate })
+      service.createItem(userId, { titulo: 'Pan de molde', fechaProgramada: pastDate })
     ).rejects.toThrow(InvalidScheduleDateError);
   });
 
   it('debe aislar estrictamente los productos por userId', async () => {
-    await service.createItem(userId, { nombre: 'Huevos ecológicos' });
-    await service.createItem(otherUserId, { nombre: 'Café tostado' });
+    await service.createItem(userId, { titulo: 'Huevos ecológicos' });
+    await service.createItem(otherUserId, { titulo: 'Café tostado' });
 
     const elenaItems = await service.findAllByUser(userId);
     expect(elenaItems).toHaveLength(1);
-    expect(elenaItems[0].nombre).toBe('Huevos ecológicos');
+    expect(elenaItems[0].titulo).toBe('Huevos ecológicos');
 
     const otherItems = await service.findAllByUser(otherUserId);
     expect(otherItems).toHaveLength(1);
-    expect(otherItems[0].nombre).toBe('Café tostado');
+    expect(otherItems[0].titulo).toBe('Café tostado');
   });
 
-  it('debe conmutar el estado comprado mediante toggleBoughtStatus', async () => {
-    const item = await service.createItem(userId, { nombre: 'Arroz redondo' });
-    expect(item.comprado).toBe(false);
+  it('debe conmutar el estado completado/comprado mediante toggleBoughtStatus', async () => {
+    const item = await service.createItem(userId, { titulo: 'Arroz redondo' });
+    expect(item.completado).toBe(false);
 
     const toggled = await service.toggleBoughtStatus(userId, item.id);
-    expect(toggled.comprado).toBe(true);
+    expect(toggled.completado).toBe(true);
 
     const toggledAgain = await service.toggleBoughtStatus(userId, item.id);
-    expect(toggledAgain.comprado).toBe(false);
+    expect(toggledAgain.completado).toBe(false);
   });
 
   it('debe lanzar ShoppingItemNotFoundError al intentar buscar o mutar un ítem inexistente', async () => {
@@ -96,12 +96,12 @@ describe('ShoppingService (Dominio Shopping y Bulk Schedule)', () => {
     );
   });
 
-  it('ASIGNACIÓN GRUPAL BULK-SCHEDULE: debe programar en bloque todos los productos pendientes (comprado: false)', async () => {
+  it('ASIGNACIÓN GRUPAL BULK-SCHEDULE: debe programar en bloque todos los productos pendientes (completado: false)', async () => {
     // 2 pendientes
-    const item1 = await service.createItem(userId, { nombre: 'Detergente ropa' });
-    const item2 = await service.createItem(userId, { nombre: 'Suavizante' });
-    // 1 ya comprado
-    const item3 = await service.createItem(userId, { nombre: 'Esponjas' });
+    const item1 = await service.createItem(userId, { titulo: 'Detergente ropa' });
+    const item2 = await service.createItem(userId, { titulo: 'Suavizante' });
+    // 1 ya completado
+    const item3 = await service.createItem(userId, { titulo: 'Esponjas' });
     await service.toggleBoughtStatus(userId, item3.id);
 
     const futureDate = new Date();
@@ -119,6 +119,6 @@ describe('ShoppingService (Dominio Shopping y Bulk Schedule)', () => {
 
     expect(updated1?.fechaProgramada).toBeDefined();
     expect(updated2?.fechaProgramada).toBeDefined();
-    expect(untouched3?.fechaProgramada).toBeNull(); // No se modifica si ya estaba comprado
+    expect(untouched3?.fechaProgramada).toBeNull();
   });
 });
