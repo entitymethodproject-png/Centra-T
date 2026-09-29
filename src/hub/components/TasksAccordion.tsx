@@ -3,6 +3,7 @@ import styles from './TasksAccordion.module.css';
 import { TaskItem } from '../../tasks/entities/task-item.entity';
 import { TasksService } from '../../tasks/services/tasks.service';
 import { TaskCreationWizard } from '../../tasks/components/TaskCreationWizard';
+import { TaskCard } from '../../tasks/components/TaskCard';
 
 export interface TasksAccordionProps {
   tasks?: TaskItem[];
@@ -89,23 +90,8 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
     }
   };
 
-  const handleToggleTask = async (taskId: string) => {
-    if (onTaskToggle) {
-      onTaskToggle(taskId);
-    }
-    if (tasksService && userId) {
-      try {
-        const updated = await tasksService.toggleTaskStatus(userId, taskId);
-        setTasks((prev) => prev.map((t) => (t.id === taskId ? updated : t)));
-      } catch {
-        // En caso de fallo, se mantiene el estado previo
-      }
-    } else {
-      // Mutación local si es controlado por props
-      setTasks((prev) =>
-        prev.map((t) => (t.id === taskId ? { ...t, completado: !t.completado } : t))
-      );
-    }
+  const handleTaskUpdated = (updatedTask: TaskItem) => {
+    setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
   };
 
   return (
@@ -189,32 +175,22 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
             </div>
           )}
 
-          {/* EV-LIST-01: Lista Poblada de Tareas */}
+          {/* EV-LIST-01: Lista Poblada de Tareas con TaskCard */}
           {!isLoading && !error && tasks.length > 0 && (
             <ul className={styles.taskList} role="list" data-testid="tasks-populated-list">
               {tasks.map((task) => (
-                <li
+                <TaskCard
                   key={task.id}
-                  className={`${styles.taskItem} ${task.completado ? styles.completed : ''}`}
-                >
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={task.completado}
-                      onChange={() => handleToggleTask(task.id)}
-                      className={styles.checkbox}
-                      aria-label={`Completar tarea ${task.titulo}`}
-                    />
-                  </label>
-
-                  <span className={styles.taskTitle}>{task.titulo}</span>
-
-                  <span
-                    className={`${styles.priorityBadge} ${styles['priority_' + task.prioridad]}`}
-                  >
-                    {task.prioridad.toUpperCase()}
-                  </span>
-                </li>
+                  task={task}
+                  userId={userId}
+                  tasksService={tasksService}
+                  onToggleOptimistic={(taskId) => {
+                    if (onTaskToggle) {
+                      onTaskToggle(taskId);
+                    }
+                  }}
+                  onTaskUpdated={handleTaskUpdated}
+                />
               ))}
             </ul>
           )}
