@@ -1,13 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import bcrypt from 'bcryptjs';
-// @ts-expect-error Service not yet implemented (TDD Fase RED)
 import {
   UsersService,
   UserAlreadyExistsError,
   InvalidEmailError,
   WeakPasswordError,
 } from './users.service';
-// @ts-expect-error Repository not yet implemented (TDD Fase RED)
 import { InMemoryUserRepository } from '../repositories/user.repository';
 
 describe('PVF-A02.01 · UsersService (Entidad User, VO Email, Hashing y POST /users)', () => {
