@@ -28,14 +28,17 @@
 
 .priorityDot_alta {
   background-color: #EF4444;
+  box-shadow: 0 0 4px rgba(239, 68, 68, 0.4);
 }
 
 .priorityDot_media {
   background-color: #F59E0B;
+  box-shadow: 0 0 4px rgba(245, 158, 11, 0.4);
 }
 
 .priorityDot_baja {
-  background-color: #10B981;
+  background-color: #3B82F6;
+  box-shadow: 0 0 4px rgba(59, 130, 246, 0.4);
 }
 
 .moduleBadge {
