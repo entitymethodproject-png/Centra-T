@@ -1,0 +1,58 @@
+.workspaceShell {
+  width: 100vw;
+  height: 100vh;
+  padding: var(--shell-padding, 16px);
+  background-color: var(--bg-base, #0B0F17);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--panel-gap, 16px);
+  overflow: hidden;
+  color: var(--text-primary, #F0F4F8);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.navbarRegion {
+  height: var(--navbar-height, 64px);
+  min-height: var(--navbar-height, 64px);
+  background-color: var(--bg-hub, #131B26);
+  border: 1px solid var(--border-subtle, #233144);
+  border-radius: var(--panel-radius, 14px);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.bodyRegion {
+  flex: 1;
+  display: flex;
+  gap: var(--panel-gap, 16px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.hubRegion {
+  width: var(--hub-width, 380px);
+  min-width: 320px;
+  max-width: 420px;
+  background-color: var(--bg-hub, #131B26);
+  border: 1px solid var(--border-subtle, #233144);
+  border-radius: var(--panel-radius, 14px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.workbenchRegion {
+  flex: 1;
+  min-width: 0;
+  background-color: var(--bg-hub, #131B26);
+  border: 1px solid var(--border-subtle, #233144);
+  border-radius: var(--panel-radius, 14px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}

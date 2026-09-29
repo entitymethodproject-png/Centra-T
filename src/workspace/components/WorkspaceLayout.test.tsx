@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import React from 'react';
-// @ts-expect-error Component not yet implemented (TDD Fase RED)
 import { WorkspaceLayout } from './WorkspaceLayout';
 
 describe('PVF-A01.01 · WorkspaceLayout (Shell Base y Topología Espacial de 2 Columnas)', () => {
