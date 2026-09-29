@@ -162,4 +162,25 @@ describe('PVF-A02.03 · AuthController (Sesión Segura HttpOnly, Anti-Enumeraci�
       expect(throttlerService.getFailedAttempts(throttleKey)).toBe(0);
     });
   });
+
+  describe('Cierre de Sesión Seguro (PVF-A02.05 - Logout)', () => {
+    it('debe realizar logout exitoso emitiendo cookie con Max-Age=0 y purgando la sesión activa', async () => {
+      const loginResponse = await authController.login({
+        email: 'carlos@example.com',
+        password: validPassword,
+      });
+      const sessionToken = loginResponse.body.token;
+
+      expect(authService.getActiveSessionsCount()).toBe(1);
+
+      const logoutResponse = await authController.logout(sessionToken);
+
+      expect(logoutResponse.statusCode).toBe(200);
+      expect(logoutResponse.headers['Set-Cookie']).toContain('Max-Age=0');
+      expect(logoutResponse.headers['Set-Cookie']).toContain('HttpOnly');
+      expect(logoutResponse.headers['Set-Cookie']).toContain('SameSite=Strict');
+      expect(authService.getActiveSessionsCount()).toBe(0);
+    });
+  });
 });
+
