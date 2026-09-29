@@ -2,6 +2,7 @@ import React from 'react';
 import '../../theme/tokens.css';
 import styles from './WorkspaceLayout.module.css';
 import { HubContainer } from '../../hub/components/HubContainer';
+import { TopNavbar } from './TopNavbar';
 
 export interface WorkspaceLayoutProps {
   navbarSlot?: React.ReactNode;
@@ -18,7 +19,7 @@ export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   return (
     <div className={styles.workspaceShell}>
       <header role="banner" className={styles.navbarRegion}>
-        {navbarSlot || <div data-testid="navbar-placeholder">TopNavbar (64px)</div>}
+        {navbarSlot || <TopNavbar data-testid="navbar-placeholder" />}
       </header>
       <div className={styles.bodyRegion}>
         {hubSlot !== undefined ? (

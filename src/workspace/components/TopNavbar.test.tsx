@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-// @ts-expect-error Component not yet implemented (TDD Fase RED)
 import { TopNavbar } from './TopNavbar';
 
 describe('PVF-A01.03 · TopNavbar (Barra de Navegación Superior y Telemetría Visual)', () => {
