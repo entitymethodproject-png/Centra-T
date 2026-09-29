@@ -68,6 +68,7 @@ export function useWorkspaceController({
     }
     return false;
   });
+  const [currentUser, setCurrentUser] = useState<{ userId: string; email: string; name: string } | null>(null);
 
   const { isOffline } = useNetworkStatus();
 
@@ -121,6 +122,10 @@ export function useWorkspaceController({
       try {
         const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (res.ok && isMounted) {
+          const data = await res.json().catch(() => null);
+          if (data?.user) {
+            setCurrentUser(data.user);
+          }
           setIsAuthenticated(true);
           if (window.localStorage) {
             window.localStorage.setItem('centrat_auth', 'true');
@@ -130,6 +135,7 @@ export function useWorkspaceController({
           }
         } else if (res.status === 401 && isMounted) {
           setIsAuthenticated(false);
+          setCurrentUser(null);
           if (window.localStorage) {
             window.localStorage.removeItem('centrat_auth');
           }
@@ -257,7 +263,11 @@ export function useWorkspaceController({
 
       // Actualización optimista inmediata (<16ms)
       stateSetter((prev) =>
-        prev.map((i) => (i.id === itemId ? { ...i, completado: !i.completado } : i))
+        prev.map((i) => {
+          if (i.id !== itemId) return i;
+          const next = !i.completado;
+          return { ...i, completado: next, comprado: next };
+        })
       );
 
       // Simulación de fallo en servidor con reversión garantizada
@@ -485,6 +495,7 @@ export function useWorkspaceController({
   return {
     // Sesión y Red
     isAuthenticated,
+    currentUser,
     isOffline,
     handleLoginSuccess,
     handleLogout,
@@ -497,8 +508,29 @@ export function useWorkspaceController({
 
     // Acciones de Tareas
     handleTaskCreated: (newTask: TaskItem) => setAllTasks((prev) => [newTask, ...prev]),
-    handleTaskUpdated: (updated: TaskItem) =>
-      setAllTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t))),
+    handleTaskUpdated: (updated: TaskItem) => {
+      setAllTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)));
+      if (typeof window !== 'undefined' && initialTasks === undefined) {
+        fetch(`/api/tasks/${updated.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            titulo: updated.titulo,
+            descripcion: updated.descripcion,
+            prioridad: updated.prioridad,
+            completado: updated.completado,
+            fechaProgramada: updated.fechaProgramada
+              ? typeof updated.fechaProgramada === 'string'
+                ? (updated.fechaProgramada as string).slice(0, 10)
+                : updated.fechaProgramada instanceof Date
+                ? updated.fechaProgramada.toISOString().slice(0, 10)
+                : undefined
+              : null,
+          }),
+        }).catch(() => {});
+      }
+    },
     handleTaskDeleted: (id: string) => {
       setAllTasks((prev) => prev.filter((t) => t.id !== id));
       if (typeof window !== 'undefined') {
@@ -509,8 +541,30 @@ export function useWorkspaceController({
 
     // Acciones de Compras
     handleShoppingCreated: (newItem: ShoppingItem) => setAllShopping((prev) => [newItem, ...prev]),
-    handleShoppingUpdated: (updated: ShoppingItem) =>
-      setAllShopping((prev) => prev.map((i) => (i.id === updated.id ? updated : i))),
+    handleShoppingUpdated: (updated: ShoppingItem) => {
+      setAllShopping((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+      if (typeof window !== 'undefined' && initialShoppingItems === undefined) {
+        fetch(`/api/shopping/${updated.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            titulo: updated.titulo || updated.nombre,
+            descripcion: updated.descripcion,
+            prioridad: updated.prioridad,
+            completado: updated.completado || updated.comprado,
+            comprado: updated.completado || updated.comprado,
+            fechaProgramada: updated.fechaProgramada
+              ? typeof updated.fechaProgramada === 'string'
+                ? (updated.fechaProgramada as string).slice(0, 10)
+                : updated.fechaProgramada instanceof Date
+                ? updated.fechaProgramada.toISOString().slice(0, 10)
+                : undefined
+              : null,
+          }),
+        }).catch(() => {});
+      }
+    },
     handleShoppingDeleted: (id: string) => {
       setAllShopping((prev) => prev.filter((i) => i.id !== id));
       if (typeof window !== 'undefined') {
@@ -521,8 +575,29 @@ export function useWorkspaceController({
 
     // Acciones de Limpiezas
     handleCleaningCreated: (newItem: CleaningItem) => setAllCleaning((prev) => [newItem, ...prev]),
-    handleCleaningUpdated: (updated: CleaningItem) =>
-      setAllCleaning((prev) => prev.map((i) => (i.id === updated.id ? updated : i))),
+    handleCleaningUpdated: (updated: CleaningItem) => {
+      setAllCleaning((prev) => prev.map((i) => (i.id === updated.id ? updated : i)));
+      if (typeof window !== 'undefined' && initialCleaningItems === undefined) {
+        fetch(`/api/cleaning/${updated.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            titulo: updated.titulo || updated.nombre,
+            descripcion: updated.descripcion,
+            prioridad: updated.prioridad,
+            completado: updated.completado,
+            fechaProgramada: updated.fechaProgramada
+              ? typeof updated.fechaProgramada === 'string'
+                ? (updated.fechaProgramada as string).slice(0, 10)
+                : updated.fechaProgramada instanceof Date
+                ? updated.fechaProgramada.toISOString().slice(0, 10)
+                : undefined
+              : null,
+          }),
+        }).catch(() => {});
+      }
+    },
     handleCleaningDeleted: (id: string) => {
       setAllCleaning((prev) => prev.filter((i) => i.id !== id));
       if (typeof window !== 'undefined') {

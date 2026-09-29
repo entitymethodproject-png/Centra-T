@@ -51,6 +51,17 @@ export class AuthenticationController {
     return { user, message: 'Sesión iniciada con éxito' };
   }
 
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const { user, sessionToken } = await this.authService.resetPassword(dto.email, dto.password);
+    res.cookie(COOKIE_NAME, sessionToken, COOKIE_OPTIONS);
+    return { user, message: 'Contraseña actualizada y sesión iniciada con éxito' };
+  }
+
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(

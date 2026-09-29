@@ -16,4 +16,7 @@ export class CreateTaskDto {
 
   @IsOptional()
   fechaProgramada?: string | null;
+
+  @IsOptional()
+  modulo?: string;
 }

@@ -16,4 +16,7 @@ export class CreateShoppingDto {
 
   @IsOptional()
   fechaProgramada?: string | null;
+
+  @IsOptional()
+  modulo?: string;
 }

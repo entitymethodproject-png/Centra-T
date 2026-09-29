@@ -20,4 +20,13 @@ export class UpdateTaskDto {
 
   @IsOptional()
   fechaProgramada?: string | null;
+
+  @IsOptional()
+  modulo?: string;
+
+  @IsOptional()
+  id?: string;
+
+  @IsOptional()
+  nombre?: string;
 }

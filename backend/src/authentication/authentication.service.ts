@@ -81,7 +81,7 @@ export class AuthenticationService {
     if (cached) return cached;
 
     // Si el servidor se reinició, restaurar la sesión a partir del userId y PostgreSQL
-    const match = token.match(/^centrat_sess_([0-9a-fA-F-]+)_[a-z0-9]+$/);
+    const match = token.match(/^centrat_sess_([0-9a-zA-Z-]+)_(.+)$/);
     if (match) {
       try {
         const user = await this.usersService.findById(match[1]);
@@ -95,6 +95,26 @@ export class AuthenticationService {
       }
     }
     return null;
+  }
+
+  async resetPassword(email: string, newPassword: string): Promise<{ user: AuthSession; sessionToken: string }> {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new UnauthorizedException('Usuario no encontrado');
+    }
+    const salt = await bcrypt.genSalt(12);
+    user.passwordHash = await bcrypt.hash(newPassword, salt);
+    await this.usersService.save(user);
+
+    const sessionToken = this.createSessionToken(user.id, user.email, user.name);
+    return {
+      user: {
+        userId: user.id,
+        email: user.email,
+        name: user.name,
+      },
+      sessionToken,
+    };
   }
 
   revokeSession(token: string): void {

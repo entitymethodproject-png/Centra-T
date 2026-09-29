@@ -36,6 +36,10 @@ export class UsersService implements OnModuleInit {
     return this.userRepository.save(user);
   }
 
+  async save(user: UserEntity): Promise<UserEntity> {
+    return this.userRepository.save(user);
+  }
+
   private async seedDemoUser() {
     const demoEmail = 'elena@centrat.local';
     const existing = await this.findByEmail(demoEmail);

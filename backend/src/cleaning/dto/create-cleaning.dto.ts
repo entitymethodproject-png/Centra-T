@@ -16,4 +16,7 @@ export class CreateCleaningDto {
 
   @IsOptional()
   fechaProgramada?: string | null;
+
+  @IsOptional()
+  modulo?: string;
 }

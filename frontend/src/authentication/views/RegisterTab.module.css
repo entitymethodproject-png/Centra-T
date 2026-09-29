@@ -142,3 +142,36 @@
   margin: 0;
   line-height: 1.4;
 }
+
+.resetPrompt {
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  color: #93C5FD;
+}
+
+.resetPrompt p {
+  margin: 0;
+}
+
+.resetButton {
+  background-color: #10B981;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.resetButton:hover:not(:disabled) {
+  background-color: #059669;
+}

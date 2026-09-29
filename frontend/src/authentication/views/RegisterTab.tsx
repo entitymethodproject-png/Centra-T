@@ -26,12 +26,45 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
     passwordConfirm?: string;
     global?: string;
   }>({});
+  const [canResetPassword, setCanResetPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const handleResetPasswordSubmit = async () => {
+    setIsLoading(true);
+    setErrors({});
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsSuccess(true);
+        if (window.localStorage) {
+          window.localStorage.setItem('centrat_auth', 'true');
+        }
+        if (window.sessionStorage) {
+          window.sessionStorage.setItem('centrat_auth', 'true');
+        }
+        if (onSuccess) onSuccess(data.user);
+        return;
+      }
+      const errData = await res.json().catch(() => ({}));
+      setErrors({ global: errData.message || 'Error al actualizar la contraseña' });
+    } catch {
+      setErrors({ global: 'Error de conexión con el servidor' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
+    setCanResetPassword(false);
 
     // Caso Forense VV-009: Validación innegociable de doble contraseña
     if (password !== passwordConfirm) {
@@ -94,8 +127,9 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
           }
 
           if (res.status === 409) {
+            setCanResetPassword(true);
             setErrors({
-              global: 'No ha sido posible completar el registro. Compruebe los datos o intente iniciar sesión',
+              global: 'Este correo ya está registrado en Centra-T.',
             });
             return;
           }
@@ -123,6 +157,7 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
       }
     } catch (err) {
       if (err instanceof UserAlreadyExistsError) {
+        setCanResetPassword(true);
         setErrors({
           global: 'No ha sido posible completar el registro. Compruebe los datos o intente iniciar sesión',
         });
@@ -142,6 +177,20 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
       {errors.global && (
         <div role="alert" className={styles.globalError}>
           {errors.global}
+        </div>
+      )}
+
+      {canResetPassword && (
+        <div className={styles.resetPrompt}>
+          <p>¿Deseas guardar esta nueva contraseña y entrar ahora mismo?</p>
+          <button
+            type="button"
+            onClick={handleResetPasswordSubmit}
+            disabled={isLoading}
+            className={styles.resetButton}
+          >
+            Actualizar Contraseña y Entrar
+          </button>
         </div>
       )}
 

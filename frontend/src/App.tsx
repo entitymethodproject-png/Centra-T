@@ -31,6 +31,7 @@ export const App: React.FC<AppProps> = (props) => {
   const {
     // Sesión y Red
     isAuthenticated,
+    currentUser,
     isOffline,
     handleLoginSuccess,
     handleLogout,
@@ -109,7 +110,7 @@ export const App: React.FC<AppProps> = (props) => {
         bannerSlot={<OfflineBanner isOffline={isOffline} />}
         navbarSlot={
           <TopNavbar
-            user={{ name: 'Usuario Centra-T' }}
+            user={{ name: currentUser?.name || 'Usuario Centra-T' }}
             onLogout={handleLogout}
           />
         }

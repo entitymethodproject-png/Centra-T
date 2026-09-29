@@ -131,7 +131,6 @@ export const ItemCreationWizard: React.FC<ItemCreationWizardProps> = ({
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
             body: JSON.stringify({
-              modulo,
               titulo: titulo.trim(),
               descripcion: descripcion.trim() || undefined,
               prioridad,
@@ -159,10 +158,15 @@ export const ItemCreationWizard: React.FC<ItemCreationWizardProps> = ({
             return;
           } else {
             const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || 'Error al guardar el elemento en el servidor');
+            const msg = Array.isArray(errData.message)
+              ? errData.message.join(', ')
+              : errData.message || 'Error al guardar el elemento en el servidor';
+            setSubmitError(msg);
+            setIsLoading(false);
+            return;
           }
-        } catch {
-          // Si el endpoint no responde o el entorno de test no soporta fetch relativo,
+        } catch (fetchErr) {
+          // Si el endpoint no responde (por ejemplo en entorno Vitest/jsdom sin servidor),
           // continuar con el servicio local in-memory
         }
       }
