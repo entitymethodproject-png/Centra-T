@@ -13,7 +13,7 @@ export const QuickItemInput: React.FC<QuickItemInputProps> = ({
   autoFocus = false,
 }) => {
   const [nombre, setNombre] = useState('');
-  const [cantidad, setCantidad] = useState<number>(1);
+  const [cantidad, setCantidad] = useState<number | ''>(1);
   const [unidad, setUnidad] = useState('ud');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -26,9 +26,10 @@ export const QuickItemInput: React.FC<QuickItemInputProps> = ({
 
     setIsSubmitting(true);
     try {
+      const finalCantidad = typeof cantidad === 'number' && cantidad >= 1 ? cantidad : 1;
       await onAddItem({
         nombre: trimmed,
-        cantidad: cantidad > 0 ? cantidad : 1,
+        cantidad: finalCantidad,
         unidad: unidad.trim() || 'ud',
       });
       setNombre('');
@@ -39,6 +40,18 @@ export const QuickItemInput: React.FC<QuickItemInputProps> = ({
       setTimeout(() => {
         inputRef.current?.focus();
       }, 0);
+    }
+  };
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    if (val === '') {
+      setCantidad('');
+      return;
+    }
+    const parsed = parseInt(val, 10);
+    if (!isNaN(parsed)) {
+      setCantidad(Math.max(1, parsed));
     }
   };
 
@@ -62,9 +75,9 @@ export const QuickItemInput: React.FC<QuickItemInputProps> = ({
           <input
             type="number"
             value={cantidad}
-            min={0.1}
-            step={0.1}
-            onChange={(e) => setCantidad(parseFloat(e.target.value) || 1)}
+            min={1}
+            step={1}
+            onChange={handleQuantityChange}
             disabled={disabled || isSubmitting}
             className={styles.quantityInput}
             aria-label="Cantidad"

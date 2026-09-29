@@ -4,11 +4,16 @@ import userEvent from '@testing-library/user-event';
 import { QuickItemInput } from './QuickItemInput';
 
 describe('QuickItemInput Component (Input Rápido Inline)', () => {
-  it('debe renderizar los campos de nombre, cantidad y selector de unidad', () => {
+  it('debe renderizar los campos de nombre, cantidad y selector de unidad con paso de 1 en 1 (unidades)', () => {
     render(<QuickItemInput onAddItem={vi.fn()} />);
 
     expect(screen.getByRole('textbox', { name: /nombre del producto/i })).toBeInTheDocument();
-    expect(screen.getByRole('spinbutton', { name: /cantidad/i })).toHaveValue(1);
+    
+    const quantityInput = screen.getByRole('spinbutton', { name: /cantidad/i });
+    expect(quantityInput).toHaveValue(1);
+    expect(quantityInput).toHaveAttribute('step', '1');
+    expect(quantityInput).toHaveAttribute('min', '1');
+
     expect(screen.getByRole('combobox', { name: /unidad/i })).toHaveValue('ud');
     expect(screen.getByRole('button', { name: /añadir ítem/i })).toBeInTheDocument();
   });
@@ -25,6 +30,26 @@ describe('QuickItemInput Component (Input Rápido Inline)', () => {
     expect(handleAdd).toHaveBeenCalledWith({
       nombre: 'Café molido',
       cantidad: 1,
+      unidad: 'ud',
+    });
+  });
+
+  it('debe permitir ajustar la cantidad en unidades enteras (paso de 1) y enviar la cantidad modificada', async () => {
+    const user = userEvent.setup();
+    const handleAdd = vi.fn();
+
+    render(<QuickItemInput onAddItem={handleAdd} />);
+
+    const nameInput = screen.getByRole('textbox', { name: /nombre del producto/i });
+    const quantityInput = screen.getByRole('spinbutton', { name: /cantidad/i });
+
+    await user.clear(quantityInput);
+    await user.type(quantityInput, '4');
+    await user.type(nameInput, 'Plátanos{Enter}');
+
+    expect(handleAdd).toHaveBeenCalledWith({
+      nombre: 'Plátanos',
+      cantidad: 4,
       unidad: 'ud',
     });
   });
