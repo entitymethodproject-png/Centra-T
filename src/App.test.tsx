@@ -31,6 +31,7 @@ describe('App Root Integration (Flujo de Sesión y Acceso UI)', () => {
     expect(screen.getByText(/usuario centra-t/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /cerrar sesión/i })).toBeInTheDocument();
     expect(screen.getByRole('main', { name: /lienzo de trabajo/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /tareas \(0\)/i })).toBeInTheDocument();
   });
 
   it('debe devolver al usuario a LoginPage al pulsar Cerrar Sesión en el Workspace', async () => {

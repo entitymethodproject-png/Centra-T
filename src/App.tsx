@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { WorkspaceLayout } from './workspace/components/WorkspaceLayout';
 import { LoginPage } from './authentication/views/LoginPage';
 import { TopNavbar } from './workspace/components/TopNavbar';
+import { HubContainer } from './hub/components/HubContainer';
+import { TasksAccordion } from './hub/components/TasksAccordion';
 
 export interface AppProps {
   initialAuthenticated?: boolean;
@@ -47,6 +49,12 @@ export const App: React.FC<AppProps> = ({ initialAuthenticated = false }) => {
           onLogout={handleLogout}
         />
       }
+      hubSlot={
+        <HubContainer>
+          <TasksAccordion />
+        </HubContainer>
+      }
     />
   );
 };
+
