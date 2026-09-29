@@ -58,8 +58,13 @@ export function useWorkspaceController({
   // 1. Estado de Sesión y Red
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     if (initialAuthenticated) return true;
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      return window.sessionStorage.getItem('centrat_auth') === 'true';
+    if (typeof window !== 'undefined') {
+      if (window.localStorage && window.localStorage.getItem('centrat_auth') === 'true') {
+        return true;
+      }
+      if (window.sessionStorage && window.sessionStorage.getItem('centrat_auth') === 'true') {
+        return true;
+      }
     }
     return false;
   });
@@ -117,8 +122,19 @@ export function useWorkspaceController({
         const res = await fetch('/api/auth/me', { credentials: 'include' });
         if (res.ok && isMounted) {
           setIsAuthenticated(true);
+          if (window.localStorage) {
+            window.localStorage.setItem('centrat_auth', 'true');
+          }
           if (window.sessionStorage) {
             window.sessionStorage.setItem('centrat_auth', 'true');
+          }
+        } else if (res.status === 401 && isMounted) {
+          setIsAuthenticated(false);
+          if (window.localStorage) {
+            window.localStorage.removeItem('centrat_auth');
+          }
+          if (window.sessionStorage) {
+            window.sessionStorage.removeItem('centrat_auth');
           }
         }
       } catch {
@@ -126,13 +142,13 @@ export function useWorkspaceController({
       }
     };
 
-    if (!isAuthenticated && !initialAuthenticated) {
+    if (!initialAuthenticated) {
       checkServerSession();
     }
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated, initialAuthenticated]);
+  }, [initialAuthenticated]);
 
   // Carga de colecciones reales desde PostgreSQL cuando la sesión está activa
   useEffect(() => {
@@ -201,8 +217,13 @@ export function useWorkspaceController({
 
   // Manejo de autenticación
   const handleLoginSuccess = useCallback(() => {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      window.sessionStorage.setItem('centrat_auth', 'true');
+    if (typeof window !== 'undefined') {
+      if (window.localStorage) {
+        window.localStorage.setItem('centrat_auth', 'true');
+      }
+      if (window.sessionStorage) {
+        window.sessionStorage.setItem('centrat_auth', 'true');
+      }
     }
     setIsAuthenticated(true);
   }, []);
@@ -210,6 +231,9 @@ export function useWorkspaceController({
   const handleLogout = useCallback(() => {
     setIsAuthenticated(false);
     if (typeof window !== 'undefined') {
+      if (window.localStorage) {
+        window.localStorage.removeItem('centrat_auth');
+      }
       if (window.sessionStorage) {
         window.sessionStorage.removeItem('centrat_auth');
       }

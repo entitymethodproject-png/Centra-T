@@ -83,6 +83,9 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
           if (res.ok) {
             const data = await res.json();
             setIsSuccess(true);
+            if (window.localStorage) {
+              window.localStorage.setItem('centrat_auth', 'true');
+            }
             if (window.sessionStorage) {
               window.sessionStorage.setItem('centrat_auth', 'true');
             }
@@ -107,8 +110,13 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
 
       const createdUser = await usersService.createUser({ email, password });
       setIsSuccess(true);
-      if (typeof window !== 'undefined' && window.sessionStorage) {
-        window.sessionStorage.setItem('centrat_auth', 'true');
+      if (typeof window !== 'undefined') {
+        if (window.localStorage) {
+          window.localStorage.setItem('centrat_auth', 'true');
+        }
+        if (window.sessionStorage) {
+          window.sessionStorage.setItem('centrat_auth', 'true');
+        }
       }
       if (onSuccess) {
         onSuccess(createdUser);

@@ -10,7 +10,7 @@ import { AuthenticationService } from '../authentication.service';
 export class SessionAuthGuard implements CanActivate {
   constructor(private readonly authService: AuthenticationService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token =
       request.cookies?.['centrat_session'] ||
@@ -20,7 +20,7 @@ export class SessionAuthGuard implements CanActivate {
       throw new UnauthorizedException('Sesión no válida o expirada');
     }
 
-    const session = this.authService.validateSessionToken(token);
+    const session = await this.authService.validateOrRestoreSessionToken(token);
     if (!session) {
       throw new UnauthorizedException('Sesión no válida o expirada');
     }

@@ -130,6 +130,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
           if (res.ok) {
             setIsSuccess(true);
+            if (window.localStorage) {
+              window.localStorage.setItem('centrat_auth', 'true');
+            }
             if (window.sessionStorage) {
               window.sessionStorage.setItem('centrat_auth', 'true');
             }
@@ -163,8 +166,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       const response = await authController.login({ email, password });
       if (response && response.statusCode === 200) {
         setIsSuccess(true);
-        if (typeof window !== 'undefined' && window.sessionStorage) {
-          window.sessionStorage.setItem('centrat_auth', 'true');
+        if (typeof window !== 'undefined') {
+          if (window.localStorage) {
+            window.localStorage.setItem('centrat_auth', 'true');
+          }
+          if (window.sessionStorage) {
+            window.sessionStorage.setItem('centrat_auth', 'true');
+          }
         }
         if (onSuccess) {
           onSuccess();
@@ -238,25 +246,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
                 Acceso concedido. Entrando al Workspace...
               </div>
             )}
-
-            <div className={styles.demoBox}>
-              <div className={styles.demoTitle}>💡 Credenciales Demo (PostgreSQL):</div>
-              <div className={styles.demoCredentials}>
-                <div><strong>Email:</strong> elena@centrat.local</div>
-                <div><strong>Contraseña:</strong> Password123!</div>
-              </div>
-              <button
-                type="button"
-                className={styles.demoButton}
-                onClick={() => {
-                  setEmail('elena@centrat.local');
-                  setPassword('Password123!');
-                  setErrors({});
-                }}
-              >
-                Rellenar credenciales demo
-              </button>
-            </div>
 
             <form onSubmit={handleLoginSubmit} noValidate className={styles.form}>
               <div className={styles.formGroup}>

@@ -75,6 +75,28 @@ export class AuthenticationService {
     return this.activeSessions.get(token) || null;
   }
 
+  async validateOrRestoreSessionToken(token: string): Promise<AuthSession | null> {
+    if (!token) return null;
+    const cached = this.activeSessions.get(token);
+    if (cached) return cached;
+
+    // Si el servidor se reinició, restaurar la sesión a partir del userId y PostgreSQL
+    const match = token.match(/^centrat_sess_([0-9a-fA-F-]+)_[a-z0-9]+$/);
+    if (match) {
+      try {
+        const user = await this.usersService.findById(match[1]);
+        if (user) {
+          const session: AuthSession = { userId: user.id, email: user.email, name: user.name };
+          this.activeSessions.set(token, session);
+          return session;
+        }
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }
+
   revokeSession(token: string): void {
     if (token) {
       this.activeSessions.delete(token);
