@@ -4,6 +4,7 @@ import { LoginPage } from './authentication/views/LoginPage';
 import { TopNavbar } from './workspace/components/TopNavbar';
 import { HubContainer } from './hub/components/HubContainer';
 import { TasksAccordion } from './hub/components/TasksAccordion';
+import { ShoppingAccordion } from './hub/components/ShoppingAccordion';
 
 export interface AppProps {
   initialAuthenticated?: boolean;
@@ -52,6 +53,7 @@ export const App: React.FC<AppProps> = ({ initialAuthenticated = false }) => {
       hubSlot={
         <HubContainer>
           <TasksAccordion />
+          <ShoppingAccordion />
         </HubContainer>
       }
     />
