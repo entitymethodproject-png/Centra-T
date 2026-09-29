@@ -274,7 +274,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               usersService={usersService}
               onSuccess={(createdUser) => {
                 setEmail(createdUser.email);
-                setTimeout(() => setActiveTab('login'), 1000);
+                if (onSuccess) onSuccess();
+                if (onNavigateToWorkspace) onNavigateToWorkspace();
               }}
               onSwitchToLogin={() => setActiveTab('login')}
             />

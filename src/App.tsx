@@ -8,13 +8,33 @@ export interface AppProps {
 }
 
 export const App: React.FC<AppProps> = ({ initialAuthenticated = false }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(initialAuthenticated);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (initialAuthenticated) return true;
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      return window.sessionStorage.getItem('centrat_auth') === 'true';
+    }
+    return false;
+  });
+
+  const handleLoginSuccess = () => {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      window.sessionStorage.setItem('centrat_auth', 'true');
+    }
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      window.sessionStorage.removeItem('centrat_auth');
+    }
+    setIsAuthenticated(false);
+  };
 
   if (!isAuthenticated) {
     return (
       <LoginPage
-        onNavigateToWorkspace={() => setIsAuthenticated(true)}
-        onSuccess={() => setIsAuthenticated(true)}
+        onNavigateToWorkspace={handleLoginSuccess}
+        onSuccess={handleLoginSuccess}
       />
     );
   }
@@ -24,7 +44,7 @@ export const App: React.FC<AppProps> = ({ initialAuthenticated = false }) => {
       navbarSlot={
         <TopNavbar
           user={{ name: 'Usuario Centra-T' }}
-          onLogout={() => setIsAuthenticated(false)}
+          onLogout={handleLogout}
         />
       }
     />
