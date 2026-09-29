@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest';
 import { beforeEach } from 'vitest';
 import { InMemoryUserRepository } from '../users/repositories/user.repository';
-import { InMemoryTaskRepository } from '../tasks/repositories/task.repository';
+import { InMemoryTaskRepository } from '../items/repositories/item.repository';
 
 beforeEach(() => {
   InMemoryUserRepository.clear();

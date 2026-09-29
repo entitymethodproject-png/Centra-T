@@ -1,3 +1,1 @@
-export interface BulkScheduleShoppingDto {
-  fechaProgramada: Date | string;
-}
+export * from '../../items/dto/bulk-schedule.dto';

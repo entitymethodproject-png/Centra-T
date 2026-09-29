@@ -27,7 +27,6 @@ test.describe('Centra-T · Suite Forense Automatizada E2E (Casos VV-001 a VV-009
 
     // Formulario de registro activo
     await expect(page.getByLabel(/confirmar contraseña/i)).toBeVisible();
-    await page.getByLabel(/nombre completo/i).fill('Carlos Flow');
     await page.getByLabel(/correo electrónico/i).fill('carlos.e2e@centrat.local');
     await page.getByLabel(/^contraseña$/i).fill('Password123!');
     await page.getByLabel(/confirmar contraseña/i).fill('Password123!');

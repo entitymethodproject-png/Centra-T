@@ -13,9 +13,7 @@ import { useItemFilters } from './filters/hooks/useItemFilters';
 import { sortItems } from './filters/utils/sortEngine';
 import { applyFilters } from './filters/utils/filterEngine';
 import { SortConfiguration, DEFAULT_SORT_CONFIG } from './filters/types/sort.types';
-import { TaskItem } from './tasks/entities/task-item.entity';
-import { ShoppingItem } from './shopping/entities/shopping-item.entity';
-import { CleaningItem } from './cleaning/entities/cleaning-item.entity';
+import { TaskItem, ShoppingItem, CleaningItem } from './items/entities/item.entity';
 import {
   CalendarSchedulableItem,
   DragItemPayload,
