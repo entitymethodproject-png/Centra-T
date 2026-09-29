@@ -415,12 +415,11 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
 
   it('[VV-003]: Al mover una tarea ya fechada a una nueva fecha se abre el modal de conflicto y [Mantener fecha] conserva la fecha original (Decisión 4B)', async () => {
     const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, '0');
-    const d = String(today.getDate()).padStart(2, '0');
-    const todayIso = `${y}-${m}-${d}`;
-    const nextDay = String(today.getDate() + 1).padStart(2, '0');
-    const nextDayIso = `${y}-${m}-${nextDay}`;
+    const toIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const todayIso = toIso(today);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const nextDayIso = toIso(tomorrow);
 
     const mockTasks = [
       {
@@ -480,12 +479,11 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
 
   it('[VV-003]: Al pulsar [Mover fecha] en el modal de conflicto se confirma la reasignación a la nueva casilla', async () => {
     const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth() + 1).padStart(2, '0');
-    const d = String(today.getDate()).padStart(2, '0');
-    const todayIso = `${y}-${m}-${d}`;
-    const nextDay = String(today.getDate() + 1).padStart(2, '0');
-    const nextDayIso = `${y}-${m}-${nextDay}`;
+    const toIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const todayIso = toIso(today);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+    const nextDayIso = toIso(tomorrow);
 
     const mockTasks = [
       {
