@@ -8,6 +8,7 @@ import { ShoppingAccordion } from './hub/components/ShoppingAccordion';
 import { CleaningAccordion } from './hub/components/CleaningAccordion';
 import { FilterModal } from './filters/components/FilterModal';
 import { SortMenu } from './filters/components/SortMenu';
+import { MonthlyCalendarGrid } from './workspace/components/MonthlyCalendarGrid';
 import { useItemFilters } from './filters/hooks/useItemFilters';
 import { sortItems } from './filters/utils/sortEngine';
 import { applyFilters } from './filters/utils/filterEngine';
@@ -177,6 +178,7 @@ export const App: React.FC<AppProps> = ({
             />
           </HubContainer>
         }
+        workbenchSlot={<MonthlyCalendarGrid />}
       />
 
       <FilterModal

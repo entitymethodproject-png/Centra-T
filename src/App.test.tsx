@@ -34,6 +34,14 @@ describe('App Root Integration (Flujo de Sesión y Acceso UI)', () => {
     expect(screen.getByRole('button', { name: /tareas \(0\)/i })).toBeInTheDocument();
   });
 
+  it('debe renderizar MonthlyCalendarGrid en el workbench al estar autenticado', () => {
+    render(<App initialAuthenticated={true} />);
+
+    expect(screen.getByRole('region', { name: /calendario mensual/i })).toBeInTheDocument();
+    expect(screen.getByRole('grid', { name: /cuadrícula del mes/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /ir al mes actual|hoy/i })).toBeInTheDocument();
+  });
+
   it('debe devolver al usuario a LoginPage al pulsar Cerrar Sesión en el Workspace', async () => {
     const user = userEvent.setup();
     render(<App initialAuthenticated={true} />);
