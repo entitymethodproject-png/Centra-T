@@ -135,3 +135,10 @@
 .switchButton:hover {
   text-decoration: underline;
 }
+
+.passwordHint {
+  font-size: 11px;
+  color: #94A3B8;
+  margin: 0;
+  line-height: 1.4;
+}

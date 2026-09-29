@@ -201,6 +201,10 @@ export const RegisterTab: React.FC<RegisterTabProps> = ({
           )}
         </div>
 
+        <p className={styles.passwordHint}>
+          ℹ️ Requisitos: mínimo 8 caracteres, al menos una mayúscula, un número y un símbolo (ej: Password123!).
+        </p>
+
         <button type="submit" disabled={isLoading} className={styles.submitButton}>
           {isLoading ? 'Creando cuenta...' : 'Crear Cuenta'}
         </button>

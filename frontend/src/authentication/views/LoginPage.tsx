@@ -239,6 +239,25 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               </div>
             )}
 
+            <div className={styles.demoBox}>
+              <div className={styles.demoTitle}>💡 Credenciales Demo (PostgreSQL):</div>
+              <div className={styles.demoCredentials}>
+                <div><strong>Email:</strong> elena@centrat.local</div>
+                <div><strong>Contraseña:</strong> Password123!</div>
+              </div>
+              <button
+                type="button"
+                className={styles.demoButton}
+                onClick={() => {
+                  setEmail('elena@centrat.local');
+                  setPassword('Password123!');
+                  setErrors({});
+                }}
+              >
+                Rellenar credenciales demo
+              </button>
+            </div>
+
             <form onSubmit={handleLoginSubmit} noValidate className={styles.form}>
               <div className={styles.formGroup}>
                 <label htmlFor="login-email" className={styles.label}>
@@ -315,7 +334,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         {activeTab === 'register' && (
           <div className={styles.tabContent} role="tabpanel">
             <RegisterTab
-              usersService={usersService}
+              usersService={propUsersService}
               onSuccess={(createdUser) => {
                 setEmail(createdUser.email);
                 if (onSuccess) onSuccess();
