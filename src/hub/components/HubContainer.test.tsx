@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-// @ts-expect-error Component not yet implemented (TDD Fase RED)
 import { HubContainer } from './HubContainer';
 
 describe('PVF-A01.02 · HubContainer (Mecanismo Colapsable Reactivo del Hub)', () => {
