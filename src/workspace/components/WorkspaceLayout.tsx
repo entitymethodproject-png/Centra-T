@@ -6,6 +6,7 @@ import { TopNavbar } from './TopNavbar';
 
 export interface WorkspaceLayoutProps {
   navbarSlot?: React.ReactNode;
+  bannerSlot?: React.ReactNode;
   hubSlot?: React.ReactNode;
   workbenchSlot?: React.ReactNode;
   children?: React.ReactNode;
@@ -13,11 +14,13 @@ export interface WorkspaceLayoutProps {
 
 export const WorkspaceLayout: React.FC<WorkspaceLayoutProps> = ({
   navbarSlot,
+  bannerSlot,
   hubSlot,
   workbenchSlot,
 }) => {
   return (
     <div className={styles.workspaceShell}>
+      {bannerSlot}
       <header role="banner" className={styles.navbarRegion}>
         {navbarSlot || <TopNavbar data-testid="navbar-placeholder" />}
       </header>

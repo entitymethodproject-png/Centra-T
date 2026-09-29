@@ -13,6 +13,7 @@ export interface ShoppingAccordionProps {
   initialExpanded?: boolean;
   isLoading?: boolean;
   error?: string | null;
+  isOffline?: boolean;
   onToggleExpand?: (expanded: boolean) => void;
   onCreateItemClick?: () => void;
   onItemCreated?: (item: ShoppingItem) => void;
@@ -29,6 +30,7 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
   initialExpanded = true,
   isLoading: propLoading = false,
   error: propError = null,
+  isOffline = false,
   onToggleExpand,
   onCreateItemClick,
   onItemCreated,
@@ -179,13 +181,17 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
 
         <button
           type="button"
-          className={styles.newButton}
+          disabled={isOffline}
+          aria-disabled={isOffline}
+          className={`${styles.newButton} ${isOffline ? styles.newButtonDisabled : ''}`}
           onClick={(e) => {
             e.stopPropagation();
-            handleOpenWizard();
+            if (!isOffline) {
+              handleOpenWizard();
+            }
           }}
           aria-label="Crear nuevo producto"
-          title="Crear nuevo producto"
+          title={isOffline ? 'Creación deshabilitada en modo sin conexión' : 'Crear nuevo producto'}
           data-testid="shopping-create-button"
         >
           +

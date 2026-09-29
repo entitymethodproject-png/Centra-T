@@ -25,6 +25,8 @@ import {
 import { ReassignmentConfirmModal } from './calendar-sync/components/ReassignmentConfirmModal';
 import { BulkShoppingConfirmModal } from './calendar-sync/components/BulkShoppingConfirmModal';
 import { CalendarItemContextMenu } from './calendar-sync/components/CalendarItemContextMenu';
+import { useNetworkStatus } from './workspace/hooks/useNetworkStatus';
+import { OfflineBanner } from './workspace/components/OfflineBanner';
 
 export interface AppProps {
   initialAuthenticated?: boolean;
@@ -46,6 +48,8 @@ export const App: React.FC<AppProps> = ({
     }
     return false;
   });
+
+  const { isOffline } = useNetworkStatus();
 
   // Colecciones de ítems reactivas en cliente
   const [allTasks, setAllTasks] = useState<TaskItem[]>(initialTasks || []);
@@ -298,6 +302,7 @@ export const App: React.FC<AppProps> = ({
   return (
     <>
       <WorkspaceLayout
+        bannerSlot={<OfflineBanner isOffline={isOffline} />}
         navbarSlot={
           <TopNavbar
             user={{ name: 'Usuario Centra-T' }}
@@ -314,6 +319,7 @@ export const App: React.FC<AppProps> = ({
           >
             <TasksAccordion
               tasks={processedTasks}
+              isOffline={isOffline}
               onTaskCreated={(newTask) => setAllTasks((prev) => [newTask, ...prev])}
               onTaskUpdated={(updated) =>
                 setAllTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
@@ -323,6 +329,7 @@ export const App: React.FC<AppProps> = ({
             />
             <ShoppingAccordion
               items={processedShopping}
+              isOffline={isOffline}
               onItemCreated={(newItem) => setAllShopping((prev) => [newItem, ...prev])}
               onItemUpdated={(updated) =>
                 setAllShopping((prev) => prev.map((i) => (i.id === updated.id ? updated : i)))
@@ -332,6 +339,7 @@ export const App: React.FC<AppProps> = ({
             />
             <CleaningAccordion
               items={processedCleaning}
+              isOffline={isOffline}
               onItemCreated={(newItem) => setAllCleaning((prev) => [newItem, ...prev])}
               onItemUpdated={(updated) =>
                 setAllCleaning((prev) => prev.map((i) => (i.id === updated.id ? updated : i)))

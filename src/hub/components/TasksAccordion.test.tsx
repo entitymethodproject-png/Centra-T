@@ -124,4 +124,17 @@ describe('TasksAccordion Component (EV-LIST-01 a EV-LIST-05)', () => {
 
     expect(handleToggle).toHaveBeenCalledWith('task-1');
   });
+
+  it('deshabilita el botón de crear (+) cuando isOffline es true', async () => {
+    const user = userEvent.setup();
+    render(<TasksAccordion tasks={mockTasks} isOffline={true} />);
+
+    const newBtn = screen.getByRole('button', { name: /crear nueva tarea/i });
+    expect(newBtn).toBeDisabled();
+    expect(newBtn).toHaveAttribute('aria-disabled', 'true');
+    expect(newBtn).toHaveClass(/newButtonDisabled/);
+
+    await user.click(newBtn);
+    expect(screen.queryByTestId('task-creation-wizard')).not.toBeInTheDocument();
+  });
 });

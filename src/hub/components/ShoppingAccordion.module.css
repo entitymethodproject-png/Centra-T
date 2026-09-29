@@ -103,6 +103,12 @@
   color: #FFFFFF;
 }
 
+.newButtonDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .contentArea {
   padding: 12px 14px;
   border-top: 1px solid var(--border-subtle, #233144);

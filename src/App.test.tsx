@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, within, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 
@@ -762,6 +762,73 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
       const taskCard = within(hub).getByTestId('task-card-task-unschedule-1');
       expect(taskCard).toBeInTheDocument();
       expect(within(taskCard).getByText('Revisión extintores')).toBeInTheDocument();
+    });
+  });
+
+  describe('Detección Offline y Modo Preventivo Solo Lectura (Caso Forense VV-008)', () => {
+    it('[VV-008]: Desconectar red despliega OfflineBanner superior y desactiva los botones de creación en el Hub', async () => {
+      render(<App initialAuthenticated={true} />);
+
+      // Simular desconexión de red
+      act(() => {
+        window.dispatchEvent(new Event('offline'));
+      });
+
+      // Banner visible con role="status" y microcopy canónico
+      const banner = await screen.findByTestId('offline-banner');
+      expect(banner).toBeInTheDocument();
+      expect(banner).toHaveAttribute('role', 'status');
+      expect(within(banner).getByText(/Modo sin conexión/i)).toBeInTheDocument();
+
+      // Botones de creación [+] inhabilitados
+      const taskCreateBtn = screen.getByTestId('task-create-button');
+      expect(taskCreateBtn).toBeDisabled();
+      expect(taskCreateBtn).toHaveAttribute('aria-disabled', 'true');
+
+      const shoppingCreateBtn = screen.getByTestId('shopping-create-button');
+      expect(shoppingCreateBtn).toBeDisabled();
+      expect(shoppingCreateBtn).toHaveAttribute('aria-disabled', 'true');
+
+      const cleaningCreateBtn = screen.getByTestId('cleaning-create-button');
+      expect(cleaningCreateBtn).toBeDisabled();
+      expect(cleaningCreateBtn).toHaveAttribute('aria-disabled', 'true');
+    });
+
+    it('[VV-008]: En modo offline los botones de Filtrar y Reordenar permanecen activos y funcionales para consulta local', () => {
+      render(<App initialAuthenticated={true} />);
+
+      act(() => {
+        window.dispatchEvent(new Event('offline'));
+      });
+
+      // Botones de control del Hub operativos
+      const filterBtn = screen.getByRole('button', { name: /^filtrar/i });
+      expect(filterBtn).toBeEnabled();
+
+      const sortBtn = screen.getByRole('button', { name: /^reordenar/i });
+      expect(sortBtn).toBeEnabled();
+    });
+
+    it('[VV-008]: Reconectar red oculta el OfflineBanner y restablece los botones de creación', async () => {
+      render(<App initialAuthenticated={true} />);
+
+      act(() => {
+        window.dispatchEvent(new Event('offline'));
+      });
+
+      expect(screen.getByTestId('offline-banner')).toBeInTheDocument();
+
+      // Simular reconexión de red
+      act(() => {
+        window.dispatchEvent(new Event('online'));
+      });
+
+      await waitFor(() => {
+        expect(screen.queryByTestId('offline-banner')).not.toBeInTheDocument();
+      });
+
+      const taskCreateBtn = screen.getByTestId('task-create-button');
+      expect(taskCreateBtn).toBeEnabled();
     });
   });
 });

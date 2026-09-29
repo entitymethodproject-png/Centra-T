@@ -12,6 +12,7 @@ export interface CleaningAccordionProps {
   initialExpanded?: boolean;
   isLoading?: boolean;
   error?: string | null;
+  isOffline?: boolean;
   onToggleExpand?: (expanded: boolean) => void;
   onCreateItemClick?: () => void;
   onItemCreated?: (item: CleaningItem) => void;
@@ -28,6 +29,7 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
   initialExpanded = true,
   isLoading: propLoading = false,
   error: propError = null,
+  isOffline = false,
   onToggleExpand,
   onCreateItemClick,
   onItemCreated,
@@ -148,13 +150,17 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
 
         <button
           type="button"
-          className={styles.newButton}
+          disabled={isOffline}
+          aria-disabled={isOffline}
+          className={`${styles.newButton} ${isOffline ? styles.newButtonDisabled : ''}`}
           onClick={(e) => {
             e.stopPropagation();
-            handleOpenWizard();
+            if (!isOffline) {
+              handleOpenWizard();
+            }
           }}
           aria-label="Crear nueva tarea de limpieza"
-          title="Crear nueva tarea de limpieza"
+          title={isOffline ? 'Creación deshabilitada en modo sin conexión' : 'Crear nueva tarea de limpieza'}
           data-testid="cleaning-create-button"
         >
           +

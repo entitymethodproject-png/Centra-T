@@ -12,6 +12,7 @@ export interface TasksAccordionProps {
   initialExpanded?: boolean;
   isLoading?: boolean;
   error?: string | null;
+  isOffline?: boolean;
   onToggleExpand?: (expanded: boolean) => void;
   onCreateTaskClick?: () => void;
   onTaskCreated?: (task: TaskItem) => void;
@@ -28,6 +29,7 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
   initialExpanded = true,
   isLoading: propLoading = false,
   error: propError = null,
+  isOffline = false,
   onToggleExpand,
   onCreateTaskClick,
   onTaskCreated,
@@ -142,13 +144,18 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
 
         <button
           type="button"
-          className={styles.newButton}
+          disabled={isOffline}
+          aria-disabled={isOffline}
+          className={`${styles.newButton} ${isOffline ? styles.newButtonDisabled : ''}`}
           onClick={(e) => {
             e.stopPropagation();
-            handleOpenWizard();
+            if (!isOffline) {
+              handleOpenWizard();
+            }
           }}
           aria-label="Crear nueva tarea"
-          title="Crear nueva tarea"
+          title={isOffline ? 'Creación deshabilitada en modo sin conexión' : 'Crear nueva tarea'}
+          data-testid="task-create-button"
         >
           +
         </button>
