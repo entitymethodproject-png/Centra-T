@@ -146,4 +146,71 @@ describe('MonthlyCalendarGrid Component', () => {
       })
     );
   });
+
+  it('debería renderizar CalendarDropZone en las casillas del mes', () => {
+    render(<MonthlyCalendarGrid initialDate={mockInitialDate} />);
+    const dropZone = screen.getByTestId('calendar-drop-zone-2026-09-15');
+    expect(dropZone).toBeInTheDocument();
+    expect(dropZone).toHaveAttribute('data-date', '2026-09-15');
+  });
+
+  it('debería proyectar las píldoras CalendarTaskPill en la casilla de la fecha programada', () => {
+    const scheduledItems = [
+      {
+        id: 'scheduled-1',
+        titulo: 'Revisión anual caldera',
+        prioridad: 'alta' as const,
+        modulo: 'tasks' as const,
+        completado: false,
+        fechaProgramada: '2026-09-15',
+      },
+    ];
+
+    render(
+      <MonthlyCalendarGrid
+        initialDate={mockInitialDate}
+        scheduledItems={scheduledItems}
+      />
+    );
+
+    const pill = screen.getByTestId('calendar-pill-scheduled-1');
+    expect(pill).toBeInTheDocument();
+    expect(pill).toHaveTextContent('Revisión anual caldera');
+  });
+
+  it('debería invocar onItemDrop al soltar un ítem sobre una casilla', () => {
+    const handleItemDrop = vi.fn();
+    render(
+      <MonthlyCalendarGrid
+        initialDate={mockInitialDate}
+        onItemDrop={handleItemDrop}
+      />
+    );
+
+    const dropZone = screen.getByTestId('calendar-drop-zone-2026-09-15');
+    const payload = {
+      id: 'task-dnd-1',
+      modulo: 'tasks' as const,
+      titulo: 'Comprar bombillas',
+      prioridad: 'media' as const,
+      completado: false,
+    };
+
+    const dataTransfer = {
+      getData: (format: string) => {
+        if (format === 'application/x-centrat-item' || format === 'text/plain') {
+          return JSON.stringify(payload);
+        }
+        return '';
+      },
+    };
+
+    // Usamos dispatchEvent de drag/drop nativo simulado
+    const dropEvent = new Event('drop', { bubbles: true, cancelable: true });
+    Object.defineProperty(dropEvent, 'dataTransfer', { value: dataTransfer });
+    dropZone.dispatchEvent(dropEvent);
+
+    expect(handleItemDrop).toHaveBeenCalledTimes(1);
+    expect(handleItemDrop).toHaveBeenCalledWith(payload, '2026-09-15');
+  });
 });

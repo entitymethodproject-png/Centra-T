@@ -16,6 +16,10 @@ import { SortConfiguration, DEFAULT_SORT_CONFIG } from './filters/types/sort.typ
 import { TaskItem } from './tasks/entities/task-item.entity';
 import { ShoppingItem } from './shopping/entities/shopping-item.entity';
 import { CleaningItem } from './cleaning/entities/cleaning-item.entity';
+import {
+  CalendarSchedulableItem,
+  DragItemPayload,
+} from './calendar-sync/types/drag-drop.types';
 
 export interface AppProps {
   initialAuthenticated?: boolean;
@@ -123,6 +127,52 @@ export const App: React.FC<AppProps> = ({
     );
   };
 
+  const allScheduledItems: CalendarSchedulableItem[] = useMemo(() => {
+    return [
+      ...allTasks.map((t) => ({
+        id: t.id,
+        modulo: 'tasks' as const,
+        titulo: t.titulo,
+        prioridad: t.prioridad,
+        completado: t.completado,
+        fechaProgramada: t.fechaProgramada,
+      })),
+      ...allShopping.map((s) => ({
+        id: s.id,
+        modulo: 'shopping' as const,
+        titulo: s.titulo || s.nombre || '',
+        prioridad: s.prioridad,
+        completado: s.completado || !!s.comprado,
+        fechaProgramada: s.fechaProgramada,
+      })),
+      ...allCleaning.map((c) => ({
+        id: c.id,
+        modulo: 'cleaning' as const,
+        titulo: c.titulo || c.nombre || '',
+        prioridad: c.prioridad,
+        completado: c.completado,
+        fechaProgramada: c.fechaProgramada,
+      })),
+    ].filter((i) => Boolean(i.fechaProgramada));
+  }, [allTasks, allShopping, allCleaning]);
+
+  const handleScheduleItem = (draggedItem: DragItemPayload, targetDate: string) => {
+    const targetDateObj = new Date(`${targetDate}T00:00:00`);
+    if (draggedItem.modulo === 'tasks') {
+      setAllTasks((prev) =>
+        prev.map((t) => (t.id === draggedItem.id ? { ...t, fechaProgramada: targetDateObj } : t))
+      );
+    } else if (draggedItem.modulo === 'shopping') {
+      setAllShopping((prev) =>
+        prev.map((s) => (s.id === draggedItem.id ? { ...s, fechaProgramada: targetDateObj } : s))
+      );
+    } else if (draggedItem.modulo === 'cleaning') {
+      setAllCleaning((prev) =>
+        prev.map((c) => (c.id === draggedItem.id ? { ...c, fechaProgramada: targetDateObj } : c))
+      );
+    }
+  };
+
   if (!isAuthenticated) {
     return (
       <LoginPage
@@ -178,7 +228,12 @@ export const App: React.FC<AppProps> = ({
             />
           </HubContainer>
         }
-        workbenchSlot={<MonthlyCalendarGrid />}
+        workbenchSlot={
+          <MonthlyCalendarGrid
+            scheduledItems={allScheduledItems}
+            onItemDrop={handleScheduleItem}
+          />
+        }
       />
 
       <FilterModal

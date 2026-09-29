@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ShoppingCard } from './ShoppingCard';
 import { ShoppingItem } from '../entities/shopping-item.entity';
@@ -177,5 +177,24 @@ describe('ShoppingCard Component (Mutación Optimista & Paridad de Diseño)', ()
     await user.click(screen.getByRole('checkbox'));
 
     expect(handleOptimistic).toHaveBeenCalledWith('shop-opt-01', true);
+  });
+
+  it('debe tener draggable=true y empaquetar DragItemPayload en onDragStart', () => {
+    render(<ShoppingCard item={baseItem} />);
+    const card = screen.getByTestId('shopping-item-shop-opt-01');
+    expect(card).toHaveAttribute('draggable', 'true');
+
+    const dataTransfer = {
+      setData: vi.fn(),
+      dropEffect: 'none',
+      effectAllowed: 'none',
+    };
+
+    fireEvent.dragStart(card, { dataTransfer });
+
+    expect(dataTransfer.setData).toHaveBeenCalledWith(
+      'application/x-centrat-item',
+      expect.stringContaining('"modulo":"shopping"')
+    );
   });
 });

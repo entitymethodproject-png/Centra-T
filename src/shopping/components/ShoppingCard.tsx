@@ -3,6 +3,7 @@ import styles from './ShoppingCard.module.css';
 import { ShoppingItem } from '../entities/shopping-item.entity';
 import { ShoppingService } from '../services/shopping.service';
 import { ShoppingActionMenu } from './ShoppingActionMenu';
+import { DRAG_TRANSFER_MIME, DragItemPayload } from '../../calendar-sync/types/drag-drop.types';
 
 export interface ShoppingCardProps {
   item: ShoppingItem;
@@ -12,6 +13,7 @@ export interface ShoppingCardProps {
   onItemUpdated?: (updatedItem: ShoppingItem) => void;
   onItemDeleted?: (itemId: string) => void;
   onRollback?: (revertedItem: ShoppingItem) => void;
+  isDraggable?: boolean;
 }
 
 export const ShoppingCard: React.FC<ShoppingCardProps> = ({
@@ -22,6 +24,7 @@ export const ShoppingCard: React.FC<ShoppingCardProps> = ({
   onItemUpdated,
   onItemDeleted,
   onRollback,
+  isDraggable = true,
 }) => {
   const [isCompleted, setIsCompleted] = useState<boolean>(item.completado || !!item.comprado);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -73,11 +76,27 @@ export const ShoppingCard: React.FC<ShoppingCardProps> = ({
 
   const displayName = item.titulo || item.nombre || '';
 
+  const handleDragStart = (e: React.DragEvent) => {
+    const payload: DragItemPayload = {
+      id: item.id,
+      modulo: 'shopping',
+      titulo: displayName,
+      prioridad: item.prioridad,
+      completado: isCompleted,
+      fechaProgramada: item.fechaProgramada ? String(item.fechaProgramada) : null,
+    };
+    e.dataTransfer.setData(DRAG_TRANSFER_MIME, JSON.stringify(payload));
+    e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
     <li
       className={`${styles.taskItem} ${isCompleted ? styles.completed : ''}`}
       data-testid={`shopping-item-${item.id}`}
       data-completed={isCompleted}
+      draggable={isDraggable}
+      onDragStart={handleDragStart}
     >
       <div className={styles.taskMain}>
         <label className={styles.checkboxLabel}>

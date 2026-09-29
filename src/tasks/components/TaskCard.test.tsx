@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TaskCard } from './TaskCard';
 import { TaskItem } from '../entities/task-item.entity';
@@ -183,5 +183,24 @@ describe('TaskCard Component (Mutación Optimista & Caso Forense VV-005)', () =>
     await user.click(screen.getByRole('checkbox'));
 
     expect(handleOptimistic).toHaveBeenCalledWith('task-opt-01', true);
+  });
+
+  it('debe tener draggable=true y empaquetar DragItemPayload en onDragStart', () => {
+    render(<TaskCard task={baseTask} />);
+    const card = screen.getByTestId('task-card-task-opt-01');
+    expect(card).toHaveAttribute('draggable', 'true');
+
+    const dataTransfer = {
+      setData: vi.fn(),
+      dropEffect: 'none',
+      effectAllowed: 'none',
+    };
+
+    fireEvent.dragStart(card, { dataTransfer });
+
+    expect(dataTransfer.setData).toHaveBeenCalledWith(
+      'application/x-centrat-item',
+      expect.stringContaining('"modulo":"tasks"')
+    );
   });
 });

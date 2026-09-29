@@ -1,0 +1,16 @@
+.dropZone {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.dropZoneActive {
+  outline: 2px dashed var(--accent-cobalt, #2563EB);
+  outline-offset: -2px;
+  background-color: rgba(37, 99, 235, 0.08);
+  border-radius: 4px;
+}

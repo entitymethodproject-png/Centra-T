@@ -3,6 +3,7 @@ import styles from './TaskCard.module.css';
 import { TaskItem } from '../entities/task-item.entity';
 import { TasksService } from '../services/tasks.service';
 import { TaskActionMenu } from './TaskActionMenu';
+import { DRAG_TRANSFER_MIME, DragItemPayload } from '../../calendar-sync/types/drag-drop.types';
 
 export interface TaskCardProps {
   task: TaskItem;
@@ -12,6 +13,7 @@ export interface TaskCardProps {
   onTaskUpdated?: (updatedTask: TaskItem) => void;
   onTaskDeleted?: (taskId: string) => void;
   onRollback?: (revertedTask: TaskItem) => void;
+  isDraggable?: boolean;
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({
@@ -22,6 +24,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   onTaskUpdated,
   onTaskDeleted,
   onRollback,
+  isDraggable = true,
 }) => {
   const [isCompleted, setIsCompleted] = useState<boolean>(task.completado);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -75,11 +78,27 @@ export const TaskCard: React.FC<TaskCardProps> = ({
     setToastMessage(null);
   };
 
+  const handleDragStart = (e: React.DragEvent) => {
+    const payload: DragItemPayload = {
+      id: task.id,
+      modulo: 'tasks',
+      titulo: task.titulo,
+      prioridad: task.prioridad,
+      completado: isCompleted,
+      fechaProgramada: task.fechaProgramada ? String(task.fechaProgramada) : null,
+    };
+    e.dataTransfer.setData(DRAG_TRANSFER_MIME, JSON.stringify(payload));
+    e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
     <li
       className={`${styles.taskItem} ${isCompleted ? styles.completed : ''}`}
       data-testid={`task-card-${task.id}`}
       data-completed={isCompleted}
+      draggable={isDraggable}
+      onDragStart={handleDragStart}
     >
       <div className={styles.taskMain}>
         <label className={styles.checkboxLabel}>

@@ -3,6 +3,7 @@ import styles from './CleaningCard.module.css';
 import { CleaningItem } from '../entities/cleaning-item.entity';
 import { CleaningService } from '../services/cleaning.service';
 import { CleaningActionMenu } from './CleaningActionMenu';
+import { DRAG_TRANSFER_MIME, DragItemPayload } from '../../calendar-sync/types/drag-drop.types';
 
 export interface CleaningCardProps {
   item: CleaningItem;
@@ -12,6 +13,7 @@ export interface CleaningCardProps {
   onItemUpdated?: (updatedItem: CleaningItem) => void;
   onItemDeleted?: (itemId: string) => void;
   onRollback?: (revertedItem: CleaningItem) => void;
+  isDraggable?: boolean;
 }
 
 export const CleaningCard: React.FC<CleaningCardProps> = ({
@@ -22,6 +24,7 @@ export const CleaningCard: React.FC<CleaningCardProps> = ({
   onItemUpdated,
   onItemDeleted,
   onRollback,
+  isDraggable = true,
 }) => {
   const [isCompleted, setIsCompleted] = useState<boolean>(item.completado);
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
@@ -75,11 +78,27 @@ export const CleaningCard: React.FC<CleaningCardProps> = ({
 
   const displayName = item.titulo || item.nombre || '';
 
+  const handleDragStart = (e: React.DragEvent) => {
+    const payload: DragItemPayload = {
+      id: item.id,
+      modulo: 'cleaning',
+      titulo: displayName,
+      prioridad: item.prioridad,
+      completado: isCompleted,
+      fechaProgramada: item.fechaProgramada ? String(item.fechaProgramada) : null,
+    };
+    e.dataTransfer.setData(DRAG_TRANSFER_MIME, JSON.stringify(payload));
+    e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
     <li
       className={`${styles.taskItem} ${isCompleted ? styles.completed : ''}`}
       data-testid={`cleaning-item-${item.id}`}
       data-completed={isCompleted}
+      draggable={isDraggable}
+      onDragStart={handleDragStart}
     >
       <div className={styles.taskMain}>
         <label className={styles.checkboxLabel}>

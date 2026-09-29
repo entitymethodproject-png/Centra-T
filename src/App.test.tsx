@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { App } from './App';
 
@@ -190,10 +190,12 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
     const user = userEvent.setup();
     render(<App initialAuthenticated={true} initialTasks={mockTasksForApp} />);
 
+    const hub = screen.getByRole('complementary', { name: /hub lateral/i });
+
     // 1. Estado inicial: 3 tareas visibles y contador Tareas (3)
-    expect(screen.getByText('Reparar caldera urgente')).toBeInTheDocument();
-    expect(screen.getByText('Comprar bombilla LED')).toBeInTheDocument();
-    expect(screen.getByText('Revisar recibos electricidad')).toBeInTheDocument();
+    expect(within(hub).getByText('Reparar caldera urgente')).toBeInTheDocument();
+    expect(within(hub).getByText('Comprar bombilla LED')).toBeInTheDocument();
+    expect(within(hub).getByText('Revisar recibos electricidad')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /tareas \(3\)/i })).toBeInTheDocument();
 
     // 2. Abrir FilterModal haciendo clic en [Filtrar]
@@ -215,9 +217,9 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
 
     // 6. Tareas no-alta desaparecen de la pantalla en tiempo real
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.getByText('Reparar caldera urgente')).toBeInTheDocument();
-    expect(screen.queryByText('Comprar bombilla LED')).not.toBeInTheDocument();
-    expect(screen.queryByText('Revisar recibos electricidad')).not.toBeInTheDocument();
+    expect(within(hub).getByText('Reparar caldera urgente')).toBeInTheDocument();
+    expect(within(hub).queryByText('Comprar bombilla LED')).not.toBeInTheDocument();
+    expect(within(hub).queryByText('Revisar recibos electricidad')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /tareas \(1\)/i })).toBeInTheDocument();
 
     // 7. Botón [Limpiar] visible en toolbar del Hub
@@ -228,9 +230,9 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
     // 8. Pulsar [Limpiar]: Vuelven a aparecer todas las tareas
     await user.click(clearBtn);
 
-    expect(screen.getByText('Reparar caldera urgente')).toBeInTheDocument();
-    expect(screen.getByText('Comprar bombilla LED')).toBeInTheDocument();
-    expect(screen.getByText('Revisar recibos electricidad')).toBeInTheDocument();
+    expect(within(hub).getByText('Reparar caldera urgente')).toBeInTheDocument();
+    expect(within(hub).getByText('Comprar bombilla LED')).toBeInTheDocument();
+    expect(within(hub).getByText('Revisar recibos electricidad')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /tareas \(3\)/i })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /limpiar filtros/i })).not.toBeInTheDocument();
   });
@@ -238,6 +240,8 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
   it('debe ocultar en caliente una tarea al completarla cuando el filtro SOLO_PENDIENTES está activo', async () => {
     const user = userEvent.setup();
     render(<App initialAuthenticated={true} initialTasks={mockTasksForApp} />);
+
+    const hub = screen.getByRole('complementary', { name: /hub lateral/i });
 
     // 1. Abrir FilterModal
     await user.click(screen.getByRole('button', { name: /^filtrar/i }));
@@ -247,25 +251,25 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
     await user.click(screen.getByRole('button', { name: /aplicar filtros/i }));
 
     // 3. Se muestran las 2 pendientes
-    expect(screen.getByText('Reparar caldera urgente')).toBeInTheDocument();
-    expect(screen.getByText('Comprar bombilla LED')).toBeInTheDocument();
-    expect(screen.queryByText('Revisar recibos electricidad')).not.toBeInTheDocument();
+    expect(within(hub).getByText('Reparar caldera urgente')).toBeInTheDocument();
+    expect(within(hub).getByText('Comprar bombilla LED')).toBeInTheDocument();
+    expect(within(hub).queryByText('Revisar recibos electricidad')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /tareas \(2\)/i })).toBeInTheDocument();
 
     // 4. Completar en caliente 'Reparar caldera urgente'
-    const checkbox = screen.getByRole('checkbox', { name: /completar tarea reparar caldera urgente/i });
+    const checkbox = within(hub).getByRole('checkbox', { name: /completar tarea reparar caldera urgente/i });
     await user.click(checkbox);
 
     // 5. Debe desaparecer inmediatamente de la vista
-    expect(screen.queryByText('Reparar caldera urgente')).not.toBeInTheDocument();
-    expect(screen.getByText('Comprar bombilla LED')).toBeInTheDocument();
+    expect(within(hub).queryByText('Reparar caldera urgente')).not.toBeInTheDocument();
+    expect(within(hub).getByText('Comprar bombilla LED')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /tareas \(1\)/i })).toBeInTheDocument();
 
     // 6. Restaurar filtros con [Limpiar] para volver a ver todas
     await user.click(screen.getByRole('button', { name: /limpiar filtros/i }));
-    expect(screen.getByText('Reparar caldera urgente')).toBeInTheDocument();
-    expect(screen.getByText('Comprar bombilla LED')).toBeInTheDocument();
-    expect(screen.getByText('Revisar recibos electricidad')).toBeInTheDocument();
+    expect(within(hub).getByText('Reparar caldera urgente')).toBeInTheDocument();
+    expect(within(hub).getByText('Comprar bombilla LED')).toBeInTheDocument();
+    expect(within(hub).getByText('Revisar recibos electricidad')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /tareas \(3\)/i })).toBeInTheDocument();
   });
 
@@ -292,6 +296,60 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
       'Reparar caldera urgente',
       'Revisar recibos electricidad',
     ]);
+  });
+
+  it('programa una tarea en el calendario al arrastrarla desde el Hub y soltarla en una casilla de día (RV-A07 / FIA-A07.02)', async () => {
+    const mockTasks = [
+      {
+        id: 'task-dnd-test',
+        titulo: 'Instalar estantería salón',
+        prioridad: 'alta' as const,
+        completado: false,
+        modulo: 'tasks' as const,
+        descripcion: 'Para el salón',
+        userId: 'usr-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        fechaProgramada: null,
+      },
+    ];
+
+    render(<App initialAuthenticated={true} initialTasks={mockTasks} />);
+
+    // Verificar que la tarjeta existe en el Hub y es arrastrable
+    const taskCard = screen.getByTestId('task-card-task-dnd-test');
+    expect(taskCard).toHaveAttribute('draggable', 'true');
+
+    // Simular dragStart y drop sobre la casilla con fireEvent (envuelto en act)
+    const dataTransferData: Record<string, string> = {};
+    const dataTransfer = {
+      setData: (format: string, data: string) => {
+        dataTransferData[format] = data;
+      },
+      getData: (format: string) => dataTransferData[format] || '',
+      dropEffect: 'none',
+      effectAllowed: 'none',
+    };
+
+    fireEvent.dragStart(taskCard, { dataTransfer });
+
+    // Obtener la casilla destino en el calendario
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const targetDate = `${y}-${m}-15`;
+
+    const dropZone = screen.getByTestId(`calendar-drop-zone-${targetDate}`);
+    expect(dropZone).toBeInTheDocument();
+
+    fireEvent.drop(dropZone, { dataTransfer });
+
+    // Verificar que la píldora aparece materializada en el calendario
+    await waitFor(() => {
+      const pill = screen.getByTestId('calendar-pill-task-dnd-test');
+      expect(pill).toBeInTheDocument();
+      expect(pill).toHaveTextContent('Instalar estantería salón');
+    });
   });
 });
 

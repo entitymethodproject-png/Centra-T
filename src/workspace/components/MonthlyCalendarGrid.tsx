@@ -4,20 +4,31 @@ import {
   CalendarDay,
   generateCalendarMatrix,
   getMonthName,
+  formatDateToIso,
 } from '../utils/calendarMatrix';
+import { CalendarDropZone } from '../../calendar-sync/components/CalendarDropZone';
+import { CalendarTaskPill } from '../../calendar-sync/components/CalendarTaskPill';
+import {
+  CalendarSchedulableItem,
+  DragItemPayload,
+} from '../../calendar-sync/types/drag-drop.types';
 
 export interface MonthlyCalendarGridProps {
   initialDate?: Date;
+  scheduledItems?: CalendarSchedulableItem[];
   onMonthChange?: (year: number, month: number) => void;
   onDayClick?: (day: CalendarDay) => void;
+  onItemDrop?: (item: DragItemPayload, targetDate: string) => void;
 }
 
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
 export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
   initialDate,
+  scheduledItems = [],
   onMonthChange,
   onDayClick,
+  onItemDrop,
 }) => {
   const [currentDate, setCurrentDate] = useState<Date>(() => initialDate || new Date());
 
@@ -32,6 +43,23 @@ export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
       ),
     [currentDate, referenceToday]
   );
+
+  const itemsForDay = useMemo(() => {
+    if (!scheduledItems || scheduledItems.length === 0) return {};
+    const map: Record<string, CalendarSchedulableItem[]> = {};
+    for (const item of scheduledItems) {
+      if (!item.fechaProgramada) continue;
+      const dateStr =
+        item.fechaProgramada instanceof Date
+          ? formatDateToIso(item.fechaProgramada)
+          : String(item.fechaProgramada).slice(0, 10);
+      if (!map[dateStr]) {
+        map[dateStr] = [];
+      }
+      map[dateStr].push(item);
+    }
+    return map;
+  }, [scheduledItems]);
 
   const handlePrevMonth = () => {
     const nextDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
@@ -97,6 +125,7 @@ export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
         {days.map((day) => {
           const isAdjacent = !day.isCurrentMonth;
           const isToday = day.isToday;
+          const dayItems = itemsForDay[day.dateString] || [];
 
           const cellClasses = [
             styles.cell,
@@ -129,10 +158,28 @@ export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
                 }
               }}
             >
-              <div className={styles.cellHeader}>
-                <span className={badgeClasses}>{day.dayNumber}</span>
-              </div>
-              <div className={styles.cellContent} />
+              <CalendarDropZone
+                dateString={day.dateString}
+                isPast={day.isPast}
+                isCurrentMonth={day.isCurrentMonth}
+                onItemDrop={onItemDrop}
+              >
+                <div className={styles.cellHeader}>
+                  <span className={badgeClasses}>{day.dayNumber}</span>
+                </div>
+                <div className={styles.cellContent}>
+                  {dayItems.map((item) => (
+                    <CalendarTaskPill
+                      key={item.id}
+                      id={item.id}
+                      titulo={item.titulo}
+                      prioridad={item.prioridad}
+                      modulo={item.modulo}
+                      completado={item.completado}
+                    />
+                  ))}
+                </div>
+              </CalendarDropZone>
             </div>
           );
         })}
