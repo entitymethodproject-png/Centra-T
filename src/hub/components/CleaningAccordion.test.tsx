@@ -54,7 +54,7 @@ describe('CleaningAccordion Component (Telemetría e Integración en Hub)', () =
     render(<CleaningAccordion items={mockItems} />);
 
     expect(screen.getByRole('button', { name: /limpieza \(2 pend \/ 3 tot\)/i })).toBeInTheDocument();
-    expect(screen.getByTestId('cleaning-pending-badge')).toHaveTextContent('2 pendientes');
+    expect(screen.getByTestId('cleaning-pending-badge')).toHaveTextContent('2');
   });
 
   it('2. debe colapsar y expandir el contenido al pulsar la cabecera', async () => {
@@ -78,24 +78,15 @@ describe('CleaningAccordion Component (Telemetría e Integración en Hub)', () =
     expect(screen.getByTestId('cleaning-populated-list')).toBeInTheDocument();
   });
 
-  it('3. debe filtrar reactivamente las tareas por zona al pulsar los chips semánticos', async () => {
-    const user = userEvent.setup();
+  it('3. debe renderizar todas las tareas con distintivos de zona y frecuencia', () => {
     render(<CleaningAccordion items={mockItems} />);
 
-    // Inicialmente todas visibles
     expect(screen.getByText('Fregar suelo cocina')).toBeInTheDocument();
     expect(screen.getByText('Desinfectar ducha')).toBeInTheDocument();
     expect(screen.getByText('Aspirar alfombra salón')).toBeInTheDocument();
-
-    // Filtrar por Cocina
-    await user.click(screen.getByTestId('cleaning-chip-cocina'));
-    expect(screen.getByText('Fregar suelo cocina')).toBeInTheDocument();
-    expect(screen.queryByText('Desinfectar ducha')).not.toBeInTheDocument();
-    expect(screen.queryByText('Aspirar alfombra salón')).not.toBeInTheDocument();
-
-    // Volver a Todas
-    await user.click(screen.getByTestId('cleaning-chip-todas'));
-    expect(screen.getByText('Desinfectar ducha')).toBeInTheDocument();
+    expect(screen.getByText('cocina')).toBeInTheDocument();
+    expect(screen.getByText('baño')).toBeInTheDocument();
+    expect(screen.getByText('salon')).toBeInTheDocument();
   });
 
   it('4. debe renderizar el Skeleton Screen de 3 líneas cuando isLoading=true', () => {
@@ -109,11 +100,12 @@ describe('CleaningAccordion Component (Telemetría e Integración en Hub)', () =
     expect(screen.getByText(/no hay tareas de limpieza/i)).toBeInTheDocument();
   });
 
-  it('6. debe abrir el modal de creación al pulsar [+ Nueva Limpieza] sin colapsar el acordeón', async () => {
+  it('6. debe abrir el modal de creación al pulsar [+] sin colapsar el acordeón', async () => {
     const user = userEvent.setup();
     render(<CleaningAccordion items={mockItems} />);
 
     const createBtn = screen.getByTestId('cleaning-create-button');
+    expect(createBtn).toHaveTextContent('+');
     await user.click(createBtn);
 
     expect(screen.getByTestId('cleaning-creation-modal')).toBeInTheDocument();

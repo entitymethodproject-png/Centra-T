@@ -19,7 +19,6 @@ export const CleaningCreationModal: React.FC<CleaningCreationModalProps> = ({
   const [nombre, setNombre] = useState('');
   const [zona, setZona] = useState<CleaningZone>('general');
   const [frecuencia, setFrecuencia] = useState<CleaningFrequency>('semanal');
-  const [fechaProgramada, setFechaProgramada] = useState('');
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -27,7 +26,6 @@ export const CleaningCreationModal: React.FC<CleaningCreationModalProps> = ({
       setNombre('');
       setZona('general');
       setFrecuencia('semanal');
-      setFechaProgramada('');
       setError(null);
     }
   }, [isOpen]);
@@ -62,7 +60,6 @@ export const CleaningCreationModal: React.FC<CleaningCreationModalProps> = ({
         nombre: trimmed,
         zona,
         frecuencia,
-        fechaProgramada: fechaProgramada ? new Date(fechaProgramada) : null,
       });
       onClose();
     } catch (err: any) {
@@ -158,21 +155,6 @@ export const CleaningCreationModal: React.FC<CleaningCreationModalProps> = ({
                 <option value="mensual">Mensual (+30 días)</option>
               </select>
             </div>
-          </div>
-
-          <div className={styles.fieldGroup}>
-            <label htmlFor="cleaning-schedule-date" className={styles.label}>
-              Fecha Programada (Opcional)
-            </label>
-            <input
-              id="cleaning-schedule-date"
-              type="date"
-              value={fechaProgramada}
-              onChange={(e) => setFechaProgramada(e.target.value)}
-              className={styles.input}
-              disabled={isLoading}
-              data-testid="cleaning-date-input"
-            />
           </div>
 
           <div className={styles.actions}>

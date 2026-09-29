@@ -34,7 +34,6 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
   const [items, setItems] = useState<CleaningItem[]>(propItems || []);
   const [isLoading, setIsLoading] = useState(propLoading);
   const [error, setError] = useState<string | null>(propError);
-  const [activeZone, setActiveZone] = useState<string>('todas');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -65,11 +64,6 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
 
   const total = items.length;
   const pendientes = items.filter((i) => !i.completado).length;
-
-  const filteredItems = items.filter((item) => {
-    if (activeZone === 'todas') return true;
-    return item.zona === activeZone;
-  });
 
   const handleHeaderClick = () => {
     const next = !isExpanded;
@@ -126,7 +120,7 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
         completado: false,
         lastCompletedAt: null,
         proximaFechaSugerida: suggested,
-        fechaProgramada: dto.fechaProgramada ? new Date(dto.fechaProgramada) : null,
+        fechaProgramada: null,
         createdAt: now,
         updatedAt: now,
       };
@@ -167,7 +161,7 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
         <div className={styles.headerRight}>
           {pendientes > 0 && (
             <span className={styles.pendingBadge} data-testid="cleaning-pending-badge">
-              {pendientes} pendientes
+              {pendientes}
             </span>
           )}
           <button
@@ -176,8 +170,9 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
             className={styles.createButton}
             data-testid="cleaning-create-button"
             aria-label="Nueva tarea de limpieza"
+            title="Nueva tarea de limpieza"
           >
-            + Nueva Limpieza
+            +
           </button>
         </div>
       </div>
@@ -185,23 +180,6 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
       {/* Cuerpo del Acordeón */}
       {isExpanded && (
         <div className={styles.contentArea}>
-          {/* Barra de Chips Semánticos por Zona */}
-          <div className={styles.chipsBar} role="group" aria-label="Filtrar por zona">
-            {['todas', 'cocina', 'baño', 'salon', 'general'].map((z) => (
-              <button
-                key={z}
-                type="button"
-                onClick={() => setActiveZone(z)}
-                className={`${styles.chip} ${activeZone === z ? styles.chipActive : ''} ${
-                  z !== 'todas' ? styles[`chip_${z}`] : ''
-                }`}
-                data-testid={`cleaning-chip-${z}`}
-              >
-                {z.charAt(0).toUpperCase() + z.slice(1)}
-              </button>
-            ))}
-          </div>
-
           {/* Skeleton Screen */}
           {isLoading && (
             <div className={styles.skeletonContainer} data-testid="cleaning-skeleton">
@@ -224,22 +202,20 @@ export const CleaningAccordion: React.FC<CleaningAccordionProps> = ({
           )}
 
           {/* Empty State */}
-          {!isLoading && !error && filteredItems.length === 0 && (
+          {!isLoading && !error && items.length === 0 && (
             <div className={styles.emptyContainer} data-testid="cleaning-empty-state">
               <div className={styles.emptyIcon} aria-hidden="true">🧹</div>
               <p className={styles.emptyTitle}>No hay tareas de limpieza</p>
               <p className={styles.emptySubtitle}>
-                {activeZone === 'todas'
-                  ? 'Pulsa [+ Nueva Limpieza] para programar el cuidado del hogar'
-                  : `No hay tareas registradas en la zona "${activeZone}"`}
+                Pulsa [+] para programar el cuidado del hogar
               </p>
             </div>
           )}
 
           {/* Populated List */}
-          {!isLoading && !error && filteredItems.length > 0 && (
+          {!isLoading && !error && items.length > 0 && (
             <ul className={styles.cleaningList} role="list" data-testid="cleaning-populated-list">
-              {filteredItems.map((item) => (
+              {items.map((item) => (
                 <li
                   key={item.id}
                   className={`${styles.cleaningItem} ${item.completado ? styles.itemCompleted : ''}`}

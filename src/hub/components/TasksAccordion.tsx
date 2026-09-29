@@ -132,8 +132,9 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
             handleOpenWizard();
           }}
           aria-label="Crear nueva tarea"
+          title="Crear nueva tarea"
         >
-          + Nueva
+          +
         </button>
       </div>
 
