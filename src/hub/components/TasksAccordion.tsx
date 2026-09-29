@@ -94,6 +94,10 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
     setTasks((prev) => prev.map((t) => (t.id === updatedTask.id ? updatedTask : t)));
   };
 
+  const handleTaskDeleted = (deletedId: string) => {
+    setTasks((prev) => prev.filter((t) => t.id !== deletedId));
+  };
+
   return (
     <div className={styles.accordionContainer}>
       {/* Cabecera del Acordeón */}
@@ -175,7 +179,7 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
             </div>
           )}
 
-          {/* EV-LIST-01: Lista Poblada de Tareas con TaskCard */}
+          {/* EV-LIST-01: Lista Poblada de Tareas con TaskCard y ActionMenu */}
           {!isLoading && !error && tasks.length > 0 && (
             <ul className={styles.taskList} role="list" data-testid="tasks-populated-list">
               {tasks.map((task) => (
@@ -190,6 +194,7 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
                     }
                   }}
                   onTaskUpdated={handleTaskUpdated}
+                  onTaskDeleted={handleTaskDeleted}
                 />
               ))}
             </ul>

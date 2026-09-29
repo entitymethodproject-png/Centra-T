@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './TaskCard.module.css';
 import { TaskItem } from '../entities/task-item.entity';
 import { TasksService } from '../services/tasks.service';
+import { TaskActionMenu } from './TaskActionMenu';
 
 export interface TaskCardProps {
   task: TaskItem;
@@ -9,6 +10,7 @@ export interface TaskCardProps {
   tasksService?: TasksService;
   onToggleOptimistic?: (taskId: string, newStatus: boolean) => void;
   onTaskUpdated?: (updatedTask: TaskItem) => void;
+  onTaskDeleted?: (taskId: string) => void;
   onRollback?: (revertedTask: TaskItem) => void;
 }
 
@@ -18,6 +20,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   tasksService,
   onToggleOptimistic,
   onTaskUpdated,
+  onTaskDeleted,
   onRollback,
 }) => {
   const [isCompleted, setIsCompleted] = useState<boolean>(task.completado);
@@ -103,6 +106,15 @@ export const TaskCard: React.FC<TaskCardProps> = ({
         >
           {task.prioridad.toUpperCase()}
         </span>
+
+        {/* Menú Contextual de Tarjeta */}
+        <TaskActionMenu
+          task={task}
+          userId={userId}
+          tasksService={tasksService}
+          onTaskUpdated={onTaskUpdated}
+          onTaskDeleted={onTaskDeleted}
+        />
       </div>
 
       {/* Caso Forense VV-005: Toast empático de reversión ante fallo 500 */}
