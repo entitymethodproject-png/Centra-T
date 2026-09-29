@@ -1,4 +1,4 @@
-import { AuthService } from '../services/auth.service';
+import { AuthService, AuthLogoutResponse } from '../services/auth.service';
 import { ThrottlerService } from '../services/throttler.service';
 import { LoginCredentialsDto } from '../dto/login-credentials.dto';
 import { AuthHttpResponse } from '../dto/auth-response.dto';
@@ -28,5 +28,9 @@ export class AuthController {
       this.throttlerService.recordFailure(throttleKey);
       throw err;
     }
+  }
+
+  async logout(sessionToken?: string): Promise<AuthLogoutResponse> {
+    return this.authService.logout(sessionToken);
   }
 }

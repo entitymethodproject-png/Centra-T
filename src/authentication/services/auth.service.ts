@@ -11,7 +11,25 @@ export class InvalidCredentialsError extends Error {
   }
 }
 
+export interface SessionData {
+  userId: string;
+  email: string;
+  createdAt: number;
+}
+
+export interface AuthLogoutResponse {
+  statusCode: number;
+  headers: {
+    'Set-Cookie': string;
+  };
+  body: {
+    message: string;
+  };
+}
+
 export class AuthService {
+  private activeSessions = new Map<string, SessionData>();
+
   constructor(private usersService: UsersService = new UsersService()) {}
 
   async authenticate(dto: LoginCredentialsDto): Promise<AuthHttpResponse> {
@@ -32,6 +50,13 @@ export class AuthService {
     const sessionToken = crypto.randomUUID();
     const setCookieHeader = `session_token=${sessionToken}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=86400`;
 
+    // Registrar sesión activa en memoria
+    this.activeSessions.set(sessionToken, {
+      userId: user.id,
+      email: user.email,
+      createdAt: Date.now(),
+    });
+
     return {
       statusCode: 200,
       headers: {
@@ -46,5 +71,36 @@ export class AuthService {
         token: sessionToken,
       },
     };
+  }
+
+  validateSession(token: string): SessionData | null {
+    if (!token) return null;
+    return this.activeSessions.get(token) || null;
+  }
+
+  revokeSession(token: string): boolean {
+    if (!token) return false;
+    return this.activeSessions.delete(token);
+  }
+
+  logout(token?: string): AuthLogoutResponse {
+    if (token) {
+      this.revokeSession(token);
+    }
+    const purgeCookieHeader =
+      'session_token=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    return {
+      statusCode: 200,
+      headers: {
+        'Set-Cookie': purgeCookieHeader,
+      },
+      body: {
+        message: 'Sesión cerrada correctamente',
+      },
+    };
+  }
+
+  getActiveSessionsCount(): number {
+    return this.activeSessions.size;
   }
 }
