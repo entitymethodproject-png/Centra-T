@@ -3,6 +3,7 @@ import styles from './ShoppingAccordion.module.css';
 import { ShoppingItem } from '../../shopping/entities/shopping-item.entity';
 import { ShoppingService } from '../../shopping/services/shopping.service';
 import { QuickItemInput } from '../../shopping/components/QuickItemInput';
+import { ShoppingItemList } from '../../shopping/components/ShoppingItemList';
 
 export interface ShoppingAccordionProps {
   items?: ShoppingItem[];
@@ -200,37 +201,12 @@ export const ShoppingAccordion: React.FC<ShoppingAccordionProps> = ({
             </div>
           )}
 
-          {/* Populated List */}
+          {/* Populated List delegada en ShoppingItemList (Modo Compra Activa) */}
           {!isLoading && !error && items.length > 0 && (
-            <ul className={styles.shoppingList} role="list" data-testid="shopping-populated-list">
-              {items.map((item) => (
-                <li
-                  key={item.id}
-                  className={`${styles.shoppingItem} ${item.comprado ? styles.completed : ''}`}
-                  data-testid={`shopping-item-${item.id}`}
-                >
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={item.comprado}
-                      onChange={() => handleToggleItem(item.id)}
-                      className={styles.checkbox}
-                      aria-label={`Comprar producto ${item.nombre}`}
-                    />
-                  </label>
-
-                  <span
-                    className={`${styles.itemName} ${item.comprado ? styles.nameCompleted : ''}`}
-                  >
-                    {item.nombre}
-                  </span>
-
-                  <span className={styles.quantityBadge}>
-                    {item.cantidad} {item.unidad}
-                  </span>
-                </li>
-              ))}
-            </ul>
+            <ShoppingItemList
+              items={items}
+              onToggleItem={handleToggleItem}
+            />
           )}
 
           {/* Input Rápido Inline en el pie */}

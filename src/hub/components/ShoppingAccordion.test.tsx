@@ -95,9 +95,11 @@ describe('ShoppingAccordion Component (Telemetría e Integración en Hub)', () =
     expect(screen.getByText('Arroz basmati')).toBeInTheDocument();
     expect(screen.getByText('1 kg')).toBeInTheDocument();
 
-    const checkboxes = screen.getAllByRole('checkbox');
-    expect(checkboxes[0]).toBeChecked(); // Leche comprada
-    expect(checkboxes[1]).not.toBeChecked(); // Arroz pendiente
+    const lecheCheckbox = screen.getByRole('checkbox', { name: /desmarcar producto leche desnatada/i });
+    const arrozCheckbox = screen.getByRole('checkbox', { name: /comprar producto arroz basmati/i });
+
+    expect(lecheCheckbox).toBeChecked(); // Leche comprada
+    expect(arrozCheckbox).not.toBeChecked(); // Arroz pendiente
   });
 
   it('debe actualizar la telemetría dinámicamente al alternar un checkbox', async () => {
@@ -107,9 +109,9 @@ describe('ShoppingAccordion Component (Telemetría e Integración en Hub)', () =
     const header = screen.getByRole('button', { name: /compra semanal \(1\/3\)/i });
     expect(header).toBeInTheDocument();
 
-    // Marcar arroz como comprado
-    const checkboxes = screen.getAllByRole('checkbox');
-    await user.click(checkboxes[1]);
+    // Marcar arroz como comprado mediante su etiqueta accesible
+    const arrozCheckbox = screen.getByRole('checkbox', { name: /comprar producto arroz basmati/i });
+    await user.click(arrozCheckbox);
 
     // Ratio pasa a 2/3 y pendientes pasa a 1
     expect(screen.getByRole('button', { name: /compra semanal \(2\/3\)/i })).toBeInTheDocument();
