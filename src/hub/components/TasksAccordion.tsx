@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styles from './TasksAccordion.module.css';
 import { TaskItem } from '../../tasks/entities/task-item.entity';
 import { TasksService } from '../../tasks/services/tasks.service';
+import { TaskCreationWizard } from '../../tasks/components/TaskCreationWizard';
 
 export interface TasksAccordionProps {
   tasks?: TaskItem[];
@@ -12,6 +13,7 @@ export interface TasksAccordionProps {
   error?: string | null;
   onToggleExpand?: (expanded: boolean) => void;
   onCreateTaskClick?: () => void;
+  onTaskCreated?: (task: TaskItem) => void;
   onTaskToggle?: (taskId: string) => void;
   onRetry?: () => void;
 }
@@ -19,12 +21,13 @@ export interface TasksAccordionProps {
 export const TasksAccordion: React.FC<TasksAccordionProps> = ({
   tasks: propTasks,
   tasksService,
-  userId,
+  userId = 'usr-demo-elena-001',
   initialExpanded = true,
   isLoading: propLoading = false,
   error: propError = null,
   onToggleExpand,
   onCreateTaskClick,
+  onTaskCreated,
   onTaskToggle,
   onRetry,
 }) => {
@@ -32,6 +35,7 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
   const [tasks, setTasks] = useState<TaskItem[]>(propTasks || []);
   const [isLoading, setIsLoading] = useState(propLoading);
   const [error, setError] = useState<string | null>(propError);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
 
   // Sincronizar props cuando cambian
   useEffect(() => {
@@ -66,6 +70,22 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
     setIsExpanded(next);
     if (onToggleExpand) {
       onToggleExpand(next);
+    }
+  };
+
+  const handleOpenWizard = () => {
+    if (onCreateTaskClick) {
+      onCreateTaskClick();
+    } else {
+      setIsWizardOpen(true);
+    }
+  };
+
+  const handleTaskCreated = (newTask: TaskItem) => {
+    setTasks((prev) => [newTask, ...prev]);
+    setIsWizardOpen(false);
+    if (onTaskCreated) {
+      onTaskCreated(newTask);
     }
   };
 
@@ -114,19 +134,17 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
           <h3 className={styles.title}>Tareas ({tasks.length})</h3>
         </div>
 
-        {onCreateTaskClick && (
-          <button
-            type="button"
-            className={styles.newButton}
-            onClick={(e) => {
-              e.stopPropagation();
-              onCreateTaskClick();
-            }}
-            aria-label="Crear nueva tarea"
-          >
-            + Nueva
-          </button>
-        )}
+        <button
+          type="button"
+          className={styles.newButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenWizard();
+          }}
+          aria-label="Crear nueva tarea"
+        >
+          + Nueva
+        </button>
       </div>
 
       {/* Cuerpo del Acordeón */}
@@ -161,15 +179,13 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
               </div>
               <p className={styles.emptyTitle}>No tienes tareas pendientes</p>
               <p className={styles.emptySubtitle}>Añade tareas para organizarte en casa</p>
-              {onCreateTaskClick && (
-                <button
-                  type="button"
-                  onClick={onCreateTaskClick}
-                  className={styles.emptyCtaButton}
-                >
-                  + Crear Tarea
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleOpenWizard}
+                className={styles.emptyCtaButton}
+              >
+                + Crear Tarea
+              </button>
             </div>
           )}
 
@@ -204,6 +220,15 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
           )}
         </div>
       )}
+
+      {/* Modal Wizard de Creación en 3 Pasos (VV-004) */}
+      <TaskCreationWizard
+        isOpen={isWizardOpen}
+        onClose={() => setIsWizardOpen(false)}
+        userId={userId}
+        tasksService={tasksService}
+        onTaskCreated={handleTaskCreated}
+      />
     </div>
   );
 };
