@@ -4,10 +4,10 @@
   "description": "Centra-T Backend API REST con NestJS 10.x, TypeORM y PostgreSQL",
   "private": true,
   "scripts": {
-    "build": "nest build || tsc -p tsconfig.build.json",
-    "start": "nest start || ts-node src/main.ts",
-    "start:dev": "nest start --watch || ts-node-dev src/main.ts",
-    "start:prod": "node dist/main",
+    "build": "tsc -p tsconfig.json",
+    "start": "ts-node src/main.ts",
+    "start:dev": "ts-node src/main.ts",
+    "start:prod": "node dist/main.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit"
