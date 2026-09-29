@@ -23,6 +23,7 @@ export const TaskActionMenu: React.FC<TaskActionMenuProps> = ({
   const [isPrioritySubmenuOpen, setIsPrioritySubmenuOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [openUpwards, setOpenUpwards] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
@@ -70,6 +71,11 @@ export const TaskActionMenu: React.FC<TaskActionMenuProps> = ({
 
   const handleToggleMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!isMenuOpen && menuRef.current && typeof window !== 'undefined') {
+      const rect = menuRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      setOpenUpwards(spaceBelow < 180);
+    }
     setIsMenuOpen((prev) => !prev);
     setIsPrioritySubmenuOpen(false);
   };
@@ -146,7 +152,7 @@ export const TaskActionMenu: React.FC<TaskActionMenuProps> = ({
       {isMenuOpen && (
         <div
           role="menu"
-          className={styles.dropdownMenu}
+          className={`${styles.dropdownMenu} ${openUpwards ? styles.dropdownMenuUpwards : ''}`}
           data-testid="task-action-dropdown"
           aria-label="Opciones de tarea"
         >

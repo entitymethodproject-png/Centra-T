@@ -105,7 +105,7 @@ export const TasksAccordion: React.FC<TasksAccordionProps> = ({
         role="button"
         tabIndex={0}
         aria-expanded={isExpanded}
-        className={styles.header}
+        className={`${styles.header} ${!isExpanded ? styles.headerCollapsed : ''}`}
         onClick={handleHeaderClick}
         onKeyDown={(e) => {
           if (e.key === 'Enter' || e.key === ' ') {
