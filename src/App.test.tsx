@@ -108,5 +108,34 @@ describe('App Root Integration (Flujo de Sesión y Acceso UI)', () => {
     });
     expect(window.sessionStorage.getItem('centrat_auth')).toBe('true');
   });
+
+  it('debe permitir login directo con las credenciales demo preconfiguradas (elena@centrat.local / Password123!)', async () => {
+    const user = userEvent.setup();
+    render(<App initialAuthenticated={false} />);
+
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'elena@centrat.local');
+    await user.type(screen.getByLabelText(/^contraseña/i), 'Password123!');
+    await user.click(screen.getByRole('button', { name: /entrar/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('main', { name: /lienzo de trabajo/i })).toBeInTheDocument();
+    });
+    expect(window.sessionStorage.getItem('centrat_auth')).toBe('true');
+  });
+
+  it('debe rechazar con error credenciales erróneas para el usuario demo', async () => {
+    const user = userEvent.setup();
+    render(<App initialAuthenticated={false} />);
+
+    await user.type(screen.getByLabelText(/correo electrónico/i), 'elena@centrat.local');
+    await user.type(screen.getByLabelText(/^contraseña/i), 'ContrasenaIncorrecta123!');
+    await user.click(screen.getByRole('button', { name: /entrar/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toHaveTextContent(/credenciales incorrectas/i);
+    });
+    expect(screen.queryByRole('main', { name: /lienzo de trabajo/i })).not.toBeInTheDocument();
+  });
 });
+
 
