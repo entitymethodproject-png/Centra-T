@@ -20,9 +20,11 @@ import {
   CalendarSchedulableItem,
   DragItemPayload,
   SchedulableDragPayload,
+  ItemModule,
 } from './calendar-sync/types/drag-drop.types';
 import { ReassignmentConfirmModal } from './calendar-sync/components/ReassignmentConfirmModal';
 import { BulkShoppingConfirmModal } from './calendar-sync/components/BulkShoppingConfirmModal';
+import { CalendarItemContextMenu } from './calendar-sync/components/CalendarItemContextMenu';
 
 export interface AppProps {
   initialAuthenticated?: boolean;
@@ -66,6 +68,12 @@ export const App: React.FC<AppProps> = ({
   const [bulkShoppingConflict, setBulkShoppingConflict] = useState<{
     targetDate: string;
     pendingCount: number;
+  } | null>(null);
+
+  // Estado para menú contextual de pastillas en calendario (Caso Forense VV-007)
+  const [contextMenuState, setContextMenuState] = useState<{
+    position: { x: number; y: number };
+    item: { id: string; modulo: ItemModule; titulo: string };
   } | null>(null);
 
   useEffect(() => {
@@ -202,6 +210,34 @@ export const App: React.FC<AppProps> = ({
     setBulkShoppingConflict(null);
   };
 
+  const handleItemContextMenu = (
+    e: React.MouseEvent,
+    item: { id: string; modulo: ItemModule; titulo: string }
+  ) => {
+    e.preventDefault();
+    setContextMenuState({
+      position: { x: e.clientX, y: e.clientY },
+      item,
+    });
+  };
+
+  const handleUnscheduleItem = (itemId: string, modulo: ItemModule) => {
+    if (modulo === 'tasks') {
+      setAllTasks((prev) =>
+        prev.map((t) => (t.id === itemId ? { ...t, fechaProgramada: null } : t))
+      );
+    } else if (modulo === 'shopping') {
+      setAllShopping((prev) =>
+        prev.map((s) => (s.id === itemId ? { ...s, fechaProgramada: null } : s))
+      );
+    } else if (modulo === 'cleaning') {
+      setAllCleaning((prev) =>
+        prev.map((c) => (c.id === itemId ? { ...c, fechaProgramada: null } : c))
+      );
+    }
+    setContextMenuState(null);
+  };
+
   const handleScheduleItem = (draggedItem: SchedulableDragPayload, targetDate: string) => {
     // Manejo de Compra Masiva (Caso VV-006)
     if ('isBulk' in draggedItem && draggedItem.isBulk === true && draggedItem.modulo === 'shopping') {
@@ -309,6 +345,7 @@ export const App: React.FC<AppProps> = ({
           <MonthlyCalendarGrid
             scheduledItems={allScheduledItems}
             onItemDrop={handleScheduleItem}
+            onItemContextMenu={handleItemContextMenu}
           />
         }
       />
@@ -354,6 +391,16 @@ export const App: React.FC<AppProps> = ({
         targetDate={bulkShoppingConflict?.targetDate || ''}
         onConfirm={handleConfirmBulkShopping}
         onCancel={() => setBulkShoppingConflict(null)}
+      />
+
+      <CalendarItemContextMenu
+        isOpen={Boolean(contextMenuState)}
+        position={contextMenuState?.position || { x: 0, y: 0 }}
+        itemId={contextMenuState?.item.id || ''}
+        modulo={contextMenuState?.item.modulo || 'tasks'}
+        itemTitle={contextMenuState?.item.titulo || ''}
+        onUnschedule={handleUnscheduleItem}
+        onClose={() => setContextMenuState(null)}
       />
     </>
   );

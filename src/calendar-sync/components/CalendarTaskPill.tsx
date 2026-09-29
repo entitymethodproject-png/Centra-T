@@ -12,6 +12,7 @@ export interface CalendarTaskPillProps {
   isDraggable?: boolean;
   isBulk?: boolean;
   onClick?: (id: string) => void;
+  onContextMenu?: (e: React.MouseEvent, item: { id: string; modulo: ItemModule; titulo: string }) => void;
 }
 
 const MODULE_INITIALS: Record<ItemModule, string> = {
@@ -30,6 +31,7 @@ export const CalendarTaskPill: React.FC<CalendarTaskPillProps> = ({
   isDraggable = true,
   isBulk = false,
   onClick,
+  onContextMenu,
 }) => {
   const moduleInitial = MODULE_INITIALS[modulo] || 'T';
 
@@ -53,6 +55,14 @@ export const CalendarTaskPill: React.FC<CalendarTaskPillProps> = ({
     e.dataTransfer.effectAllowed = 'move';
   };
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    if (onContextMenu) {
+      e.preventDefault();
+      e.stopPropagation();
+      onContextMenu(e, { id, modulo, titulo });
+    }
+  };
+
   return (
     <div
       className={`${styles.pillContainer} ${isBulk ? styles.bulkShoppingPill : ''}`}
@@ -63,6 +73,7 @@ export const CalendarTaskPill: React.FC<CalendarTaskPillProps> = ({
       draggable={isDraggable}
       onDragStart={handleDragStart}
       onClick={() => onClick?.(id)}
+      onContextMenu={handleContextMenu}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {

@@ -678,6 +678,92 @@ describe('App Root Integration - Filtrado Reactivo y Reordenación en Caliente (
       expect(within(todayZone).queryByTestId('calendar-pill-shop-bulk-completed')).not.toBeInTheDocument();
     });
   });
+
+  describe('Desasignación por Clic Derecho y Retorno al Hub (Caso Forense VV-007)', () => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const d = String(today.getDate()).padStart(2, '0');
+    const todayIso = `${y}-${m}-${d}`;
+
+    const createInitialTasks = () => [
+      {
+        id: 'task-unschedule-1',
+        titulo: 'Revisión extintores',
+        descripcion: 'Verificar fecha de caducidad',
+        modulo: 'tasks' as const,
+        prioridad: 'alta' as const,
+        completado: false,
+        fechaProgramada: new Date(`${todayIso}T00:00:00`),
+        userId: 'usr-1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ];
+
+    it('[VV-007]: Clic derecho en una pastilla del calendario abre el menú contextual en la posición del cursor', () => {
+      render(<App initialAuthenticated={true} initialTasks={createInitialTasks()} />);
+
+      const pill = screen.getByTestId('calendar-pill-task-unschedule-1');
+      expect(pill).toBeInTheDocument();
+
+      fireEvent.contextMenu(pill, { clientX: 320, clientY: 210 });
+
+      const menu = screen.getByTestId('calendar-item-context-menu');
+      expect(menu).toBeInTheDocument();
+      expect(menu).toHaveStyle({ top: '210px', left: '320px' });
+      expect(screen.getByRole('menuitem', { name: /mover a sin asignar/i })).toBeInTheDocument();
+    });
+
+    it('[VV-007]: Presionar Escape o hacer clic fuera cierra el menú sin desasignar la pastilla', () => {
+      render(<App initialAuthenticated={true} initialTasks={createInitialTasks()} />);
+
+      const pill = screen.getByTestId('calendar-pill-task-unschedule-1');
+      fireEvent.contextMenu(pill, { clientX: 320, clientY: 210 });
+
+      expect(screen.getByTestId('calendar-item-context-menu')).toBeInTheDocument();
+
+      // Presionar Escape
+      fireEvent.keyDown(window, { key: 'Escape' });
+
+      // Menú cerrado
+      expect(screen.queryByTestId('calendar-item-context-menu')).not.toBeInTheDocument();
+
+      // La pastilla permanece intacta en el calendario
+      expect(screen.getByTestId('calendar-pill-task-unschedule-1')).toBeInTheDocument();
+    });
+
+    it('[VV-007]: Seleccionar "Mover a Sin Asignar" retira la pastilla del calendario y mantiene el ítem intacto en el Hub sin fecha', async () => {
+      render(<App initialAuthenticated={true} initialTasks={createInitialTasks()} />);
+
+      const todayZone = screen.getByTestId(`calendar-drop-zone-${todayIso}`);
+      const pill = within(todayZone).getByTestId('calendar-pill-task-unschedule-1');
+      expect(pill).toBeInTheDocument();
+
+      // Clic derecho para desplegar menú contextual
+      fireEvent.contextMenu(pill, { clientX: 300, clientY: 200 });
+
+      const unscheduleBtn = screen.getByTestId('context-menu-unschedule-btn');
+      expect(unscheduleBtn).toBeInTheDocument();
+
+      // Pulsar "Mover a Sin Asignar"
+      fireEvent.click(unscheduleBtn);
+
+      // Menú contextual se cierra
+      expect(screen.queryByTestId('calendar-item-context-menu')).not.toBeInTheDocument();
+
+      // La pastilla ya NO está presente en el calendario
+      await waitFor(() => {
+        expect(within(todayZone).queryByTestId('calendar-pill-task-unschedule-1')).not.toBeInTheDocument();
+      });
+
+      // El ítem se mantiene vivo e intacto en el Hub lateral sin eliminarse de la aplicación
+      const hub = screen.getByRole('complementary', { name: /hub lateral/i });
+      const taskCard = within(hub).getByTestId('task-card-task-unschedule-1');
+      expect(taskCard).toBeInTheDocument();
+      expect(within(taskCard).getByText('Revisión extintores')).toBeInTheDocument();
+    });
+  });
 });
 
 

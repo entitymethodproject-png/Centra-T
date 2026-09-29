@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MonthlyCalendarGrid } from './MonthlyCalendarGrid';
 
@@ -256,4 +256,40 @@ describe('MonthlyCalendarGrid Component', () => {
     expect(handleItemDrop).toHaveBeenCalledTimes(1);
     expect(handleItemDrop).toHaveBeenCalledWith(payload, '2026-09-30');
   });
+
+  it('propaga onItemContextMenu a CalendarTaskPill al recibir clic derecho', () => {
+    const handleContextMenu = vi.fn();
+    const scheduledItems = [
+      {
+        id: 'task-grid-ctx',
+        modulo: 'tasks' as const,
+        titulo: 'Revisión contador gas',
+        prioridad: 'alta' as const,
+        completado: false,
+        fechaProgramada: '2026-09-29',
+      },
+    ];
+
+    render(
+      <MonthlyCalendarGrid
+        initialDate={mockInitialDate}
+        scheduledItems={scheduledItems}
+        onItemContextMenu={handleContextMenu}
+      />
+    );
+
+    const pill = screen.getByTestId('calendar-pill-task-grid-ctx');
+    fireEvent.contextMenu(pill);
+
+    expect(handleContextMenu).toHaveBeenCalledTimes(1);
+    expect(handleContextMenu).toHaveBeenCalledWith(
+      expect.any(Object),
+      {
+        id: 'task-grid-ctx',
+        modulo: 'tasks',
+        titulo: 'Revisión contador gas',
+      }
+    );
+  });
 });
+

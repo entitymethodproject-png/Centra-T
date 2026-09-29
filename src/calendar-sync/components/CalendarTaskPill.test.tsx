@@ -177,4 +177,31 @@ describe('CalendarTaskPill Component', () => {
       })
     );
   });
+
+  it('dispara onContextMenu suprimiendo el menú nativo (preventDefault) con los datos del ítem', () => {
+    const handleContextMenu = vi.fn();
+    render(
+      <CalendarTaskPill
+        id="task-pill-ctx"
+        titulo="Limpiar filtros campana"
+        prioridad="media"
+        modulo="cleaning"
+        onContextMenu={handleContextMenu}
+      />
+    );
+
+    const pill = screen.getByTestId('calendar-pill-task-pill-ctx');
+    fireEvent.contextMenu(pill);
+
+    expect(handleContextMenu).toHaveBeenCalledTimes(1);
+    expect(handleContextMenu).toHaveBeenCalledWith(
+      expect.any(Object),
+      {
+        id: 'task-pill-ctx',
+        modulo: 'cleaning',
+        titulo: 'Limpiar filtros campana',
+      }
+    );
+  });
 });
+

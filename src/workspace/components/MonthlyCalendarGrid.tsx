@@ -11,6 +11,7 @@ import { CalendarTaskPill } from '../../calendar-sync/components/CalendarTaskPil
 import {
   CalendarSchedulableItem,
   SchedulableDragPayload,
+  ItemModule,
 } from '../../calendar-sync/types/drag-drop.types';
 
 export interface MonthlyCalendarGridProps {
@@ -19,6 +20,7 @@ export interface MonthlyCalendarGridProps {
   onMonthChange?: (year: number, month: number) => void;
   onDayClick?: (day: CalendarDay) => void;
   onItemDrop?: (item: SchedulableDragPayload, targetDate: string) => void;
+  onItemContextMenu?: (e: React.MouseEvent, item: { id: string; modulo: ItemModule; titulo: string }) => void;
 }
 
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
@@ -29,6 +31,7 @@ export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
   onMonthChange,
   onDayClick,
   onItemDrop,
+  onItemContextMenu,
 }) => {
   const [currentDate, setCurrentDate] = useState<Date>(() => initialDate || new Date());
 
@@ -177,6 +180,7 @@ export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
                       modulo={item.modulo}
                       completado={item.completado}
                       fechaProgramada={item.fechaProgramada}
+                      onContextMenu={onItemContextMenu}
                     />
                   ))}
                 </div>
