@@ -9,8 +9,10 @@ import { ItemsModule } from './items/items.module';
 import { TasksModule } from './tasks/tasks.module';
 import { ShoppingModule } from './shopping/shopping.module';
 import { CleaningModule } from './cleaning/cleaning.module';
+import { AppController } from './app.controller';
 
 @Module({
+  controllers: [AppController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({

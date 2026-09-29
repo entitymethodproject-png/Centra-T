@@ -32,7 +32,10 @@ async function bootstrap() {
 
   const port = process.env.PORT || 4000;
   await app.listen(port);
-  console.log(`[Centra-T Backend] Servidor NestJS activo en http://localhost:${port}/api`);
+  console.log(`\n============================================================`);
+  console.log(`🚀 [BACKEND API]  Activa en:  http://localhost:${port}/api`);
+  console.log(`🌐 [FRONTEND WEB] Entra en:   http://localhost:3001`);
+  console.log(`============================================================\n`);
 }
 
 bootstrap();
