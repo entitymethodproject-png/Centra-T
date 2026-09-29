@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from './ItemCard.module.css';
 import { Item } from '../entities/item.entity';
-import { ItemsService } from '../services/items.service';
+import { type PolymorphicItemsService } from '../services/items.service';
 import { ItemActionMenu } from './ItemActionMenu';
 import { DRAG_TRANSFER_MIME, DragItemPayload } from '../../calendar-sync/types/drag-drop.types';
 
@@ -9,10 +9,10 @@ export interface ItemCardProps {
   item?: Item;
   task?: Item; // alias retrocompatible
   userId?: string;
-  itemsService?: ItemsService;
-  tasksService?: ItemsService; // alias retrocompatible
-  shoppingService?: ItemsService; // alias retrocompatible
-  cleaningService?: ItemsService; // alias retrocompatible
+  itemsService?: PolymorphicItemsService;
+  tasksService?: PolymorphicItemsService; // alias retrocompatible
+  shoppingService?: PolymorphicItemsService; // alias retrocompatible
+  cleaningService?: PolymorphicItemsService; // alias retrocompatible
   onToggleOptimistic?: (itemId: string, newStatus: boolean) => void;
   onItemUpdated?: (updatedItem: Item) => void;
   onTaskUpdated?: (updatedTask: Item) => void; // alias retrocompatible
@@ -83,31 +83,31 @@ export const ItemCard: React.FC<ItemCardProps> = ({
     if (service && userId) {
       setIsSyncing(true);
       try {
-        let updated: Item;
+        let updated: Item | undefined;
         if (modulo === 'shopping') {
-          if (typeof (service as any).toggleBoughtStatus === 'function') {
-            updated = await (service as any).toggleBoughtStatus(userId, currentItem.id);
-          } else {
+          if (typeof service.toggleBoughtStatus === 'function') {
+            updated = (await service.toggleBoughtStatus(userId, currentItem.id)) as Item;
+          } else if (typeof service.toggleItemStatus === 'function') {
             updated = await service.toggleItemStatus(userId, currentItem.id);
           }
         } else if (modulo === 'cleaning') {
-          if (typeof (service as any).updateItem === 'function') {
+          if (typeof service.updateItem === 'function') {
             updated = await service.updateItem(userId, currentItem.id, { completado: newStatus });
-          } else if (typeof (service as any).toggleTaskStatus === 'function') {
-            updated = await (service as any).toggleTaskStatus(userId, currentItem.id);
-          } else {
+          } else if (typeof service.toggleTaskStatus === 'function') {
+            updated = (await service.toggleTaskStatus(userId, currentItem.id)) as Item;
+          } else if (typeof service.toggleItemStatus === 'function') {
             updated = await service.toggleItemStatus(userId, currentItem.id);
           }
         } else {
           // tasks
-          if (typeof (service as any).toggleTaskStatus === 'function') {
-            updated = await (service as any).toggleTaskStatus(userId, currentItem.id);
-          } else {
+          if (typeof service.toggleTaskStatus === 'function') {
+            updated = (await service.toggleTaskStatus(userId, currentItem.id)) as Item;
+          } else if (typeof service.toggleItemStatus === 'function') {
             updated = await service.toggleItemStatus(userId, currentItem.id);
           }
         }
         setIsSyncing(false);
-        if (notifyUpdated) {
+        if (notifyUpdated && updated) {
           notifyUpdated(updated);
         }
       } catch {

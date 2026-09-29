@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './ItemActionMenu.module.css';
 import { Item, ItemPriority } from '../entities/item.entity';
-import { ItemsService } from '../services/items.service';
+import { type PolymorphicItemsService } from '../services/items.service';
 
 export interface ItemActionMenuProps {
   item?: Item;
   task?: Item; // alias retrocompatible
   userId?: string;
-  itemsService?: ItemsService;
-  tasksService?: ItemsService; // alias retrocompatible
-  shoppingService?: ItemsService; // alias retrocompatible
-  cleaningService?: ItemsService; // alias retrocompatible
+  itemsService?: PolymorphicItemsService;
+  tasksService?: PolymorphicItemsService; // alias retrocompatible
+  shoppingService?: PolymorphicItemsService; // alias retrocompatible
+  cleaningService?: PolymorphicItemsService; // alias retrocompatible
   onItemUpdated?: (updatedItem: Item) => void;
   onItemDeleted?: (itemId: string) => void;
   onTaskUpdated?: (updatedTask: Item) => void; // alias retrocompatible
@@ -130,18 +130,18 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
       setIsSavingDesc(true);
       try {
         let updated: Item;
-        if (modulo === 'tasks' && typeof (service as any).updateTask === 'function') {
-          updated = await (service as any).updateTask(userId, currentItem.id, {
+        if (modulo === 'tasks' && typeof service.updateTask === 'function') {
+          updated = (await service.updateTask(userId, currentItem.id, {
             descripcion: descriptionText.trim(),
-          });
+          })) as Item;
         } else if (typeof service.updateItem === 'function') {
           updated = await service.updateItem(userId, currentItem.id, {
             descripcion: descriptionText.trim(),
           });
-        } else if (typeof (service as any).updateTask === 'function') {
-          updated = await (service as any).updateTask(userId, currentItem.id, {
+        } else if (typeof service.updateTask === 'function') {
+          updated = (await service.updateTask(userId, currentItem.id, {
             descripcion: descriptionText.trim(),
-          });
+          })) as Item;
         } else {
           updated = {
             ...currentItem,
@@ -154,9 +154,10 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
         if (notifyUpdated) {
           notifyUpdated(updated);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setIsSavingDesc(false);
-        setDescError(err.message || 'Error al guardar la descripción');
+        const error = err as Error;
+        setDescError(error?.message || 'Error al guardar la descripción');
       }
     } else {
       const updated: Item = {
@@ -179,18 +180,18 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
     try {
       if (service && userId) {
         let updated: Item;
-        if (modulo === 'tasks' && typeof (service as any).updateTask === 'function') {
-          updated = await (service as any).updateTask(userId, currentItem.id, {
+        if (modulo === 'tasks' && typeof service.updateTask === 'function') {
+          updated = (await service.updateTask(userId, currentItem.id, {
             descripcion: '',
-          });
+          })) as Item;
         } else if (typeof service.updateItem === 'function') {
           updated = await service.updateItem(userId, currentItem.id, {
             descripcion: '',
           });
-        } else if (typeof (service as any).updateTask === 'function') {
-          updated = await (service as any).updateTask(userId, currentItem.id, {
+        } else if (typeof service.updateTask === 'function') {
+          updated = (await service.updateTask(userId, currentItem.id, {
             descripcion: '',
-          });
+          })) as Item;
         } else {
           updated = {
             ...currentItem,
@@ -216,9 +217,10 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
         }
       }
       setDescriptionText('');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsSavingDesc(false);
-      setDescError(err?.message || 'No se pudo borrar la descripción');
+      const error = err as Error;
+      setDescError(error?.message || 'No se pudo borrar la descripción');
     }
   };
 
@@ -229,18 +231,18 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
     if (service && userId) {
       try {
         let updated: Item;
-        if (modulo === 'tasks' && typeof (service as any).updateTask === 'function') {
-          updated = await (service as any).updateTask(userId, currentItem.id, {
+        if (modulo === 'tasks' && typeof service.updateTask === 'function') {
+          updated = (await service.updateTask(userId, currentItem.id, {
             prioridad: newPriority,
-          });
+          })) as Item;
         } else if (typeof service.updateItem === 'function') {
           updated = await service.updateItem(userId, currentItem.id, {
             prioridad: newPriority,
           });
-        } else if (typeof (service as any).updateTask === 'function') {
-          updated = await (service as any).updateTask(userId, currentItem.id, {
+        } else if (typeof service.updateTask === 'function') {
+          updated = (await service.updateTask(userId, currentItem.id, {
             prioridad: newPriority,
-          });
+          })) as Item;
         } else {
           updated = {
             ...currentItem,
@@ -251,7 +253,7 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
         if (notifyUpdated) {
           notifyUpdated(updated);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('Error al cambiar prioridad:', err);
       }
     } else {
@@ -282,21 +284,22 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
     if (service && userId) {
       setIsDeleting(true);
       try {
-        if (modulo === 'tasks' && typeof (service as any).deleteTask === 'function') {
-          await (service as any).deleteTask(userId, currentItem.id);
+        if (modulo === 'tasks' && typeof service.deleteTask === 'function') {
+          await service.deleteTask(userId, currentItem.id);
         } else if (typeof service.deleteItem === 'function') {
           await service.deleteItem(userId, currentItem.id);
-        } else if (typeof (service as any).deleteTask === 'function') {
-          await (service as any).deleteTask(userId, currentItem.id);
+        } else if (typeof service.deleteTask === 'function') {
+          await service.deleteTask(userId, currentItem.id);
         }
         setIsDeleting(false);
         setIsConfirmOpen(false);
         if (notifyDeleted) {
           notifyDeleted(currentItem.id);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setIsDeleting(false);
-        setDeleteError(err.message || 'Error al eliminar');
+        const error = err as Error;
+        setDeleteError(error?.message || 'Error al eliminar');
       }
     } else {
       setIsConfirmOpen(false);

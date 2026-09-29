@@ -134,11 +134,12 @@ export class ShoppingController {
         modulo: 'shopping',
       });
       return { statusCode: 201, status: 201, body: item };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { statusCode?: number; message?: string };
       return {
-        statusCode: err.statusCode || 400,
-        status: err.statusCode || 400,
-        body: { message: err.message },
+        statusCode: error.statusCode || 400,
+        status: error.statusCode || 400,
+        body: { message: error.message },
       };
     }
   }
@@ -162,11 +163,12 @@ export class ShoppingController {
     try {
       const item = await this.shoppingService.findById(userId, id);
       return { statusCode: 200, status: 200, body: item };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { statusCode?: number; message?: string };
       return {
-        statusCode: err.statusCode || 404,
-        status: err.statusCode || 404,
-        body: { message: err.message },
+        statusCode: error.statusCode || 404,
+        status: error.statusCode || 404,
+        body: { message: error.message },
       };
     }
   }
@@ -180,11 +182,12 @@ export class ShoppingController {
     try {
       const updated = await this.shoppingService.updateItem(userId, id, req.body);
       return { statusCode: 200, status: 200, body: updated };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { statusCode?: number; message?: string };
       return {
-        statusCode: err.statusCode || 400,
-        status: err.statusCode || 400,
-        body: { message: err.message },
+        statusCode: error.statusCode || 400,
+        status: error.statusCode || 400,
+        body: { message: error.message },
       };
     }
   }
@@ -198,11 +201,12 @@ export class ShoppingController {
     try {
       const toggled = await this.shoppingService.toggleBoughtStatus(userId, id);
       return { statusCode: 200, status: 200, body: toggled };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { statusCode?: number; message?: string };
       return {
-        statusCode: err.statusCode || 404,
-        status: err.statusCode || 404,
-        body: { message: err.message },
+        statusCode: error.statusCode || 404,
+        status: error.statusCode || 404,
+        body: { message: error.message },
       };
     }
   }
@@ -216,11 +220,12 @@ export class ShoppingController {
     try {
       await this.shoppingService.deleteItem(userId, id);
       return { statusCode: 204, status: 204, body: null };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { statusCode?: number; message?: string };
       return {
-        statusCode: err.statusCode || 404,
-        status: err.statusCode || 404,
-        body: { message: err.message },
+        statusCode: error.statusCode || 404,
+        status: error.statusCode || 404,
+        body: { message: error.message },
       };
     }
   }
@@ -232,11 +237,12 @@ export class ShoppingController {
     try {
       const result = await this.shoppingService.bulkSchedule(userId, req.body, 'shopping');
       return { statusCode: 200, status: 200, body: result };
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const error = err as { statusCode?: number; message?: string };
       return {
-        statusCode: err.statusCode || 400,
-        status: err.statusCode || 400,
-        body: { message: err.message },
+        statusCode: error.statusCode || 400,
+        status: error.statusCode || 400,
+        body: { message: error.message },
       };
     }
   }
@@ -264,9 +270,10 @@ export class CleaningController {
         'cleaning'
       );
       return { status: 201, statusCode: 201, body: created };
-    } catch (error: any) {
-      const status = error.statusCode || 400;
-      return { status, statusCode: status, body: { error: error.message } };
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number; message?: string };
+      const status = err.statusCode || 400;
+      return { status, statusCode: status, body: { error: err.message } };
     }
   }
 
@@ -279,9 +286,10 @@ export class CleaningController {
     try {
       const item = await this.cleaningService.findById(userId, id);
       return { status: 200, statusCode: 200, body: item };
-    } catch (error: any) {
-      const status = error.statusCode || 500;
-      return { status, statusCode: status, body: { error: error.message } };
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number; message?: string };
+      const status = err.statusCode || 500;
+      return { status, statusCode: status, body: { error: err.message } };
     }
   }
 
@@ -294,9 +302,10 @@ export class CleaningController {
     try {
       const updated = await this.cleaningService.updateItem(userId, id, req.body);
       return { status: 200, statusCode: 200, body: updated };
-    } catch (error: any) {
-      const status = error.statusCode || 400;
-      return { status, statusCode: status, body: { error: error.message } };
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number; message?: string };
+      const status = err.statusCode || 400;
+      return { status, statusCode: status, body: { error: err.message } };
     }
   }
 
@@ -309,9 +318,10 @@ export class CleaningController {
     try {
       const completed = await this.cleaningService.completeTask(userId, id);
       return { status: 200, statusCode: 200, body: completed };
-    } catch (error: any) {
-      const status = error.statusCode || 400;
-      return { status, statusCode: status, body: { error: error.message } };
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number; message?: string };
+      const status = err.statusCode || 400;
+      return { status, statusCode: status, body: { error: err.message } };
     }
   }
 
@@ -324,9 +334,10 @@ export class CleaningController {
     try {
       await this.cleaningService.deleteItem(userId, id);
       return { status: 204, statusCode: 204, body: null };
-    } catch (error: any) {
-      const status = error.statusCode || 400;
-      return { status, statusCode: status, body: { error: error.message } };
+    } catch (error: unknown) {
+      const err = error as { statusCode?: number; message?: string };
+      const status = err.statusCode || 400;
+      return { status, statusCode: status, body: { error: err.message } };
     }
   }
 }

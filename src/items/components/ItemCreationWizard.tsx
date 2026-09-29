@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from './ItemCreationWizard.module.css';
 import { Item, ItemModulo, ItemPriority, ITEM_LIMITS } from '../entities/item.entity';
-import { ItemsService } from '../services/items.service';
+import { ItemsService, PolymorphicItemsService } from '../services/items.service';
 
 export interface ItemCreationWizardProps {
   isOpen: boolean;
   onClose: () => void;
   userId?: string;
-  itemsService?: ItemsService;
-  tasksService?: ItemsService; // alias retrocompatible
-  shoppingService?: ItemsService; // alias retrocompatible
-  cleaningService?: ItemsService; // alias retrocompatible
+  itemsService?: PolymorphicItemsService;
+  tasksService?: PolymorphicItemsService; // alias retrocompatible
+  shoppingService?: PolymorphicItemsService; // alias retrocompatible
+  cleaningService?: PolymorphicItemsService; // alias retrocompatible
   modulo?: ItemModulo;
   onItemCreated?: (createdItem: Item) => void;
   onTaskCreated?: (createdTask: Item) => void; // alias retrocompatible
@@ -118,13 +118,13 @@ export const ItemCreationWizard: React.FC<ItemCreationWizardProps> = ({
       const parsedDate = fechaProgramada ? new Date(fechaProgramada) : null;
 
       let createdItem: Item;
-      if (modulo === 'tasks' && typeof (activeService as any).createTask === 'function') {
-        createdItem = await (activeService as any).createTask(userId, {
+      if (modulo === 'tasks' && typeof activeService.createTask === 'function') {
+        createdItem = (await activeService.createTask(userId, {
           titulo: titulo.trim(),
           descripcion: descripcion.trim(),
           prioridad,
           fechaProgramada: parsedDate,
-        });
+        })) as Item;
       } else if (typeof activeService.createItem === 'function') {
         createdItem = await activeService.createItem(
           userId,
@@ -138,13 +138,13 @@ export const ItemCreationWizard: React.FC<ItemCreationWizardProps> = ({
           },
           modulo
         );
-      } else if (typeof (activeService as any).createTask === 'function') {
-        createdItem = await (activeService as any).createTask(userId, {
+      } else if (typeof activeService.createTask === 'function') {
+        createdItem = (await activeService.createTask(userId, {
           titulo: titulo.trim(),
           descripcion: descripcion.trim(),
           prioridad,
           fechaProgramada: parsedDate,
-        });
+        })) as Item;
       } else {
         throw new Error('Servicio no soporta creación');
       }
@@ -154,9 +154,10 @@ export const ItemCreationWizard: React.FC<ItemCreationWizardProps> = ({
         notifyCreated(createdItem);
       }
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsLoading(false);
-      setSubmitError(err?.message || 'Error al guardar el elemento en el servidor');
+      const error = err as Error;
+      setSubmitError(error?.message || 'Error al guardar el elemento en el servidor');
     }
   };
 

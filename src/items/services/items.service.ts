@@ -14,6 +14,15 @@ import { UpdateItemDto } from '../dto/update-item.dto';
 import { BulkScheduleDto } from '../dto/bulk-schedule.dto';
 import { IItemRepository, InMemoryItemRepository } from '../repositories/item.repository';
 
+export type PolymorphicItemsService = Partial<ItemsService> & {
+  createTask?: (userId: string, dto: any) => Promise<any>;
+  updateTask?: (userId: string, id: string, dto: any) => Promise<any>;
+  deleteTask?: (userId: string, id: string) => Promise<any>;
+  toggleTaskStatus?: (userId: string, id: string) => Promise<any>;
+  toggleBoughtStatus?: (userId: string, id: string) => Promise<any>;
+  completeTask?: (userId: string, id: string) => Promise<any>;
+};
+
 export class ItemsService {
   constructor(private itemRepository: IItemRepository = new InMemoryItemRepository()) {}
 

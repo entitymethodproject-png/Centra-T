@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React from 'react';
 import { WorkspaceLayout } from './workspace/components/WorkspaceLayout';
 import { LoginPage } from './authentication/views/LoginPage';
 import { TopNavbar } from './workspace/components/TopNavbar';
@@ -9,341 +9,90 @@ import { CleaningAccordion } from './hub/components/CleaningAccordion';
 import { FilterModal } from './filters/components/FilterModal';
 import { SortMenu } from './filters/components/SortMenu';
 import { MonthlyCalendarGrid } from './workspace/components/MonthlyCalendarGrid';
-import { useItemFilters } from './filters/hooks/useItemFilters';
-import { sortItems } from './filters/utils/sortEngine';
-import { applyFilters } from './filters/utils/filterEngine';
-import { SortConfiguration, DEFAULT_SORT_CONFIG } from './filters/types/sort.types';
-import { TaskItem, ShoppingItem, CleaningItem } from './items/entities/item.entity';
-import {
-  CalendarSchedulableItem,
-  DragItemPayload,
-  SchedulableDragPayload,
-  ItemModule,
-} from './calendar-sync/types/drag-drop.types';
 import { ReassignmentConfirmModal } from './calendar-sync/components/ReassignmentConfirmModal';
 import { BulkShoppingConfirmModal } from './calendar-sync/components/BulkShoppingConfirmModal';
 import { CalendarItemContextMenu } from './calendar-sync/components/CalendarItemContextMenu';
-import { useNetworkStatus } from './workspace/hooks/useNetworkStatus';
 import { OfflineBanner } from './workspace/components/OfflineBanner';
 import { Toast } from './workspace/components/Toast';
-import { EmpathicMessage, formatEmpathicError } from './infrastructure/http/apiClient';
+import {
+  useWorkspaceController,
+  UseWorkspaceControllerProps as AppProps,
+} from './workspace/hooks/useWorkspaceController';
 
-export interface AppProps {
-  initialAuthenticated?: boolean;
-  initialTasks?: TaskItem[];
-  initialShoppingItems?: ShoppingItem[];
-  initialCleaningItems?: CleaningItem[];
-  simulateApiErrorOnToggle?: boolean; // Permite simular rechazo 500 en tests
-}
+export type { AppProps };
 
-export const App: React.FC<AppProps> = ({
-  initialAuthenticated = false,
-  initialTasks,
-  initialShoppingItems,
-  initialCleaningItems,
-  simulateApiErrorOnToggle = false,
-}) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    if (initialAuthenticated) return true;
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      return window.sessionStorage.getItem('centrat_auth') === 'true';
-    }
-    return false;
-  });
-
-  const { isOffline } = useNetworkStatus();
-
-  // Colecciones de ítems reactivas en cliente
-  const [allTasks, setAllTasks] = useState<TaskItem[]>(initialTasks || []);
-  const [allShopping, setAllShopping] = useState<ShoppingItem[]>(initialShoppingItems || []);
-  const [allCleaning, setAllCleaning] = useState<CleaningItem[]>(initialCleaningItems || []);
-
-  // Diálogos de filtrado y menú de reordenación
-  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
-  const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
-  const [sortConfig, setSortConfig] = useState<SortConfiguration>(DEFAULT_SORT_CONFIG);
-
-  // Buffer de conflicto para reasignación de fecha (Decisión 4B / VV-003)
-  const [reassignConflict, setReassignConflict] = useState<{
-    item: DragItemPayload;
-    targetDate: string;
-    originDate: string;
-  } | null>(null);
-
-  // Buffer de conflicto para asignación masiva de compras (Caso Forense VV-006)
-  const [bulkShoppingConflict, setBulkShoppingConflict] = useState<{
-    targetDate: string;
-    pendingCount: number;
-  } | null>(null);
-
-  // Estado para menú contextual de pastillas en calendario (Caso Forense VV-007)
-  const [contextMenuState, setContextMenuState] = useState<{
-    position: { x: number; y: number };
-    item: { id: string; modulo: ItemModule; titulo: string };
-  } | null>(null);
-
-  // Estado para notificaciones Toast empáticas (RV-A08 / FIA-A08.02)
-  const [toastState, setToastState] = useState<{
-    isOpen: boolean;
-    message: EmpathicMessage;
-    type?: 'error' | 'warning' | 'info' | 'success';
-  } | null>(null);
-
-  useEffect(() => {
-    if (initialTasks !== undefined) {
-      setAllTasks(initialTasks);
-    }
-  }, [initialTasks]);
-
-  useEffect(() => {
-    if (initialShoppingItems !== undefined) {
-      setAllShopping(initialShoppingItems);
-    }
-  }, [initialShoppingItems]);
-
-  useEffect(() => {
-    if (initialCleaningItems !== undefined) {
-      setAllCleaning(initialCleaningItems);
-    }
-  }, [initialCleaningItems]);
-
-  // Hook reactivo de filtrado en cliente
+/**
+ * App View Component (Root Presentation Shell).
+ * Implementa una arquitectura MVC estricta:
+ * - View: Renderizado puramente declarativo de layout, slots y modales.
+ * - Controller: Orquestación de estado, lógica de negocio y DnD desacoplada en `useWorkspaceController`.
+ */
+export const App: React.FC<AppProps> = (props) => {
   const {
+    // Sesión y Red
+    isAuthenticated,
+    isOffline,
+    handleLoginSuccess,
+    handleLogout,
+
+    // Colecciones procesadas en tiempo real
+    processedTasks,
+    processedShopping,
+    processedCleaning,
+    allScheduledItems,
+
+    // Acciones de ciclo de vida de ítems
+    handleTaskCreated,
+    handleTaskUpdated,
+    handleTaskDeleted,
+    handleTaskToggle,
+
+    handleShoppingCreated,
+    handleShoppingUpdated,
+    handleShoppingDeleted,
+    handleShoppingToggle,
+
+    handleCleaningCreated,
+    handleCleaningUpdated,
+    handleCleaningDeleted,
+    handleCleaningToggle,
+
+    // Filtrado y Ordenación
     criteria,
-    filteredItems: filteredTasks,
     isFiltered,
     activeFilterCount,
+    isFilterModalOpen,
+    openFilterModal,
+    closeFilterModal,
     setCriteria,
     resetFilters,
-  } = useItemFilters(allTasks);
+    isSortMenuOpen,
+    sortConfig,
+    openSortMenu,
+    closeSortMenu,
+    setSortConfig,
 
-  // Procesamiento combinado de filtros y ordenación en caliente
-  const processedTasks = useMemo(() => {
-    return sortItems(filteredTasks, sortConfig);
-  }, [filteredTasks, sortConfig]);
+    // Drag & Drop y Calendario
+    handleScheduleItem,
+    applySchedule,
+    handleUnscheduleItem,
 
-  const processedShopping = useMemo(() => {
-    const filtered = applyFilters(allShopping, criteria);
-    return sortItems(filtered, sortConfig);
-  }, [allShopping, criteria, sortConfig]);
+    // Modales de Conflicto y Menús
+    reassignConflict,
+    setReassignConflict,
+    bulkShoppingConflict,
+    setBulkShoppingConflict,
+    handleConfirmBulkShopping,
+    contextMenuState,
+    handleItemContextMenu,
+    closeContextMenu,
 
-  const processedCleaning = useMemo(() => {
-    const filtered = applyFilters(allCleaning, criteria);
-    return sortItems(filtered, sortConfig);
-  }, [allCleaning, criteria, sortConfig]);
+    // Notificaciones Toast empáticas
+    toastState,
+    closeToast,
+  } = useWorkspaceController(props);
 
-  const handleLoginSuccess = () => {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      window.sessionStorage.setItem('centrat_auth', 'true');
-    }
-    setIsAuthenticated(true);
-  };
-
-  const handleLogout = () => {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      window.sessionStorage.removeItem('centrat_auth');
-    }
-    setIsAuthenticated(false);
-  };
-
-  const handleTaskToggle = async (taskId: string) => {
-    const previousTasks = allTasks;
-    const targetTask = allTasks.find((t) => t.id === taskId);
-    if (!targetTask) return;
-
-    setAllTasks((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, completado: !t.completado } : t))
-    );
-
-    if (simulateApiErrorOnToggle) {
-      await Promise.resolve();
-      const errorMsg = formatEmpathicError(500, 'Actualización de tarea');
-      setAllTasks(previousTasks.map((t) => ({ ...t })));
-      setToastState({
-        isOpen: true,
-        message: errorMsg,
-        type: 'error',
-      });
-    }
-  };
-
-  const handleShoppingToggle = async (itemId: string) => {
-    const previousShopping = allShopping;
-    const targetItem = allShopping.find((i) => i.id === itemId);
-    if (!targetItem) return;
-
-    setAllShopping((prev) =>
-      prev.map((i) => (i.id === itemId ? { ...i, completado: !i.completado } : i))
-    );
-
-    if (simulateApiErrorOnToggle) {
-      await Promise.resolve();
-      const errorMsg = formatEmpathicError(500, 'Actualización de compra');
-      setAllShopping(previousShopping.map((i) => ({ ...i })));
-      setToastState({
-        isOpen: true,
-        message: errorMsg,
-        type: 'error',
-      });
-    }
-  };
-
-  const handleCleaningToggle = async (itemId: string) => {
-    const previousCleaning = allCleaning;
-    const targetItem = allCleaning.find((i) => i.id === itemId);
-    if (!targetItem) return;
-
-    setAllCleaning((prev) =>
-      prev.map((i) => (i.id === itemId ? { ...i, completado: !i.completado } : i))
-    );
-
-    if (simulateApiErrorOnToggle) {
-      await Promise.resolve();
-      const errorMsg = formatEmpathicError(500, 'Actualización de limpieza');
-      setAllCleaning(previousCleaning.map((c) => ({ ...c })));
-      setToastState({
-        isOpen: true,
-        message: errorMsg,
-        type: 'error',
-      });
-    }
-  };
-
-  const allScheduledItems: CalendarSchedulableItem[] = useMemo(() => {
-    return [
-      ...allTasks.map((t) => ({
-        id: t.id,
-        modulo: 'tasks' as const,
-        titulo: t.titulo,
-        prioridad: t.prioridad,
-        completado: t.completado,
-        fechaProgramada: t.fechaProgramada,
-      })),
-      ...allShopping.map((s) => ({
-        id: s.id,
-        modulo: 'shopping' as const,
-        titulo: s.titulo || s.nombre || '',
-        prioridad: s.prioridad,
-        completado: s.completado || !!s.comprado,
-        fechaProgramada: s.fechaProgramada,
-      })),
-      ...allCleaning.map((c) => ({
-        id: c.id,
-        modulo: 'cleaning' as const,
-        titulo: c.titulo || c.nombre || '',
-        prioridad: c.prioridad,
-        completado: c.completado,
-        fechaProgramada: c.fechaProgramada,
-      })),
-    ].filter((i) => Boolean(i.fechaProgramada));
-  }, [allTasks, allShopping, allCleaning]);
-
-  const applySchedule = (item: DragItemPayload, targetDate: string) => {
-    const targetDateObj = new Date(`${targetDate}T00:00:00`);
-    if (item.modulo === 'tasks') {
-      setAllTasks((prev) =>
-        prev.map((t) => (t.id === item.id ? { ...t, fechaProgramada: targetDateObj } : t))
-      );
-    } else if (item.modulo === 'shopping') {
-      setAllShopping((prev) =>
-        prev.map((s) => (s.id === item.id ? { ...s, fechaProgramada: targetDateObj } : s))
-      );
-    } else if (item.modulo === 'cleaning') {
-      setAllCleaning((prev) =>
-        prev.map((c) => (c.id === item.id ? { ...c, fechaProgramada: targetDateObj } : c))
-      );
-    }
-  };
-
-  const handleConfirmBulkShopping = () => {
-    if (!bulkShoppingConflict) return;
-    const targetDateObj = new Date(`${bulkShoppingConflict.targetDate}T00:00:00`);
-    setAllShopping((prev) =>
-      prev.map((item) =>
-        !item.completado && !item.fechaProgramada
-          ? { ...item, fechaProgramada: targetDateObj }
-          : item
-      )
-    );
-    setBulkShoppingConflict(null);
-  };
-
-  const handleItemContextMenu = (
-    e: React.MouseEvent,
-    item: { id: string; modulo: ItemModule; titulo: string }
-  ) => {
-    e.preventDefault();
-    setContextMenuState({
-      position: { x: e.clientX, y: e.clientY },
-      item,
-    });
-  };
-
-  const handleUnscheduleItem = (itemId: string, modulo: ItemModule) => {
-    if (modulo === 'tasks') {
-      setAllTasks((prev) =>
-        prev.map((t) => (t.id === itemId ? { ...t, fechaProgramada: null } : t))
-      );
-    } else if (modulo === 'shopping') {
-      setAllShopping((prev) =>
-        prev.map((s) => (s.id === itemId ? { ...s, fechaProgramada: null } : s))
-      );
-    } else if (modulo === 'cleaning') {
-      setAllCleaning((prev) =>
-        prev.map((c) => (c.id === itemId ? { ...c, fechaProgramada: null } : c))
-      );
-    }
-    setContextMenuState(null);
-  };
-
-  const handleScheduleItem = (draggedItem: SchedulableDragPayload, targetDate: string) => {
-    // Manejo de Compra Masiva (Caso VV-006)
-    if ('isBulk' in draggedItem && draggedItem.isBulk === true && draggedItem.modulo === 'shopping') {
-      const pendingCount = allShopping.filter(
-        (s) => !s.completado && !s.fechaProgramada
-      ).length;
-      if (pendingCount === 0) return;
-      setBulkShoppingConflict({ targetDate, pendingCount });
-      return;
-    }
-
-    const item = draggedItem as DragItemPayload;
-    let existingItemDate: Date | string | null = item.fechaProgramada || null;
-    if (!existingItemDate) {
-      if (item.modulo === 'tasks') {
-        const found = allTasks.find((t) => t.id === item.id);
-        if (found?.fechaProgramada) existingItemDate = found.fechaProgramada;
-      } else if (item.modulo === 'shopping') {
-        const found = allShopping.find((s) => s.id === item.id);
-        if (found?.fechaProgramada) existingItemDate = found.fechaProgramada;
-      } else if (item.modulo === 'cleaning') {
-        const found = allCleaning.find((c) => c.id === item.id);
-        if (found?.fechaProgramada) existingItemDate = found.fechaProgramada;
-      }
-    }
-
-    const originDateStr = existingItemDate
-      ? typeof existingItemDate === 'string'
-        ? existingItemDate.slice(0, 10)
-        : existingItemDate instanceof Date
-        ? existingItemDate.toISOString().slice(0, 10)
-        : null
-      : null;
-
-    // Si ya tenía fecha asignada y es distinta a la fecha de destino -> CONFLICTO (Decisión 4B / VV-003)
-    if (originDateStr && originDateStr !== targetDate) {
-      setReassignConflict({
-        item,
-        targetDate,
-        originDate: originDateStr,
-      });
-      return;
-    }
-
-    // Si no tenía fecha previa o es la misma, asignación directa sin modal
-    applySchedule(item, targetDate);
-  };
-
+  // Vista de Acceso (Login / Registro)
   if (!isAuthenticated) {
     return (
       <LoginPage
@@ -353,6 +102,7 @@ export const App: React.FC<AppProps> = ({
     );
   }
 
+  // Vista de Espacio de Trabajo Principal (Workspace)
   return (
     <>
       <WorkspaceLayout
@@ -365,8 +115,8 @@ export const App: React.FC<AppProps> = ({
         }
         hubSlot={
           <HubContainer
-            onFilterClick={() => setIsFilterModalOpen(true)}
-            onSortClick={() => setIsSortMenuOpen(true)}
+            onFilterClick={openFilterModal}
+            onSortClick={openSortMenu}
             isFilterActive={isFiltered}
             activeFilterCount={activeFilterCount}
             onClearFilters={resetFilters}
@@ -374,31 +124,25 @@ export const App: React.FC<AppProps> = ({
             <TasksAccordion
               tasks={processedTasks}
               isOffline={isOffline}
-              onTaskCreated={(newTask) => setAllTasks((prev) => [newTask, ...prev])}
-              onTaskUpdated={(updated) =>
-                setAllTasks((prev) => prev.map((t) => (t.id === updated.id ? updated : t)))
-              }
-              onTaskDeleted={(id) => setAllTasks((prev) => prev.filter((t) => t.id !== id))}
+              onTaskCreated={handleTaskCreated}
+              onTaskUpdated={handleTaskUpdated}
+              onTaskDeleted={handleTaskDeleted}
               onTaskToggle={handleTaskToggle}
             />
             <ShoppingAccordion
               items={processedShopping}
               isOffline={isOffline}
-              onItemCreated={(newItem) => setAllShopping((prev) => [newItem, ...prev])}
-              onItemUpdated={(updated) =>
-                setAllShopping((prev) => prev.map((i) => (i.id === updated.id ? updated : i)))
-              }
-              onItemDeleted={(id) => setAllShopping((prev) => prev.filter((i) => i.id !== id))}
+              onItemCreated={handleShoppingCreated}
+              onItemUpdated={handleShoppingUpdated}
+              onItemDeleted={handleShoppingDeleted}
               onItemToggle={handleShoppingToggle}
             />
             <CleaningAccordion
               items={processedCleaning}
               isOffline={isOffline}
-              onItemCreated={(newItem) => setAllCleaning((prev) => [newItem, ...prev])}
-              onItemUpdated={(updated) =>
-                setAllCleaning((prev) => prev.map((i) => (i.id === updated.id ? updated : i)))
-              }
-              onItemDeleted={(id) => setAllCleaning((prev) => prev.filter((i) => i.id !== id))}
+              onItemCreated={handleCleaningCreated}
+              onItemUpdated={handleCleaningUpdated}
+              onItemDeleted={handleCleaningDeleted}
               onItemToggle={handleCleaningToggle}
             />
           </HubContainer>
@@ -412,13 +156,14 @@ export const App: React.FC<AppProps> = ({
         }
       />
 
+      {/* Modales de Filtrado y Ordenación */}
       <FilterModal
         isOpen={isFilterModalOpen}
         initialCriteria={criteria}
-        onClose={() => setIsFilterModalOpen(false)}
+        onClose={closeFilterModal}
         onApply={(newCriteria) => {
           setCriteria(newCriteria);
-          setIsFilterModalOpen(false);
+          closeFilterModal();
         }}
         onReset={resetFilters}
       />
@@ -426,13 +171,14 @@ export const App: React.FC<AppProps> = ({
       <SortMenu
         isOpen={isSortMenuOpen}
         activeConfig={sortConfig}
-        onClose={() => setIsSortMenuOpen(false)}
+        onClose={closeSortMenu}
         onSelectOption={(newConfig) => {
           setSortConfig(newConfig);
-          setIsSortMenuOpen(false);
+          closeSortMenu();
         }}
       />
 
+      {/* Modales de Conflicto y Asignación Temporal */}
       <ReassignmentConfirmModal
         isOpen={Boolean(reassignConflict)}
         itemTitle={reassignConflict?.item.titulo || ''}
@@ -455,6 +201,7 @@ export const App: React.FC<AppProps> = ({
         onCancel={() => setBulkShoppingConflict(null)}
       />
 
+      {/* Menú Contextual de Ítem en Calendario */}
       <CalendarItemContextMenu
         isOpen={Boolean(contextMenuState)}
         position={contextMenuState?.position || { x: 0, y: 0 }}
@@ -462,16 +209,17 @@ export const App: React.FC<AppProps> = ({
         modulo={contextMenuState?.item.modulo || 'tasks'}
         itemTitle={contextMenuState?.item.titulo || ''}
         onUnschedule={handleUnscheduleItem}
-        onClose={() => setContextMenuState(null)}
+        onClose={closeContextMenu}
       />
 
+      {/* Sistema de Notificaciones Toast Empático */}
       <Toast
         isOpen={Boolean(toastState?.isOpen)}
         what={toastState?.message.what || ''}
         why={toastState?.message.why || ''}
         action={toastState?.message.action || ''}
         type={toastState?.type || 'error'}
-        onClose={() => setToastState(null)}
+        onClose={closeToast}
       />
     </>
   );
