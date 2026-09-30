@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import styles from './CalendarItemContextMenu.module.css';
 import { ItemModule } from '../types/drag-drop.types';
 
@@ -21,6 +21,30 @@ export const CalendarItemContextMenu: React.FC<CalendarItemContextMenuProps> = (
   onUnschedule,
   onClose,
 }) => {
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ x: number; y: number }>({ x: position.x, y: position.y });
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    // Dimensiones estimadas para clamping de seguridad en viewport
+    const menuWidth = 200;
+    const menuHeight = 52;
+    const margin = 12;
+
+    const safeX =
+      typeof window !== 'undefined'
+        ? Math.max(margin, Math.min(position.x, window.innerWidth - menuWidth - margin))
+        : position.x;
+
+    const safeY =
+      typeof window !== 'undefined'
+        ? Math.max(margin, Math.min(position.y, window.innerHeight - menuHeight - margin))
+        : position.y;
+
+    setCoords({ x: safeX, y: safeY });
+  }, [isOpen, position.x, position.y]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -31,8 +55,19 @@ export const CalendarItemContextMenu: React.FC<CalendarItemContextMenuProps> = (
       }
     };
 
+    const handleScrollOrResize = () => {
+      onClose();
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -45,11 +80,12 @@ export const CalendarItemContextMenu: React.FC<CalendarItemContextMenuProps> = (
         data-testid="context-menu-backdrop"
       />
       <div
+        ref={menuRef}
         className={styles.menuContainer}
         role="menu"
         aria-label={`Opciones de ${itemTitle}`}
         data-testid="calendar-item-context-menu"
-        style={{ top: position.y, left: position.x }}
+        style={{ top: `${coords.y}px`, left: `${coords.x}px` }}
         onClick={(e) => e.stopPropagation()}
       >
         <button

@@ -116,14 +116,34 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
     if (!isMenuOpen) {
       if (triggerButtonRef.current && typeof window !== 'undefined') {
         const rect = triggerButtonRef.current.getBoundingClientRect();
+        const menuWidth = 210;
+        const menuHeight = 220;
+        const margin = 12;
+
         const spaceBelow = window.innerHeight - rect.bottom;
-        const shouldOpenUpwards = spaceBelow < 220;
+        const shouldOpenUpwards = spaceBelow < menuHeight && rect.top > menuHeight;
+
+        const topPos = shouldOpenUpwards
+          ? undefined
+          : Math.max(margin, Math.min(rect.bottom + 4, window.innerHeight - menuHeight - margin));
+
+        const bottomPos = shouldOpenUpwards
+          ? Math.max(
+              margin,
+              Math.min(window.innerHeight - rect.top + 4, window.innerHeight - margin)
+            )
+          : undefined;
+
+        const targetRight = window.innerWidth - rect.right;
+        const safeRight = Math.max(
+          margin,
+          Math.min(targetRight, window.innerWidth - menuWidth - margin)
+        );
+
         setMenuCoords({
-          top: shouldOpenUpwards ? undefined : (rect.bottom || 100) + 4,
-          bottom: shouldOpenUpwards
-            ? (window.innerHeight - (rect.top || 100)) + 4
-            : undefined,
-          right: Math.max(8, window.innerWidth - (rect.right || 300)),
+          top: topPos,
+          bottom: bottomPos,
+          right: safeRight,
           openUpwards: shouldOpenUpwards,
         });
       } else {

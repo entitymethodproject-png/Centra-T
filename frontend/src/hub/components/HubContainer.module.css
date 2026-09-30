@@ -169,3 +169,25 @@
   opacity: 0;
   pointer-events: none;
 }
+
+@media (max-width: 850px) {
+  .hubContainer {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .hubContainer.collapsed {
+    width: 100% !important;
+    min-width: 100% !important;
+    height: 48px;
+  }
+
+  .contentArea {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+}

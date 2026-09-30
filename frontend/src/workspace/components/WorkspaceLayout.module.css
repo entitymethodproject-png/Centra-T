@@ -56,3 +56,36 @@
   overflow: hidden;
   box-sizing: border-box;
 }
+
+/* Vista Móvil y Pantallas Estrechas: Hub Arriba y Calendario Debajo */
+@media (max-width: 850px) {
+  .workspaceShell {
+    height: auto;
+    min-height: 100vh;
+    padding: 10px;
+    gap: 12px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .navbarRegion {
+    height: auto;
+    min-height: 52px;
+    padding: 0 12px;
+  }
+
+  .bodyRegion {
+    flex-direction: column;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    gap: 14px;
+  }
+
+  .workbenchRegion {
+    width: 100%;
+    min-width: 0;
+    min-height: 480px;
+    overflow: visible;
+  }
+}

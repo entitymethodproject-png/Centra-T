@@ -74,3 +74,24 @@
   color: #F87171;
   border-color: rgba(239, 68, 68, 0.3);
 }
+
+@media (max-width: 850px) {
+  .navbarWrapper {
+    height: 52px;
+    min-height: 52px;
+    padding: 0 12px;
+  }
+
+  .brandTitle {
+    font-size: 16px;
+  }
+
+  .userName {
+    display: none;
+  }
+
+  .logoutButton {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}

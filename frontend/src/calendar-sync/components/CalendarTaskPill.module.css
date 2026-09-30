@@ -77,3 +77,26 @@
   opacity: 0.5;
   color: var(--text-muted, #64748B);
 }
+
+@media (max-width: 850px) {
+  .pillContainer {
+    height: 18px;
+    padding: 1px 4px;
+    gap: 3px;
+  }
+
+  .moduleBadge {
+    width: 12px;
+    height: 12px;
+    font-size: 9px;
+  }
+
+  .priorityDot {
+    width: 5px;
+    height: 5px;
+  }
+
+  .pillTitle {
+    font-size: 10px;
+  }
+}

@@ -11,13 +11,15 @@
 .menuContainer {
   position: fixed;
   z-index: 1050;
-  min-width: 180px;
-  background-color: var(--bg-card, #1a2433);
+  min-width: 190px;
+  background-color: var(--bg-card, #1A2433);
   border: 1px solid var(--border-subtle, #233144);
-  border-radius: var(--radius-md, 8px);
-  padding: 4px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.65), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
   animation: fadeIn 0.12s ease-out;
+  box-sizing: border-box;
+  font-family: inherit;
 }
 
 @keyframes fadeIn {
@@ -34,29 +36,32 @@
 .menuItem {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
   padding: 8px 12px;
   background: transparent;
   border: none;
-  border-radius: var(--radius-sm, 6px);
-  color: var(--text-primary, #ffffff);
-  font-family: var(--font-sans, inherit);
+  border-radius: 6px;
+  color: var(--text-primary, #F0F4F8);
+  font-family: inherit;
   font-size: 13px;
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
 }
 
 .menuItem:hover,
 .menuItem:focus-visible {
-  background-color: var(--bg-surface, #131b26);
+  background-color: var(--bg-hub, #131B26);
+  color: var(--accent-primary, #38BDF8);
   outline: none;
 }
 
 .icon {
   font-size: 14px;
-  color: var(--accent-amber, #f59e0b);
+  color: var(--accent-primary, #38BDF8);
 }
 
 .label {
