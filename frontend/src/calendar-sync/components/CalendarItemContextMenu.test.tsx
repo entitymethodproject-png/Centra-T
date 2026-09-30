@@ -67,4 +67,28 @@ describe('CalendarItemContextMenu Component (Desasignación / VV-007)', () => {
 
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
+
+  it('limita las coordenadas en pantalla cuando el clic ocurre cerca del borde inferior o derecho (Realidad Validada / Clamping seguro)', () => {
+    // Simular clic en el extremo inferior derecho de la pantalla
+    const edgePosition = { x: window.innerWidth - 20, y: window.innerHeight - 15 };
+    render(<CalendarItemContextMenu {...defaultProps} position={edgePosition} />);
+
+    const menu = screen.getByTestId('calendar-item-context-menu');
+    const computedLeft = parseInt(menu.style.left, 10);
+    const computedTop = parseInt(menu.style.top, 10);
+
+    // Debe haberse desplazado hacia adentro para no salirse de la ventana
+    expect(computedLeft).toBeLessThan(edgePosition.x);
+    expect(computedTop).toBeLessThan(edgePosition.y);
+    expect(computedLeft + 190).toBeLessThanOrEqual(window.innerWidth);
+    expect(computedTop + 50).toBeLessThanOrEqual(window.innerHeight);
+  });
+
+  it('invoca onClose de forma limpia al hacer scroll en la ventana para evitar desfases visuales', () => {
+    const handleClose = vi.fn();
+    render(<CalendarItemContextMenu {...defaultProps} onClose={handleClose} />);
+
+    fireEvent.scroll(window);
+    expect(handleClose).toHaveBeenCalledTimes(1);
+  });
 });

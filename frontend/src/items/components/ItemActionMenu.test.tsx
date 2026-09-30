@@ -96,4 +96,52 @@ describe('ItemActionMenu Component (Menú Contextual, A11y y Borrado Seguro)', (
 
     expect(onItemDeleted).toHaveBeenCalledWith('item-act-1');
   });
+
+  it('renderiza el desplegable fuera del contenedor del Hub en el body mediante portal flotante (Realidad Validada / Sin descuadre)', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<ItemActionMenu item={sampleItem} />);
+
+    const trigger = screen.getByLabelText(/acciones de tarea/i);
+    await user.click(trigger);
+
+    const menu = screen.getByRole('menu');
+    expect(menu).toBeInTheDocument();
+    // La realidad validada dicta que el menú NO debe estar confinado dentro del contenedor DOM del ítem
+    expect(container.contains(menu)).toBe(false);
+    // Debe residir directamente en document.body mediante createPortal
+    expect(document.body.contains(menu)).toBe(true);
+  });
+
+  it('cierra el menú flotante al pulsar sobre su backdrop exterior o tecla Escape', async () => {
+    const user = userEvent.setup();
+    render(<ItemActionMenu item={sampleItem} />);
+
+    const trigger = screen.getByLabelText(/acciones de tarea/i);
+    await user.click(trigger);
+    expect(screen.getByRole('menu')).toBeInTheDocument();
+
+    const backdrop = screen.getByTestId('action-menu-backdrop');
+    await user.click(backdrop);
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+
+  it('permite desplegar el submenú de prioridades y seleccionar una nueva prioridad', async () => {
+    const onItemUpdated = vi.fn();
+    const user = userEvent.setup();
+    render(<ItemActionMenu item={sampleItem} onItemUpdated={onItemUpdated} />);
+
+    await user.click(screen.getByLabelText(/acciones de tarea/i));
+    await user.click(screen.getByTestId('action-menu-change-priority'));
+
+    expect(screen.getByTestId('priority-submenu')).toBeInTheDocument();
+    const altaOption = screen.getByTestId('priority-option-alta');
+    await user.click(altaOption);
+
+    expect(onItemUpdated).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prioridad: 'alta',
+      })
+    );
+  });
 });

@@ -44,4 +44,19 @@ describe('PVF-A01.01 · WorkspaceLayout (Shell Base y Topología Espacial de 2 C
     expect(shellElement).toBeInTheDocument();
     expect(shellElement.tagName.toLowerCase()).toBe('div');
   });
+
+  it('mantiene la jerarquía espacial secuencial para apilamiento responsive (Hub antes que Workbench en la vista móvil)', () => {
+    render(
+      <WorkspaceLayout
+        hubSlot={<div data-testid="hub-slot">Hub Arriba</div>}
+        workbenchSlot={<div data-testid="workbench-slot">Workbench Abajo</div>}
+      />
+    );
+
+    const hubEl = screen.getByTestId('hub-slot');
+    const workbenchEl = screen.getByTestId('workbench-slot');
+
+    // La regla de negocio de la vista móvil exige que el Hub preceda en el DOM al Workbench
+    expect(hubEl.compareDocumentPosition(workbenchEl) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });
