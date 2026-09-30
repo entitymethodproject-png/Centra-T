@@ -84,27 +84,15 @@ export const ItemCard: React.FC<ItemCardProps> = ({
       setIsSyncing(true);
       try {
         let updated: Item | undefined;
-        if (modulo === 'shopping') {
-          if (typeof service.toggleBoughtStatus === 'function') {
-            updated = (await service.toggleBoughtStatus(userId, currentItem.id)) as Item;
-          } else if (typeof service.toggleItemStatus === 'function') {
-            updated = await service.toggleItemStatus(userId, currentItem.id);
-          }
-        } else if (modulo === 'cleaning') {
-          if (typeof service.updateItem === 'function') {
-            updated = await service.updateItem(userId, currentItem.id, { completado: newStatus });
-          } else if (typeof service.toggleTaskStatus === 'function') {
-            updated = (await service.toggleTaskStatus(userId, currentItem.id)) as Item;
-          } else if (typeof service.toggleItemStatus === 'function') {
-            updated = await service.toggleItemStatus(userId, currentItem.id);
-          }
-        } else {
-          // tasks
-          if (typeof service.toggleTaskStatus === 'function') {
-            updated = (await service.toggleTaskStatus(userId, currentItem.id)) as Item;
-          } else if (typeof service.toggleItemStatus === 'function') {
-            updated = await service.toggleItemStatus(userId, currentItem.id);
-          }
+        const toggleFn =
+          service.toggleItemStatus ||
+          service.toggleTaskStatus ||
+          service.toggleBoughtStatus;
+
+        if (typeof toggleFn === 'function') {
+          updated = (await toggleFn.call(service, userId, currentItem.id)) as Item;
+        } else if (typeof service.updateItem === 'function') {
+          updated = await service.updateItem(userId, currentItem.id, { completado: newStatus });
         }
         setIsSyncing(false);
         if (notifyUpdated && updated) {

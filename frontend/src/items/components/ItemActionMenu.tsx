@@ -184,18 +184,11 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
       setIsSavingDesc(true);
       try {
         let updated: Item;
-        if (modulo === 'tasks' && typeof service.updateTask === 'function') {
-          updated = (await service.updateTask(userId, currentItem.id, {
-            descripcion: descriptionText.trim(),
-          })) as Item;
-        } else if (typeof service.updateItem === 'function') {
-          updated = await service.updateItem(userId, currentItem.id, {
+        const updateFn = service.updateItem || service.updateTask;
+        if (typeof updateFn === 'function') {
+          updated = await updateFn.call(service, userId, currentItem.id, {
             descripcion: descriptionText.trim(),
           });
-        } else if (typeof service.updateTask === 'function') {
-          updated = (await service.updateTask(userId, currentItem.id, {
-            descripcion: descriptionText.trim(),
-          })) as Item;
         } else {
           updated = {
             ...currentItem,
@@ -301,18 +294,11 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
     if (service && userId) {
       try {
         let updated: Item;
-        if (modulo === 'tasks' && typeof service.updateTask === 'function') {
-          updated = (await service.updateTask(userId, currentItem.id, {
-            prioridad: newPriority,
-          })) as Item;
-        } else if (typeof service.updateItem === 'function') {
-          updated = await service.updateItem(userId, currentItem.id, {
+        const updateFn = service.updateItem || service.updateTask;
+        if (typeof updateFn === 'function') {
+          updated = await updateFn.call(service, userId, currentItem.id, {
             prioridad: newPriority,
           });
-        } else if (typeof service.updateTask === 'function') {
-          updated = (await service.updateTask(userId, currentItem.id, {
-            prioridad: newPriority,
-          })) as Item;
         } else {
           updated = {
             ...currentItem,
@@ -362,12 +348,9 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
     if (service && userId) {
       setIsDeleting(true);
       try {
-        if (modulo === 'tasks' && typeof service.deleteTask === 'function') {
-          await service.deleteTask(userId, currentItem.id);
-        } else if (typeof service.deleteItem === 'function') {
-          await service.deleteItem(userId, currentItem.id);
-        } else if (typeof service.deleteTask === 'function') {
-          await service.deleteTask(userId, currentItem.id);
+        const deleteFn = service.deleteItem || service.deleteTask;
+        if (typeof deleteFn === 'function') {
+          await deleteFn.call(service, userId, currentItem.id);
         }
         setIsDeleting(false);
         setIsConfirmOpen(false);

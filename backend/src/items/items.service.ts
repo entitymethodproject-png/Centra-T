@@ -180,13 +180,20 @@ export class ItemsService {
   }
 
   private validateNotPastDate(dateStr: string): void {
-    const target = new Date(`${dateStr}T00:00:00`);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const match = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    let target: Date;
+    if (match) {
+      target = new Date(parseInt(match[1], 10), parseInt(match[2], 10) - 1, parseInt(match[3], 10));
+    } else {
+      target = new Date(`${dateStr}T00:00:00`);
+    }
 
     if (isNaN(target.getTime())) {
       throw new BadRequestException('Formato de fecha inválido');
     }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
     if (target.getTime() < today.getTime()) {
       throw new BadRequestException('No se pueden programar tareas en fechas pasadas');
