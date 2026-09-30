@@ -12,6 +12,7 @@ export interface ItemCreationWizardProps {
   shoppingService?: PolymorphicItemsService; // alias retrocompatible
   cleaningService?: PolymorphicItemsService; // alias retrocompatible
   modulo?: ItemModulo;
+  initialDate?: string;
   onItemCreated?: (createdItem: Item) => void;
   onTaskCreated?: (createdTask: Item) => void; // alias retrocompatible
 }
@@ -25,6 +26,7 @@ export const ItemCreationWizard: React.FC<ItemCreationWizardProps> = ({
   shoppingService,
   cleaningService,
   modulo = 'tasks',
+  initialDate,
   onItemCreated,
   onTaskCreated,
 }) => {
@@ -35,7 +37,7 @@ export const ItemCreationWizard: React.FC<ItemCreationWizardProps> = ({
   const [titulo, setTitulo] = useState('');
   const [descripcion, setDescripcion] = useState('');
   const [prioridad, setPrioridad] = useState<ItemPriority>('media');
-  const [fechaProgramada, setFechaProgramada] = useState<string>('');
+  const [fechaProgramada, setFechaProgramada] = useState<string>(initialDate || '');
 
   const [titleError, setTitleError] = useState<string | null>(null);
   const [descError, setDescError] = useState<string | null>(null);
@@ -49,7 +51,7 @@ export const ItemCreationWizard: React.FC<ItemCreationWizardProps> = ({
     setTitulo('');
     setDescripcion('');
     setPrioridad('media');
-    setFechaProgramada('');
+    setFechaProgramada(initialDate || '');
     setTitleError(null);
     setDescError(null);
     setSubmitError(null);
@@ -63,7 +65,7 @@ export const ItemCreationWizard: React.FC<ItemCreationWizardProps> = ({
         titleInputRef.current?.focus();
       }, 50);
     }
-  }, [isOpen]);
+  }, [isOpen, initialDate]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -114,7 +116,9 @@ export const ItemCreationWizard: React.FC<ItemCreationWizardProps> = ({
     setSubmitError(null);
 
     try {
-      const parsedDate = fechaProgramada ? new Date(fechaProgramada) : null;
+      const parsedDate = fechaProgramada
+        ? new Date(`${fechaProgramada.slice(0, 10)}T00:00:00`)
+        : null;
       let createdItem: Item;
 
       if (typeof window !== 'undefined' && !service) {

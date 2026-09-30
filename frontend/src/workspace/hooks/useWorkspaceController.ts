@@ -139,6 +139,11 @@ export function useWorkspaceController({
   const [contextMenuState, setContextMenuState] = useState<ContextMenuState | null>(null);
   const [toastState, setToastState] = useState<ToastState | null>(null);
 
+  // 5. Creación rápida directa desde fecha del calendario
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<string | null>(null);
+  const [isCalendarCreateOpen, setIsCalendarCreateOpen] = useState(false);
+
+
 
   // Comprobación de sesión HttpOnly activa en NestJS al montar
   useEffect(() => {
@@ -602,5 +607,17 @@ export function useWorkspaceController({
     // Notificaciones Toast
     toastState,
     closeToast: () => setToastState(null),
+
+    // Creación directa desde fecha del calendario
+    calendarSelectedDate,
+    isCalendarCreateOpen,
+    openCalendarCreate: (dateString: string) => {
+      setCalendarSelectedDate(dateString);
+      setIsCalendarCreateOpen(true);
+    },
+    closeCalendarCreate: () => {
+      setIsCalendarCreateOpen(false);
+      setCalendarSelectedDate(null);
+    },
   };
 }

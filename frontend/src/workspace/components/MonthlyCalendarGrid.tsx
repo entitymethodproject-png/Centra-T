@@ -5,6 +5,7 @@ import {
   generateCalendarMatrix,
   getMonthName,
   formatDateToIso,
+  normalizeDateToIso,
 } from '../utils/calendarMatrix';
 import { CalendarDropZone } from '../../calendar-sync/components/CalendarDropZone';
 import { CalendarTaskPill } from '../../calendar-sync/components/CalendarTaskPill';
@@ -52,10 +53,8 @@ export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
     const map: Record<string, CalendarSchedulableItem[]> = {};
     for (const item of scheduledItems) {
       if (!item.fechaProgramada) continue;
-      const dateStr =
-        item.fechaProgramada instanceof Date
-          ? formatDateToIso(item.fechaProgramada)
-          : String(item.fechaProgramada).slice(0, 10);
+      const dateStr = normalizeDateToIso(item.fechaProgramada);
+      if (!dateStr) continue;
       if (!map[dateStr]) {
         map[dateStr] = [];
       }

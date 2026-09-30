@@ -9,6 +9,7 @@ import { CleaningAccordion } from './hub/components/CleaningAccordion';
 import { FilterModal } from './filters/components/FilterModal';
 import { SortMenu } from './filters/components/SortMenu';
 import { MonthlyCalendarGrid } from './workspace/components/MonthlyCalendarGrid';
+import { ItemCreationWizard } from './items/components/ItemCreationWizard';
 import { ReassignmentConfirmModal } from './calendar-sync/components/ReassignmentConfirmModal';
 import { BulkShoppingConfirmModal } from './calendar-sync/components/BulkShoppingConfirmModal';
 import { CalendarItemContextMenu } from './calendar-sync/components/CalendarItemContextMenu';
@@ -91,6 +92,12 @@ export const App: React.FC<AppProps> = (props) => {
     // Notificaciones Toast empáticas
     toastState,
     closeToast,
+
+    // Creación directa desde el calendario
+    calendarSelectedDate,
+    isCalendarCreateOpen,
+    openCalendarCreate,
+    closeCalendarCreate,
   } = useWorkspaceController(props);
 
   // Vista de Acceso (Login / Registro)
@@ -153,6 +160,11 @@ export const App: React.FC<AppProps> = (props) => {
             scheduledItems={allScheduledItems}
             onItemDrop={handleScheduleItem}
             onItemContextMenu={handleItemContextMenu}
+            onDayClick={(day) => {
+              if (!day.isPast) {
+                openCalendarCreate(day.dateString);
+              }
+            }}
           />
         }
       />
@@ -221,6 +233,18 @@ export const App: React.FC<AppProps> = (props) => {
         action={toastState?.message.action || ''}
         type={toastState?.type || 'error'}
         onClose={closeToast}
+      />
+
+      {/* Modal de Creación Rápida desde el Calendario */}
+      <ItemCreationWizard
+        isOpen={isCalendarCreateOpen}
+        onClose={closeCalendarCreate}
+        initialDate={calendarSelectedDate || undefined}
+        modulo="tasks"
+        onItemCreated={(newItem) => {
+          handleTaskCreated(newItem);
+          closeCalendarCreate();
+        }}
       />
     </>
   );

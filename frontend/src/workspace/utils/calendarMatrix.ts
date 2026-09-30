@@ -24,6 +24,23 @@ export function formatDateToIso(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+export function normalizeDateToIso(input: Date | string | null | undefined): string {
+  if (!input) return '';
+  if (typeof input === 'string') {
+    const match = input.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (match) {
+      return `${match[1]}-${match[2]}-${match[3]}`;
+    }
+    const d = new Date(input);
+    if (!isNaN(d.getTime())) {
+      return formatDateToIso(d);
+    }
+    return '';
+  }
+  return formatDateToIso(input);
+}
+
+
 export function generateCalendarMatrix(year: number, month: number, referenceToday?: Date): CalendarDay[] {
   const today = referenceToday || new Date();
   const todayIso = formatDateToIso(today);

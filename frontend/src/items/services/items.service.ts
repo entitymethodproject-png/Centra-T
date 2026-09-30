@@ -61,7 +61,19 @@ export class ItemsService {
 
   static validateScheduleDate(dateInput?: Date | string | null): Date | null {
     if (!dateInput) return null;
-    const targetDate = new Date(dateInput);
+    let targetDate: Date;
+    if (typeof dateInput === 'string') {
+      const match = dateInput.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (match) {
+        const [, y, m, d] = match;
+        targetDate = new Date(parseInt(y, 10), parseInt(m, 10) - 1, parseInt(d, 10));
+      } else {
+        targetDate = new Date(dateInput);
+      }
+    } else {
+      targetDate = new Date(dateInput.getTime());
+    }
+
     if (isNaN(targetDate.getTime())) {
       throw new InvalidScheduleDateError('Formato de fecha inválido');
     }

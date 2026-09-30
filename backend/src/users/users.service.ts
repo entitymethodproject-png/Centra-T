@@ -41,11 +41,13 @@ export class UsersService implements OnModuleInit {
   }
 
   private async seedDemoUser() {
-    const demoEmail = 'elena@centrat.local';
+    const demoEmail = (process.env.DEMO_USER_EMAIL || 'elena@centrat.local').trim().toLowerCase();
+    const demoPassword = process.env.DEMO_USER_PASSWORD || 'Password123!';
     const existing = await this.findByEmail(demoEmail);
     if (!existing) {
       const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash('Password123!', salt);
+      const passwordHash = await bcrypt.hash(demoPassword, salt);
+
       const demoUser = this.userRepository.create({
         id: '11111111-1111-4111-8111-111111111111',
         email: demoEmail,
