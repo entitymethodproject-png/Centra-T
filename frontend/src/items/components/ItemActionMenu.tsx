@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import '../../theme/tokens.css';
 import styles from './ItemActionMenu.module.css';
 import { Item, ItemPriority } from '../entities/item.entity';
 import { type PolymorphicItemsService } from '../services/items.service';
@@ -35,6 +37,7 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
   const notifyUpdated = onItemUpdated || onTaskUpdated;
   const notifyDeleted = onItemDeleted || onTaskDeleted;
 
+  const [isMounted, setIsMounted] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isDescriptionModalOpen, setIsDescriptionModalOpen] = useState(false);
@@ -44,38 +47,26 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
   const [isPrioritySubmenuOpen, setIsPrioritySubmenuOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [openUpwards, setOpenUpwards] = useState(false);
+  const [menuCoords, setMenuCoords] = useState<{
+    top?: number;
+    bottom?: number;
+    right: number;
+    openUpwards: boolean;
+  } | null>(null);
 
   const menuRef = useRef<HTMLDivElement>(null);
+  const triggerButtonRef = useRef<HTMLButtonElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     setDescriptionText(currentItem?.descripcion || '');
   }, [currentItem?.descripcion]);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false);
-        setIsPrioritySubmenuOpen(false);
-      }
-    };
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isMenuOpen]);
-
-  useEffect(() => {
-    if (isConfirmOpen) {
-      setTimeout(() => {
-        cancelButtonRef.current?.focus();
-      }, 50);
-    }
-  }, [isConfirmOpen]);
-
+  // Cierre al pulsar Escape
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -93,18 +84,61 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isConfirmOpen, isDeleting, isDescriptionModalOpen, isSavingDesc, isMenuOpen]);
 
+  // Cierre automático al hacer scroll o redimensionar para que el menú no quede desfasado
+  useEffect(() => {
+    if (!isMenuOpen) return;
+    const handleScrollOrResize = () => {
+      setIsMenuOpen(false);
+      setIsPrioritySubmenuOpen(false);
+    };
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
+    return () => {
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+    };
+  }, [isMenuOpen]);
+
+  // Foco accesible al botón cancelar en confirmación de borrado
+  useEffect(() => {
+    if (isConfirmOpen) {
+      setTimeout(() => {
+        cancelButtonRef.current?.focus();
+      }, 50);
+    }
+  }, [isConfirmOpen]);
+
   if (!currentItem) return null;
   const modulo = currentItem.modulo || 'tasks';
 
   const handleToggleMenu = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isMenuOpen && menuRef.current && typeof window !== 'undefined') {
-      const rect = menuRef.current.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      setOpenUpwards(spaceBelow < 180);
+    if (!isMenuOpen) {
+      if (triggerButtonRef.current && typeof window !== 'undefined') {
+        const rect = triggerButtonRef.current.getBoundingClientRect();
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const shouldOpenUpwards = spaceBelow < 220;
+        setMenuCoords({
+          top: shouldOpenUpwards ? undefined : (rect.bottom || 100) + 4,
+          bottom: shouldOpenUpwards
+            ? (window.innerHeight - (rect.top || 100)) + 4
+            : undefined,
+          right: Math.max(8, window.innerWidth - (rect.right || 300)),
+          openUpwards: shouldOpenUpwards,
+        });
+      } else {
+        setMenuCoords({
+          top: 100,
+          right: 16,
+          openUpwards: false,
+        });
+      }
+      setIsMenuOpen(true);
+      setIsPrioritySubmenuOpen(false);
+    } else {
+      setIsMenuOpen(false);
+      setIsPrioritySubmenuOpen(false);
     }
-    setIsMenuOpen((prev) => !prev);
-    setIsPrioritySubmenuOpen(false);
   };
 
   const handleOpenDescriptionModal = () => {
@@ -410,10 +444,10 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
   return (
     <div
       className={styles.container}
-      ref={menuRef}
       data-testid={`action-menu-${currentItem.id}`}
     >
       <button
+        ref={triggerButtonRef}
         type="button"
         className={styles.triggerButton}
         aria-label={ariaActionLabel}
@@ -425,80 +459,114 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
         •••
       </button>
 
-      {isMenuOpen && (
-        <div
-          className={`${styles.dropdownMenu} ${openUpwards ? styles.dropdownMenuUpwards : ''}`}
-          role="menu"
-          aria-label={ariaMenuLabel}
-          data-testid={dropdownTestId}
-        >
-          <button
-            type="button"
-            className={styles.menuItem}
-            role="menuitem"
-            data-testid={descActionTestId}
-            onClick={handleOpenDescriptionModal}
+      {/* Menú Flotante Autónomo (Renderizado fuera del Hub por encima de la interfaz) */}
+      {isMenuOpen && isMounted && typeof document !== 'undefined' && createPortal(
+        <>
+          <div
+            className={styles.dropdownBackdrop}
+            data-testid="action-menu-backdrop"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen(false);
+              setIsPrioritySubmenuOpen(false);
+            }}
+          />
+          <div
+            ref={menuRef}
+            className={`${styles.dropdownMenu} ${
+              menuCoords?.openUpwards ? styles.dropdownMenuUpwards : ''
+            }`}
+            style={{
+              position: 'fixed',
+              top: menuCoords?.top !== undefined ? `${menuCoords.top}px` : 'auto',
+              bottom: menuCoords?.bottom !== undefined ? `${menuCoords.bottom}px` : 'auto',
+              right: `${menuCoords?.right ?? 16}px`,
+              zIndex: 9999,
+            }}
+            role="menu"
+            aria-label={ariaMenuLabel}
+            data-testid={dropdownTestId}
           >
-            Descripción
-          </button>
-
-          <button
-            type="button"
-            className={styles.menuItem}
-            role="menuitem"
-            aria-haspopup="true"
-            aria-expanded={isPrioritySubmenuOpen}
-            data-testid="action-menu-change-priority"
-            onClick={() => setIsPrioritySubmenuOpen((prev) => !prev)}
-          >
-            <span>Cambiar Prioridad</span>
-            <span className={styles.menuChevron}>▸</span>
-          </button>
-
-          {isPrioritySubmenuOpen && (
-            <div
-              className={styles.priorityChoices}
-              data-testid="priority-submenu"
-              role="menu"
-              aria-label="Opciones de prioridad"
+            <button
+              type="button"
+              className={styles.menuItem}
+              role="menuitem"
+              data-testid={descActionTestId}
+              onClick={handleOpenDescriptionModal}
             >
-              {(['alta', 'media', 'baja'] as ItemPriority[]).map((pri) => (
-                <button
-                  key={pri}
-                  type="button"
-                  className={`${styles.prioritySubItem} ${
-                    currentItem.prioridad === pri ? styles.prioritySelected : ''
-                  }`}
-                  role="menuitem"
-                  data-testid={`priority-option-${pri}`}
-                  onClick={() => handleSelectPriority(pri)}
-                >
-                  <span className={`${styles.priorityDot} ${styles['dot_' + pri]}`} />
-                  <span className={styles.priorityLabel}>
-                    {pri.charAt(0).toUpperCase() + pri.slice(1)}
-                  </span>
-                  {currentItem.prioridad === pri && <span className={styles.checkIcon}>✓</span>}
-                </button>
-              ))}
-            </div>
-          )}
+              Descripción
+            </button>
 
-          <div className={styles.menuDivider} />
+            <button
+              type="button"
+              className={styles.menuItem}
+              role="menuitem"
+              aria-haspopup="true"
+              aria-expanded={isPrioritySubmenuOpen}
+              data-testid="action-menu-change-priority"
+              onClick={() => setIsPrioritySubmenuOpen((prev) => !prev)}
+            >
+              <span>Cambiar Prioridad</span>
+              <span
+                className={styles.menuChevron}
+                style={{
+                  transform: isPrioritySubmenuOpen ? 'rotate(90deg)' : 'none',
+                }}
+              >
+                ▸
+              </span>
+            </button>
 
-          <button
-            type="button"
-            className={`${styles.menuItem} ${styles.menuItemDelete}`}
-            role="menuitem"
-            data-testid={deleteActionTestId}
-            onClick={handleOpenDeleteConfirm}
-          >
-            {deleteItemLabel}
-          </button>
-        </div>
+            {isPrioritySubmenuOpen && (
+              <div
+                className={styles.priorityChoices}
+                data-testid="priority-submenu"
+                role="menu"
+                aria-label="Opciones de prioridad"
+              >
+                {(['alta', 'media', 'baja'] as ItemPriority[]).map((pri) => (
+                  <button
+                    key={pri}
+                    type="button"
+                    className={`${styles.prioritySubItem} ${
+                      currentItem.prioridad === pri ? styles.prioritySelected : ''
+                    }`}
+                    role="menuitem"
+                    data-testid={`priority-option-${pri}`}
+                    onClick={() => handleSelectPriority(pri)}
+                  >
+                    <span className={`${styles.priorityDot} ${styles['dot_' + pri]}`} />
+                    <span className={styles.priorityLabel}>
+                      {pri.charAt(0).toUpperCase() + pri.slice(1)}
+                    </span>
+                    {currentItem.prioridad === pri && (
+                      <span className={styles.checkIcon} aria-hidden="true">
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div className={styles.menuDivider} />
+
+            <button
+              type="button"
+              className={`${styles.menuItem} ${styles.menuItemDelete}`}
+              role="menuitem"
+              data-testid={deleteActionTestId}
+              onClick={handleOpenDeleteConfirm}
+            >
+              {deleteItemLabel}
+            </button>
+          </div>
+        </>,
+        document.body
       )}
 
       {/* Modal Preventivo de Descripción */}
-      {isDescriptionModalOpen && (
+      {isDescriptionModalOpen && isMounted && typeof document !== 'undefined' && createPortal(
         <div
           className={styles.modalOverlay}
           role="dialog"
@@ -586,11 +654,12 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Modal Preventivo de Confirmación de Borrado */}
-      {isConfirmOpen && (
+      {isConfirmOpen && isMounted && typeof document !== 'undefined' && createPortal(
         <div
           className={styles.modalOverlay}
           role="dialog"
@@ -644,7 +713,8 @@ export const ItemActionMenu: React.FC<ItemActionMenuProps> = ({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
