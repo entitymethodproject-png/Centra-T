@@ -32,11 +32,15 @@ async function ensurePostgres() {
 
   try {
     // 1. Intentar iniciar contenedor existente
-    execSync('docker start centrat-postgres 2>/dev/null', { stdio: 'ignore' });
+    execSync('docker start centrat-postgres', { stdio: 'ignore' });
   } catch (_) {
     try {
       // 2. Intentar docker compose / docker-compose si está disponible
-      execSync('docker compose up -d 2>/dev/null || docker-compose up -d 2>/dev/null', { stdio: 'ignore' });
+      try {
+        execSync('docker compose up -d', { stdio: 'ignore' });
+      } catch (_) {
+        execSync('docker-compose up -d', { stdio: 'ignore' });
+      }
     } catch (_) {
       try {
         // 3. Crear y arrancar contenedor de cero si no existía
