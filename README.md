@@ -51,6 +51,8 @@ npx playwright test
 
 # Verificación estricta de tipos TypeScript
 npm run typecheck
+
+
 ```
 
 * **Tests Unitarios e Integración (Vitest):** **323/323 pasados (100%)** cubriendo controladores, servicios, repositorios, hooks y componentes de interfaz.
@@ -130,9 +132,10 @@ El repositorio preserva la trazabilidad histórica de desarrollo de acuerdo con 
 2. **Construcción Táctica AS-BUILT por Unidades Funcionales:**  
    Ubicada en `Docs/Paso 4: Implementación/`. Contiene la descomposición en Rebanadas Verticales (`RV-A01` a `RV-A08`), con cada `SPEC` técnica, sus tests asociados y su correspondiente certificación `AS_BUILT.md` y `LOCK`.
 3. **Consolidación Arquitectónica y Cierre de Producción:**  
-   Ubicada en `Docs/Correcciones Post Implementación/INFORME_TECNICO_ARQUITECTURA_Y_REFACTORS.md` y `CERTIFICADO_CIERRE_TOTAL_CENTRA-T.md`. Resume la realidad final de producción, la paridad con TypeORM/Docker y la resolución de interfaces.
+   Ubicada en `Docs/INFORME_TECNICO_ARQUITECTURA_Y_REFACTORS.md`. Resume la realidad final de producción, la paridad con TypeORM/Docker y la resolución de interfaces.
 
 ---
+
 
 ## 6. Caso de Estudio: Gobernanza y Análisis de Drift en Pipeline AI-Native
 
