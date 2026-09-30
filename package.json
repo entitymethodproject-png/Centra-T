@@ -8,15 +8,18 @@
     "frontend"
   ],
   "scripts": {
+    "predev": "node scripts/ensure-db.js",
     "dev": "concurrently -n \"backend,frontend\" -c \"blue,green\" \"npm run dev:backend\" \"npm run dev:frontend\"",
     "dev:backend": "npm --prefix backend run start",
     "dev:frontend": "npm --prefix frontend run dev",
-    "db:up": "docker compose up -d",
-    "db:down": "docker compose down",
+    "db:up": "node scripts/ensure-db.js",
+    "db:down": "docker stop centrat-postgres",
     "build": "npm --prefix backend run build && npm --prefix frontend run build",
     "test": "npm --prefix backend test && npm --prefix frontend test",
     "test:backend": "npm --prefix backend test",
     "test:frontend": "npm --prefix frontend test",
+    "pretest:e2e": "node scripts/ensure-db.js",
+    "test:e2e": "playwright test",
     "typecheck": "npm --prefix backend run typecheck && npm --prefix frontend run typecheck"
   },
   "devDependencies": {
